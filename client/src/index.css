@@ -10,4 +10,31 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+
+  /* Electron-specific styles */
+  .draggable {
+    -webkit-app-region: drag;
+  }
+
+  .non-draggable {
+    -webkit-app-region: no-drag;
+  }
+}
+
+/* Custom scrollbar for Electron */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
 }
