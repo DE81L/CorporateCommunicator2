@@ -7,6 +7,7 @@ import {
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import { Store } from "express-session";
 
 const MemoryStore = createMemoryStore(session);
 
@@ -45,7 +46,7 @@ export interface IStorage {
   listRequests(): Promise<Request[]>;
   
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: Store;
 }
 
 export class MemStorage implements IStorage {
@@ -55,7 +56,7 @@ export class MemStorage implements IStorage {
   private groupMembers: Map<number, GroupMember>;
   private requests: Map<number, Request>;
   
-  sessionStore: session.SessionStore;
+  sessionStore: Store;
   currentUserId: number = 1;
   currentMessageId: number = 1;
   currentGroupId: number = 1;
@@ -92,7 +93,12 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { ...insertUser, id, isOnline: false };
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      isOnline: false,
+      avatarUrl: insertUser.avatarUrl ?? null
+    };
     this.users.set(id, user);
     return user;
   }
@@ -132,7 +138,9 @@ export class MemStorage implements IStorage {
       ...insertMessage, 
       id, 
       timestamp: new Date(),
-      isRead: false 
+      isRead: false,
+      receiverId: insertMessage.receiverId ?? null,
+      groupId: insertMessage.groupId ?? null
     };
     this.messages.set(id, message);
     return message;
@@ -145,7 +153,12 @@ export class MemStorage implements IStorage {
 
   async createGroup(insertGroup: InsertGroup): Promise<Group> {
     const id = this.currentGroupId++;
-    const group: Group = { ...insertGroup, id };
+    const group: Group = { 
+      ...insertGroup, 
+      id,
+      description: insertGroup.description ?? null,
+      isAnnouncement: insertGroup.isAnnouncement ?? false
+    };
     this.groups.set(id, group);
     return group;
   }
@@ -173,7 +186,11 @@ export class MemStorage implements IStorage {
   // Group member operations
   async addGroupMember(insertMember: InsertGroupMember): Promise<GroupMember> {
     const id = this.currentGroupMemberId++;
-    const member: GroupMember = { ...insertMember, id };
+    const member: GroupMember = { 
+      ...insertMember, 
+      id,
+      isAdmin: insertMember.isAdmin ?? false
+    };
     this.groupMembers.set(id, member);
     return member;
   }
@@ -200,7 +217,9 @@ export class MemStorage implements IStorage {
       ...insertRequest, 
       id, 
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      status: insertRequest.status ?? "pending",
+      assigneeId: insertRequest.assigneeId ?? null
     };
     this.requests.set(id, request);
     return request;

@@ -3,6 +3,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import ElectronInfo from "@/components/electron-info";
+import { useElectron } from "@/hooks/use-electron";
 import {
   Card,
   CardContent,
@@ -40,6 +42,7 @@ type PasswordChangeFormValues = z.infer<typeof passwordChangeSchema>;
 export default function SettingsSection() {
   const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
+  const { isElectron } = useElectron();
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [desktopNotifications, setDesktopNotifications] = useState(true);
@@ -205,7 +208,7 @@ export default function SettingsSection() {
       </Card>
       
       {/* Privacy & Security */}
-      <Card>
+      <Card className="mb-6">
         <CardHeader className="bg-gray-50 border-b border-gray-200 px-4 py-3">
           <CardTitle className="text-base font-medium">Privacy & Security</CardTitle>
         </CardHeader>
@@ -249,6 +252,9 @@ export default function SettingsSection() {
           </div>
         </CardContent>
       </Card>
+      
+      {/* Desktop App Information - Only show in Electron mode */}
+      {isElectron && <ElectronInfo />}
     </div>
   );
 }

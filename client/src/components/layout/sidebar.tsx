@@ -19,7 +19,7 @@ interface SidebarProps {
   setActiveSection: (section: string) => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  connectionStatus: 'connecting' | 'open' | 'closing' | 'closed';
+  connectionStatus: 'connecting' | 'open' | 'closing' | 'closed' | 'offline';
 }
 
 export default function Sidebar({ 
@@ -77,17 +77,27 @@ export default function Sidebar({
         </div>
 
         {/* Connection status indicator */}
-        <div className="px-4 py-2 flex items-center text-xs text-gray-500 border-b border-gray-100">
+        <div className="px-4 py-2 flex items-center text-xs border-b border-gray-100">
           {connectionStatus === 'open' ? (
-            <>
-              <WifiIcon className="h-3 w-3 text-green-500 mr-1" />
+            <div className="flex items-center text-green-600">
+              <WifiIcon className="h-3 w-3 mr-1" />
               <span>Connected</span>
-            </>
+            </div>
+          ) : connectionStatus === 'offline' ? (
+            <div className="flex items-center text-blue-600">
+              <WifiOffIcon className="h-3 w-3 mr-1" />
+              <span>Offline Mode</span>
+            </div>
+          ) : connectionStatus === 'connecting' ? (
+            <div className="flex items-center text-yellow-600">
+              <WifiIcon className="h-3 w-3 mr-1 animate-pulse" />
+              <span>Connecting...</span>
+            </div>
           ) : (
-            <>
-              <WifiOffIcon className="h-3 w-3 text-yellow-500 mr-1" />
-              <span>{connectionStatus === 'connecting' ? 'Connecting...' : 'Disconnected'}</span>
-            </>
+            <div className="flex items-center text-red-600">
+              <WifiOffIcon className="h-3 w-3 mr-1" />
+              <span>Disconnected</span>
+            </div>
           )}
         </div>
 

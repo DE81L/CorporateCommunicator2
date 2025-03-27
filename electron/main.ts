@@ -1,6 +1,6 @@
 // Main process for Electron app
 
-import { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, Notification } from 'electron';
 import path from 'path';
 import { initEncryption } from './encryption';
 import { initStorage } from './storage';
@@ -73,6 +73,39 @@ function createWindow() {
   // Handle version info
   ipcMain.handle('app-get-version', () => {
     return app.getVersion();
+  });
+  
+  // Handle system info
+  ipcMain.handle('get-system-info', () => {
+    const os = require('os');
+    return {
+      platform: process.platform,
+      arch: process.arch,
+      version: process.version,
+      memory: {
+        total: os.totalmem(),
+        free: os.freemem()
+      }
+    };
+  });
+  
+  // Handle connectivity check
+  ipcMain.handle('is-online', () => {
+    // Simple connectivity check - in production this would be more robust
+    return require('dns').promises.lookup('google.com')
+      .then(() => true)
+      .catch(() => false);
+  });
+  
+  // Handle notifications
+  ipcMain.handle('show-notification', (_event, title, body) => {
+    const notification = new Notification({ 
+      title, 
+      body,
+      icon: path.join(__dirname, 'icons', 'icon.png')
+    });
+    notification.show();
+    return true;
   });
 
   // Initialize the application tray
