@@ -1,24 +1,22 @@
 #!/bin/bash
 
-# Start the simple server on port 5000 in the background
-node simple-server.js &
-simple_server_pid=$!
+# Start the simple server in the background
+echo "Starting simple server on port 5000..."
+node replit-simple-server.cjs &
+SIMPLE_SERVER_PID=$!
 
-# Start the actual web application
-node replit-web-entry.js &
-web_app_pid=$!
+# Wait a moment to ensure the simple server starts
+sleep 2
 
-# Function to handle termination
-cleanup() {
-  echo "Shutting down servers..."
-  kill $simple_server_pid
-  kill $web_app_pid
-  exit 0
-}
+# Start the Node.js server in the background
+echo "Starting Express server..."
+tsx server/index.ts &
+SERVER_PID=$!
 
-# Register signal handlers
-trap cleanup SIGINT SIGTERM
+# Start the Vite development server
+echo "Starting Vite development server..."
+cd client && cross-env ELECTRON=false NODE_ENV=development vite
 
-# Wait for processes to complete
-wait $web_app_pid
-wait $simple_server_pid
+# Clean up on exit
+kill $SIMPLE_SERVER_PID
+kill $SERVER_PID

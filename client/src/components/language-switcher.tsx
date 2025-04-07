@@ -1,25 +1,36 @@
-import { useLanguage } from "@/lib/i18n/LanguageContext.tsx";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 export function LanguageSwitcher() {
-  const { language, setLanguage } = useLanguage();
+  const { i18n, t } = useTranslation();
+
+  const changeLanguage = (value: string) => {
+    i18n.changeLanguage(value);
+  };
 
   return (
-    <div className="flex items-center gap-2">
-      <Button
-        variant={language === "ru" ? "default" : "outline"}
-        size="sm"
-        onClick={() => setLanguage("ru")}
+    <div className="flex flex-col space-y-2">
+      <Label htmlFor="language-select">{t('settings.language')}</Label>
+      <Select
+        value={i18n.language}
+        onValueChange={changeLanguage}
       >
-        RU
-      </Button>
-      <Button
-        variant={language === "en" ? "default" : "outline"}
-        size="sm"
-        onClick={() => setLanguage("en")}
-      >
-        EN
-      </Button>
+        <SelectTrigger id="language-select" className="w-[180px]">
+          <SelectValue placeholder={t('settings.language')} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="ru">Русский</SelectItem>
+          <SelectItem value="en">English</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }
