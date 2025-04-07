@@ -1,30 +1,26 @@
+/**
+ * TypeScript definitions for Electron API
+ */
+
 export interface ElectronAPI {
+  // IPC Renderer
+  ipcRenderer: {
+    invoke: (channel: string, ...args: any[]) => Promise<any>;
+    send: (channel: string, ...args: any[]) => void;
+    on: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
+    removeListener: (channel: string, listener: Function) => void;
+  };
+  
+  // App info and control
   app: {
     getVersion: () => Promise<string>;
+    getPath: (name: string) => Promise<string>;
+    quit: () => Promise<void>;
   };
-  window: {
-    minimize: () => Promise<void>;
-    maximize: () => Promise<void>;
-    close: () => Promise<void>;
-  };
-  storage: {
-    getUserData: () => Promise<any>;
-    setUserData: (data: any) => Promise<void>;
-    getMessages: () => Promise<any[]>;
-    saveMessage: (message: any) => Promise<void>;
-    deleteMessage: (id: number) => Promise<void>;
-  };
-  encryption: {
-    generateKeyPair: () => Promise<void>;
-    encryptMessage: (message: string, publicKey: string) => Promise<string>;
-    decryptMessage: (encryptedMessage: string) => Promise<string>;
-    getPublicKey: () => Promise<string>;
-    rotateKeys: () => Promise<void>;
-  };
-  notification: {
-    showNotification: (title: string, body: string) => Promise<void>;
-  };
+  
+  // System utilities
   system: {
+    isOnline: () => Promise<boolean>;
     getSystemInfo: () => Promise<{
       platform: string;
       arch: string;
@@ -34,16 +30,62 @@ export interface ElectronAPI {
         free: number;
       };
     }>;
-    isOnline: () => Promise<boolean>;
+  };
+  
+  // File system operations
+  fs: {
+    readFile: (path: string) => Promise<string>;
+    writeFile: (path: string, data: string) => Promise<void>;
+    fileExists: (path: string) => Promise<boolean>;
+  };
+  
+  // Dialog operations
+  dialog: {
+    showOpenDialog: (options: any) => Promise<{
+      canceled: boolean;
+      filePaths: string[];
+    }>;
+    showSaveDialog: (options: any) => Promise<{
+      canceled: boolean;
+      filePath?: string;
+    }>;
+    showMessageBox: (options: any) => Promise<{
+      response: number;
+      checkboxChecked?: boolean;
+    }>;
+  };
+  
+  // Clipboard operations
+  clipboard: {
+    writeText: (text: string) => Promise<void>;
+    readText: () => Promise<string>;
+  };
+  
+  // Storage operations
+  storage: {
+    getUserData: () => Promise<any>;
+    setUserData: (data: any) => Promise<void>;
+    getMessages: () => Promise<any[]>;
+    saveMessage: (message: any) => Promise<void>;
+    deleteMessage: (id: number) => Promise<void>;
   };
 }
 
-// Augment the Window interface in the global scope
+// Extend the Window interface
 declare global {
   interface Window {
     electron?: ElectronAPI;
   }
 }
 
-// Export a dummy constant to make this a module
-export const ELECTRON_API = "electron-api";
+// Add custom environment variables to Vite's ImportMetaEnv
+declare module "vite/client" {
+  interface ImportMetaEnv {
+    ELECTRON?: boolean | string;
+    VITE_WEB_ONLY?: string;
+    VITE_REPLIT?: string;
+    [key: string]: any;
+  }
+}
+
+export {};

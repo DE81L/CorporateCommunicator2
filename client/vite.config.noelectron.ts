@@ -1,58 +1,41 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+import fs from 'fs';
 
-// https://vitejs.dev/config/
+// Check if theme.json exists
+let themePlugins = [react()];
+try {
+  if (fs.existsSync(path.resolve(__dirname, '../theme.json'))) {
+    const shadcnThemePlugin = require('@replit/vite-plugin-shadcn-theme-json').default;
+    const themeConfig = require('../theme.json');
+    themePlugins.push(shadcnThemePlugin(themeConfig));
+  }
+} catch (error) {
+  console.warn('Theme plugin not loaded:', error.message);
+}
+
+// Web-only Vite config for Replit environment
 export default defineConfig({
-  plugins: [
-    react(),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
-      ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
-          ),
-        ]
-      : []),
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "@lib": path.resolve(__dirname, "./src/lib"),
-      "@components": path.resolve(__dirname, "./src/components"),
-      "@ui": path.resolve(__dirname, "./src/components/ui"),
-      "@hooks": path.resolve(__dirname, "./src/hooks"),
-      "@pages": path.resolve(__dirname, "./src/pages"),
-      "@shared": path.resolve(__dirname, "../shared"),
-      "@services": path.resolve(__dirname, "./src/services"),
-      "@contexts": path.resolve(__dirname, "./src/contexts"),
-      "@assets": path.resolve(__dirname, "../attached_assets"),
-    },
-  },
+  plugins: themePlugins,
   server: {
-    host: "0.0.0.0",
+    host: '0.0.0.0',
     port: 5173,
     strictPort: true,
-    proxy: {
-      "/api": {
-        target: "http://localhost:3000",
-        changeOrigin: true,
-      },
-      "/ws": {
-        target: "http://localhost:3000",
-        changeOrigin: true,
-        ws: true,
-      },
-    },
+    hmr: {
+      clientPort: 5173
+    }
   },
-  build: {
-    outDir: "../dist",
-    // Skip sourcemap in production
-    sourcemap: process.env.NODE_ENV === "development",
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+      '@assets': path.resolve(__dirname, '../attached_assets'),
+      '@shared': path.resolve(__dirname, '../shared'),
+    }
   },
   define: {
-    "import.meta.env.ELECTRON": JSON.stringify(false),
-  },
+    'process.env.ELECTRON': JSON.stringify(false),
+    'import.meta.env.VITE_WEB_ONLY': JSON.stringify('true'),
+    'import.meta.env.VITE_REPLIT': JSON.stringify('true'),
+  }
 });
