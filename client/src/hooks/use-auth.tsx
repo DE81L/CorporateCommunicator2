@@ -10,11 +10,12 @@ import {
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
-import { insertUserSchema, type User } from "@shared/schema";
+import { insertUserSchema } from "../../../shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useLocation } from "wouter";
+import { useElectron } from "../hooks/use-electron";
 
 export const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -32,7 +33,9 @@ export interface User {
   avatarUrl: string | null;
 }
 
-export type UserWithoutPassword = Omit<User, "password">;
+export type UserWithoutPassword = Omit<User, "password"> & {
+  isOnline: number | boolean;
+};
 
 const registerSchema = insertUserSchema
   .extend({
@@ -88,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Добавляем loading состояние
   const [isLoading, setIsLoading] = useState(true);
+  const [authError, setAuthError] = useState<Error | null>(null);
 
   const {
     data: user,
@@ -220,9 +224,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         firstName: "Demo",
         lastName: "User",
         email: "demo@example.com",
-        isOnline: 1,
+        isOnline: 1 as number,
         avatarUrl: null,
-      };
+      } as UserWithoutPassword;
     }
   };
 
@@ -257,7 +261,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: error.message,
         variant: "destructive",
       });
-      setError(error);
+      setAuthError(error);
     } finally {
       setIsLoading(false);
     }
@@ -273,7 +277,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextType = {
     user: user ?? null,
     isLoading,
-    error,
+    error: authError || error,
     loginMutation,
     registerMutation,
     logoutMutation,
