@@ -1,9 +1,30 @@
 import { createApp } from './app';
+import http from 'http';
+
+// Function to start a quick server on port 5000 for Replit environment
+function startQuickServer() {
+  if (process.env.REPLIT_DB_URL) {
+    console.log('Starting quick server for Replit on port 5000...');
+    const quickServer = http.createServer((req, res) => {
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      res.end('Quick server is running on port 5000');
+    });
+    
+    quickServer.listen(5000, '0.0.0.0', () => {
+      console.log('Quick server running on port 5000');
+    });
+    
+    return quickServer;
+  }
+  return null;
+}
 
 /**
  * Main server entry point with environment detection
  */
 async function startServer() {
+  // Start quick server for Replit if needed
+  const quickServer = startQuickServer();
   const { app, server } = await createApp();
   
   // Determine the port based on environment
@@ -20,9 +41,20 @@ async function startServer() {
   // Handle termination gracefully
   const shutdown = () => {
     console.log('Shutting down server...');
+    
+    // Cleanup all servers
     server.close(() => {
-      console.log('Server closed');
-      process.exit(0);
+      console.log('Main server closed');
+      
+      // Close the quick server if it exists
+      if (quickServer) {
+        quickServer.close(() => {
+          console.log('Quick server closed');
+          process.exit(0);
+        });
+      } else {
+        process.exit(0);
+      }
     });
   };
   
@@ -33,7 +65,9 @@ async function startServer() {
 }
 
 // Start the server if this is the main module
-if (require.main === module) {
+// Using import.meta.url for ESM modules
+const isMainModule = import.meta.url.endsWith(process.argv[1].replace(/^file:\/\//, ''));
+if (isMainModule) {
   startServer().catch((err) => {
     console.error('Failed to start server:', err);
     process.exit(1);

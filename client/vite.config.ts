@@ -16,5 +16,11 @@ export default defineConfig({
     hmr: {
       clientPort: 443,
     },
+    // Allow connections from any host (including Replit domains)
+    cors: true,
+    // Allow all hosts to connect to dev server
+    strictPort: false,
+    // Allow any hostname to access the dev server
+    allowedHosts: true,
   },
 });

@@ -3,37 +3,27 @@
  * Used specifically for Replit workflows that require port 5000 to be opened within 20 seconds
  */
 
+console.log("Starting the Replit workflow server setup");
+
+// Spawn a child process to run the simple server that listens on port 5000
 const { spawn } = require('child_process');
+const path = require('path');
 
-// First, start the simple server on port 5000 to satisfy Replit's workflow check
-console.log('Starting simple server on port 5000...');
-const simpleServer = spawn('node', ['replit-simple-server.cjs'], { stdio: 'inherit' });
+// Start the simple server
+const simpleServer = spawn('node', ['replit-simple-server.cjs'], {
+  stdio: 'inherit',
+  env: { ...process.env, START_MAIN_APP: 'true' }
+});
 
+// Log any errors
 simpleServer.on('error', (err) => {
   console.error('Failed to start simple server:', err);
   process.exit(1);
 });
 
-// After the simple server has started, start the actual application
-console.log('Starting main application...');
-const mainApp = spawn('npm', ['run', 'dev'], { stdio: 'inherit' });
-
-mainApp.on('error', (err) => {
-  console.error('Failed to start main application:', err);
-  process.exit(1);
-});
-
-// Handle cleanup on exit
+// Handle process termination
 process.on('SIGINT', () => {
-  console.log('Shutting down...');
+  console.log('Terminating all processes...');
   simpleServer.kill();
-  mainApp.kill();
-  process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-  console.log('Shutting down...');
-  simpleServer.kill();
-  mainApp.kill();
   process.exit(0);
 });

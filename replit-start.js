@@ -6,148 +6,78 @@
  * then starts the actual application server.
  */
 
-const childProcess = require('child_process');
-const path = require('path');
-const fs = require('fs');
+const { spawn } = require('child_process');
+const express = require('express');
 
-// Configuration
-const SIMPLE_SERVER_PORT = 5000;
-const MAIN_SERVER_PORT = 3000;
-
-// Colors for console output
-const colors = {
-  reset: '\x1b[0m',
-  bright: '\x1b[1m',
-  dim: '\x1b[2m',
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  magenta: '\x1b[35m',
-  cyan: '\x1b[36m',
-};
-
-// Logging utility
 function log(message, type = 'info') {
-  const timestamp = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-  let prefix = '';
-  
-  switch (type) {
-    case 'info':
-      prefix = `${colors.blue}[INFO]${colors.reset}`;
-      break;
-    case 'success':
-      prefix = `${colors.green}[SUCCESS]${colors.reset}`;
-      break;
-    case 'error':
-      prefix = `${colors.red}[ERROR]${colors.reset}`;
-      break;
-    case 'warning':
-      prefix = `${colors.yellow}[WARNING]${colors.reset}`;
-      break;
-    default:
-      prefix = `[${type.toUpperCase()}]`;
-  }
-  
-  console.log(`${prefix} ${timestamp} - ${message}`);
+  const timestamp = new Date().toLocaleTimeString();
+  console.log(`${timestamp} [${type}] ${message}`);
 }
 
-// Start the simple server
 function startSimpleServer() {
-  log('Starting simple server on port 5000...', 'info');
+  log('Starting simple server on port 5000...', 'setup');
   
-  const simpleServer = childProcess.spawn('node', ['simple-server.cjs'], {
-    env: { ...process.env, PORT: SIMPLE_SERVER_PORT.toString() },
-    stdio: 'pipe',
+  const app = express();
+  app.get('/', (req, res) => {
+    res.send('Simple server running on port 5000');
   });
   
-  simpleServer.stdout.on('data', (data) => {
-    console.log(`${colors.dim}[simple-server]${colors.reset} ${data.toString().trim()}`);
+  return new Promise((resolve) => {
+    const server = app.listen(5000, '0.0.0.0', () => {
+      log('Simple server is now running', 'setup');
+      resolve(server);
+    });
   });
-  
-  simpleServer.stderr.on('data', (data) => {
-    console.error(`${colors.red}[simple-server]${colors.reset} ${data.toString().trim()}`);
-  });
-  
-  simpleServer.on('close', (code) => {
-    log(`Simple server exited with code ${code}`, code === 0 ? 'info' : 'error');
-  });
-  
-  return simpleServer;
 }
 
-// Start the main application
 function startMainApplication() {
-  log('Starting main application...', 'info');
+  log('Starting main application...', 'setup');
   
-  // Set environment variables for main application
+  // Set environment variables to skip Electron
   const env = {
     ...process.env,
-    PORT: MAIN_SERVER_PORT.toString(),
-    ELECTRON: 'false',
-    NODE_ENV: process.env.NODE_ENV || 'development',
+    REPLIT: 'true',
+    SKIP_ELECTRON: 'true'
   };
   
-  // Start TypeScript server
-  const serverProcess = childProcess.spawn('tsx', ['server/index.ts'], {
+  // Run the server and Vite, but skip Electron
+  const mainApp = spawn('concurrently', [
+    'tsx server/index.ts',
+    'cd client && cross-env NODE_ENV=development vite'
+  ], {
+    stdio: 'inherit',
     env,
-    stdio: 'pipe',
+    shell: true
   });
   
-  serverProcess.stdout.on('data', (data) => {
-    console.log(`${colors.cyan}[server]${colors.reset} ${data.toString().trim()}`);
+  mainApp.on('error', (error) => {
+    log(`Failed to start main application: ${error.message}`, 'error');
   });
   
-  serverProcess.stderr.on('data', (data) => {
-    console.error(`${colors.red}[server]${colors.reset} ${data.toString().trim()}`);
-  });
-  
-  serverProcess.on('close', (code) => {
-    log(`Server exited with code ${code}`, code === 0 ? 'info' : 'error');
-  });
-  
-  // Start Vite dev server for client
-  const clientProcess = childProcess.spawn('cd', ['client', '&&', 'cross-env', 'ELECTRON=false', 'NODE_ENV=development', 'vite'], {
-    env,
-    stdio: 'pipe',
-    shell: true,
-  });
-  
-  clientProcess.stdout.on('data', (data) => {
-    console.log(`${colors.magenta}[client]${colors.reset} ${data.toString().trim()}`);
-  });
-  
-  clientProcess.stderr.on('data', (data) => {
-    console.error(`${colors.red}[client]${colors.reset} ${data.toString().trim()}`);
-  });
-  
-  clientProcess.on('close', (code) => {
-    log(`Client process exited with code ${code}`, code === 0 ? 'info' : 'error');
-  });
-  
-  return { serverProcess, clientProcess };
+  return mainApp;
 }
 
-// Main function
-function main() {
-  log('Starting application in Replit environment', 'info');
-  
-  // Start the simple server first
-  const simpleServer = startSimpleServer();
-  
-  // Wait for simple server to start before starting main application
-  setTimeout(() => {
-    const mainProcesses = startMainApplication();
+async function main() {
+  try {
+    // First start the simple server on port 5000
+    const simpleServer = await startSimpleServer();
     
-    // Handle shutdown
+    // Then start the main application
+    const mainApp = startMainApplication();
+    
+    // Handle termination
     process.on('SIGINT', () => {
-      log('Shutting down all processes...', 'warning');
-      simpleServer.kill();
-      mainProcesses.serverProcess.kill();
-      mainProcesses.clientProcess.kill();
+      log('Shutting down servers...', 'shutdown');
+      simpleServer.close();
+      if (mainApp && !mainApp.killed) {
+        mainApp.kill();
+      }
       process.exit(0);
     });
-  }, 2000); // Give the simple server 2 seconds to start
+  } catch (error) {
+    log(`Error during startup: ${error.message}`, 'error');
+    process.exit(1);
+  }
 }
 
 // Run the main function

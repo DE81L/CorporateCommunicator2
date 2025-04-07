@@ -1,43 +1,36 @@
 /**
- * Replit Simple Server
- * 
- * This is a minimal server that listens on port 5000 to satisfy Replit's requirement
- * for a port to be open within 20 seconds. It's designed to be as lightweight as possible.
+ * Ultra-minimal Express server for Replit workflows
+ * Opens port 5000 immediately and provides a basic health check
  */
 
+console.log("Starting simple server on port 5000...");
+
+// Create a minimal Express server
 const express = require('express');
 const app = express();
 const PORT = 5000;
 
-// Set up a simple route that explains what's happening
+// Basic route
 app.get('/', (req, res) => {
   res.send(`
     <html>
-      <head>
-        <title>Corporate Messaging App</title>
-        <style>
-          body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-          .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-          .btn { display: inline-block; background: #0066ff; color: white; padding: 10px 20px; 
-                text-decoration: none; border-radius: 4px; margin-top: 20px; }
-        </style>
-      </head>
+      <head><title>Replit Server</title></head>
       <body>
-        <div class="container">
-          <h1>Corporate Messaging Application</h1>
-          <p>The application is running on port 3000.</p>
-          <p>This is a simple server running on port 5000 to satisfy Replit's requirements.</p>
-          <a class="btn" href="https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co" target="_blank">
-            Open Main Application
-          </a>
-        </div>
+        <h1>Replit Server Running</h1>
+        <p>This is a minimal server that opens port 5000 immediately to satisfy Replit's port checking.</p>
+        <p>Please visit the main application at: <a href="http://localhost:3000">http://localhost:3000</a></p>
+        <p>Current time: ${new Date().toISOString()}</p>
       </body>
     </html>
   `);
 });
 
-// Start the server
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Simple server running on port ${PORT}`);
-  console.log('NOTE: The main application runs separately on port 3000');
 });
