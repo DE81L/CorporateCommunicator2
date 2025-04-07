@@ -46,4 +46,4 @@ declare global {
 }
 
 // Export a dummy constant to make this a module
-export const ELECTRON_API = 'electron-api';
+export const ELECTRON_API = "electron-api";

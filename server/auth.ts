@@ -36,7 +36,7 @@ export function setupAuth(app: Express) {
     store: storage.sessionStore,
     cookie: {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
-    }
+    },
   };
 
   app.set("trust proxy", 1);
@@ -49,12 +49,12 @@ export function setupAuth(app: Express) {
       try {
         // Try to find user by username first
         let user = await storage.getUserByUsername(username);
-        
+
         // If not found, try by email
         if (!user) {
           user = await storage.getUserByEmail(username);
         }
-        
+
         if (!user || !(await comparePasswords(password, user.password))) {
           return done(null, false);
         } else {
@@ -79,19 +79,21 @@ export function setupAuth(app: Express) {
   app.post("/api/register", async (req, res, next) => {
     try {
       // Check if username exists
-      const existingUserByUsername = await storage.getUserByUsername(req.body.username);
+      const existingUserByUsername = await storage.getUserByUsername(
+        req.body.username,
+      );
       if (existingUserByUsername) {
         return res.status(400).json({ message: "Username already exists" });
       }
-      
+
       // Check if email exists
       const existingUserByEmail = await storage.getUserByEmail(req.body.email);
       if (existingUserByEmail) {
         return res.status(400).json({ message: "Email already exists" });
       }
-      
+
       const hashedPassword = await hashPassword(req.body.password);
-      
+
       const user = await storage.createUser({
         ...req.body,
         password: hashedPassword,
@@ -112,12 +114,10 @@ export function setupAuth(app: Express) {
   app.post("/api/login", (req, res, next) => {
     passport.authenticate("local", (err, user, info) => {
       if (err) return next(err);
-      if (!user) return res.status(401).json({ message: "Invalid credentials" });
-      
+      if (!user)
+        return res.status(401).json({ message: "Invalid credentials" });
       req.login(user, (err) => {
         if (err) return next(err);
-        
-        // Remove password from response
         const { password, ...userWithoutPassword } = user;
         return res.status(200).json(userWithoutPassword);
       });
@@ -133,9 +133,28 @@ export function setupAuth(app: Express) {
 
   app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    
+
     // Remove password from response
     const { password, ...userWithoutPassword } = req.user!;
     res.json(userWithoutPassword);
+  });
+
+  app.get("/api/random-user", async (req, res) => {
+    try {
+      const users = Array.from(storage.users.values());
+      if (users.length === 0) {
+        return res.status(404).json({ message: "No users found" });
+      }
+
+      const randomIndex = Math.floor(Math.random() * users.length);
+      const randomUser = users[randomIndex];
+
+      // Remove password from response
+      const { password, ...userWithoutPassword } = randomUser;
+
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get random user", error });
+    }
   });
 }

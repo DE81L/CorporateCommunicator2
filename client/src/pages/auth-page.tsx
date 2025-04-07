@@ -1,19 +1,67 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth, loginSchema, registerSchema } from "@/hooks/use-auth";
-import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth"; // Import useAuth from hooks
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { Redirect } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
+import { createContext, ReactNode, useContext } from "react";
+import {
+  useQuery,
+  useMutation,
+  UseMutationResult,
+} from "@tanstack/react-query";
+import { insertUserSchema, User } from "@shared/schema";
+import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+
+type UserWithoutPassword = Omit<User, "password">;
+
+const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+const registerSchema = insertUserSchema
+  .extend({
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 export default function AuthPage() {
-  const { user, loginMutation, registerMutation } = useAuth();
+  const { user, isLoading, loginMutation, registerMutation } = useAuth();
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   // Redirect if already logged in
   if (user) {
@@ -21,89 +69,40 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
-      {/* Left side: Authentication form */}
-      <div className="flex-1 flex justify-center items-center p-6">
+    <div className="min-h-screen flex">
+      <div className="flex-1 flex items-center justify-center p-6">
         <Tabs
-          defaultValue="login"
-          value={activeTab}
-          onValueChange={(v) => setActiveTab(v as "login" | "register")}
-          className="w-full max-w-md"
+          defaultValue={activeTab}
+          className="w-full max-w-md space-y-6"
+          onValueChange={(value) => setActiveTab(value as "login" | "register")}
         >
-          <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsList className="grid grid-cols-2">
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="register">Register</TabsTrigger>
           </TabsList>
-          
           <TabsContent value="login">
-            <LoginForm isPending={loginMutation.isPending} onSubmit={loginMutation.mutate} />
+            <LoginForm
+              onSubmit={loginMutation.mutate}
+              isPending={loginMutation.isPending}
+            />
           </TabsContent>
-          
           <TabsContent value="register">
-            <RegisterForm isPending={registerMutation.isPending} onSubmit={registerMutation.mutate} />
+            <RegisterForm
+              onSubmit={registerMutation.mutate}
+              isPending={registerMutation.isPending}
+            />
           </TabsContent>
         </Tabs>
-      </div>
-      
-      {/* Right side: Hero section */}
-      <div className="flex-1 bg-primary-600 text-white p-10 flex items-center justify-center">
-        <div className="max-w-lg">
-          <h1 className="text-4xl font-bold mb-6">Nexus</h1>
-          <h2 className="text-2xl font-semibold mb-4">Corporate Messenger</h2>
-          <p className="text-lg mb-6">
-            Connect with your team, share announcements, manage requests, and more - all in one place.
-          </p>
-          <ul className="space-y-4">
-            <li className="flex items-center">
-              <div className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center mr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M8 12h.01"></path>
-                  <path d="M12 12h.01"></path>
-                  <path d="M16 12h.01"></path>
-                  <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
-                </svg>
-              </div>
-              <span>Real-time messaging with your team</span>
-            </li>
-            <li className="flex items-center">
-              <div className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center mr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-              </div>
-              <span>Create and manage group discussions</span>
-            </li>
-            <li className="flex items-center">
-              <div className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center mr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5.5 20H8M17 9l-2.53 2.5M11.25 11L11 9.75M8 20v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6M12 4c1.5 0 3 .6 3 2M9 6c0-1.4 1.5-2 3-2"></path>
-                </svg>
-              </div>
-              <span>Company-wide announcements</span>
-            </li>
-            <li className="flex items-center">
-              <div className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center mr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-              </div>
-              <span>Request management with status tracking</span>
-            </li>
-          </ul>
-        </div>
       </div>
     </div>
   );
 }
 
-function LoginForm({ 
-  isPending, 
-  onSubmit 
-}: { 
-  isPending: boolean; 
+function LoginForm({
+  isPending,
+  onSubmit,
+}: {
+  isPending: boolean;
   onSubmit: (data: z.infer<typeof loginSchema>) => void;
 }) {
   const form = useForm<z.infer<typeof loginSchema>>({
@@ -132,7 +131,10 @@ function LoginForm({
                 <FormItem>
                   <FormLabel>Username or Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your username or email" {...field} />
+                    <Input
+                      placeholder="Enter your username or email"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -145,7 +147,11 @@ function LoginForm({
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Enter your password" {...field} />
+                    <Input
+                      type="password"
+                      placeholder="Enter your password"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -162,20 +168,23 @@ function LoginForm({
                   Remember me
                 </label>
               </div>
-              <a href="#" className="text-sm text-primary hover:text-primary-700">
+              <a
+                href="#"
+                className="text-sm text-primary hover:text-primary-700"
+              >
                 Forgot password?
               </a>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full" disabled={isPending}>
+          <CardFooter className="flex justify-end">
+            <Button disabled={isPending} type="submit">
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  Please wait
                 </>
               ) : (
-                "Sign in"
+                "Login"
               )}
             </Button>
           </CardFooter>
@@ -185,11 +194,11 @@ function LoginForm({
   );
 }
 
-function RegisterForm({ 
-  isPending, 
-  onSubmit 
-}: { 
-  isPending: boolean; 
+function RegisterForm({
+  isPending,
+  onSubmit,
+}: {
+  isPending: boolean;
   onSubmit: (data: z.infer<typeof registerSchema>) => void;
 }) {
   const form = useForm<z.infer<typeof registerSchema>>({
@@ -199,52 +208,47 @@ function RegisterForm({
       lastName: "",
       username: "",
       email: "",
-      company: "",
       password: "",
       confirmPassword: "",
+      avatarUrl: "",
     },
   });
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Create your account</CardTitle>
-        <CardDescription>
-          Join Nexus to connect with your team
-        </CardDescription>
+        <CardTitle>Register</CardTitle>
+        <CardDescription>Create a new account</CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your first name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your last name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="username"
@@ -252,13 +256,12 @@ function RegisterForm({
                 <FormItem>
                   <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="johndoe" {...field} />
+                    <Input placeholder="Enter your username" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
             <FormField
               control={form.control}
               name="email"
@@ -266,27 +269,16 @@ function RegisterForm({
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="john.doe@example.com" {...field} />
+                    <Input
+                      type="email"
+                      placeholder="Enter your email"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
-            <FormField
-              control={form.control}
-              name="company"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Company</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Acme Inc." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
             <FormField
               control={form.control}
               name="password"
@@ -294,13 +286,16 @@ function RegisterForm({
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Create a password" {...field} />
+                    <Input
+                      type="password"
+                      placeholder="Enter your password"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
             <FormField
               control={form.control}
               name="confirmPassword"
@@ -308,19 +303,36 @@ function RegisterForm({
                 <FormItem>
                   <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Confirm your password" {...field} />
+                    <Input
+                      type="password"
+                      placeholder="Confirm your password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="avatarUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Avatar URL</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your avatar URL" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full" disabled={isPending}>
+          <CardFooter className="flex justify-end">
+            <Button disabled={isPending} type="submit">
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Registering...
+                  Please wait
                 </>
               ) : (
                 "Register"

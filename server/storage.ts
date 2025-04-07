@@ -1,13 +1,28 @@
-import { 
-  users, type User, type InsertUser,
-  messages, type Message, type InsertMessage,
-  groups, type Group, type InsertGroup,
-  groupMembers, type GroupMember, type InsertGroupMember,
-  requests, type Request, type InsertRequest
+import {
+  users,
+  type User,
+  type InsertUser,
+  messages,
+  type Message,
+  type InsertMessage,
+  groups,
+  type Group,
+  type InsertGroup,
+  groupMembers,
+  type GroupMember,
+  type InsertGroupMember,
+  requests,
+  type Request,
+  type InsertRequest,
+  convertHelpers,
+  NULL_NUMBER,
+  NULL_TEXT,
+  NULL_DATE,
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { Store } from "express-session";
+import { v4 as uuidv4 } from "uuid";
 
 const MemoryStore = createMemoryStore(session);
 
@@ -17,13 +32,17 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  updateUserOnlineStatus(id: number, isOnline: boolean): Promise<User | undefined>;
+  updateUserOnlineStatus(
+    id: number,
+    isOnline: boolean,
+  ): Promise<User | undefined>;
   listUsers(): Promise<User[]>;
 
   // Message operations
+  getMessage(id: number): Promise<Message | undefined>;
   getMessages(senderId: number, receiverId: number): Promise<Message[]>;
-  getGroupMessages(groupId: number): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
+  deleteMessage(id: number): Promise<void>;
 
   // Group operations
   getGroup(id: number): Promise<Group | undefined>;
@@ -44,7 +63,11 @@ export interface IStorage {
   getUserRequests(userId: number): Promise<Request[]>;
   getAssignedRequests(userId: number): Promise<Request[]>;
   listRequests(): Promise<Request[]>;
-  
+  updateRequestComplete(
+    id: number,
+    updateFields: Partial<Request>,
+  ): Promise<Request>;
+
   // Session store
   sessionStore: Store;
 }
@@ -55,7 +78,7 @@ export class MemStorage implements IStorage {
   private groups: Map<number, Group>;
   private groupMembers: Map<number, GroupMember>;
   private requests: Map<number, Request>;
-  
+
   sessionStore: Store;
   currentUserId: number = 1;
   currentMessageId: number = 1;
@@ -72,6 +95,26 @@ export class MemStorage implements IStorage {
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
     });
+
+    // Create some default users for testing
+    this.createUser({
+      firstName: "John",
+      lastName: "Doe",
+      username: "johndoe",
+      email: "john.doe@example.com",
+      company: "Acme Inc.",
+      password: "password",
+      avatarUrl: NULL_TEXT,
+    });
+    this.createUser({
+      firstName: "Jane",
+      lastName: "Smith",
+      username: "janesmith",
+      email: "jane.smith@example.com",
+      company: "Beta Corp",
+      password: "password",
+      avatarUrl: NULL_TEXT,
+    });
   }
 
   // User operations
@@ -81,36 +124,40 @@ export class MemStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(
-      (user) => user.username === username
+      (user) => user.username === username,
     );
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.email === email
-    );
+    return Array.from(this.users.values()).find((user) => user.email === email);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { 
-      ...insertUser, 
-      id, 
-      isOnline: false,
-      avatarUrl: insertUser.avatarUrl ?? null
+    const user: User = {
+      ...insertUser,
+      id,
+      isOnline: convertHelpers.toDbBoolean(false),
+      avatarUrl: insertUser.avatarUrl ?? NULL_TEXT,
     };
     this.users.set(id, user);
     return user;
   }
 
-  async updateUserOnlineStatus(id: number, isOnline: boolean): Promise<User | undefined> {
-    const user = await this.getUser(id);
-    if (user) {
-      const updatedUser = { ...user, isOnline };
-      this.users.set(id, updatedUser);
-      return updatedUser;
+  async updateUserOnlineStatus(
+    userId: number,
+    isOnline: boolean,
+  ): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error("User not found");
     }
-    return undefined;
+    const updatedUser = {
+      ...user,
+      isOnline: convertHelpers.toDbBoolean(isOnline),
+    };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
   }
 
   async listUsers(): Promise<User[]> {
@@ -118,32 +165,36 @@ export class MemStorage implements IStorage {
   }
 
   // Message operations
-  async getMessages(senderId: number, receiverId: number): Promise<Message[]> {
-    return Array.from(this.messages.values()).filter(
-      (msg) => 
-        (msg.senderId === senderId && msg.receiverId === receiverId) ||
-        (msg.senderId === receiverId && msg.receiverId === senderId)
-    ).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  async getMessage(id: number): Promise<Message | undefined> {
+    return this.messages.get(id);
   }
 
-  async getGroupMessages(groupId: number): Promise<Message[]> {
+  async getMessages(senderId: number, receiverId: number): Promise<Message[]> {
     return Array.from(this.messages.values())
-      .filter(msg => msg.groupId === groupId)
-      .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+      .filter(
+        (msg) =>
+          (msg.senderId === senderId && msg.receiverId === receiverId) ||
+          (msg.senderId === receiverId && msg.receiverId === senderId),
+      )
+      .sort((a, b) => convertHelpers.compareDates(a.timestamp, b.timestamp));
   }
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
     const id = this.currentMessageId++;
-    const message: Message = { 
-      ...insertMessage, 
-      id, 
-      timestamp: new Date(),
-      isRead: false,
+    const message: Message = {
+      ...insertMessage,
+      id,
+      timestamp: convertHelpers.toDbDate(new Date(insertMessage.timestamp)),
+      isRead: convertHelpers.toDbBoolean(!!insertMessage.isRead),
       receiverId: insertMessage.receiverId ?? null,
-      groupId: insertMessage.groupId ?? null
+      groupId: insertMessage.groupId ?? null,
     };
     this.messages.set(id, message);
     return message;
+  }
+
+  async deleteMessage(id: number): Promise<void> {
+    this.messages.delete(id);
   }
 
   // Group operations
@@ -153,11 +204,11 @@ export class MemStorage implements IStorage {
 
   async createGroup(insertGroup: InsertGroup): Promise<Group> {
     const id = this.currentGroupId++;
-    const group: Group = { 
-      ...insertGroup, 
+    const group: Group = {
+      ...insertGroup,
       id,
-      description: insertGroup.description ?? null,
-      isAnnouncement: insertGroup.isAnnouncement ?? false
+      description: insertGroup.description ?? NULL_TEXT,
+      isAnnouncement: convertHelpers.toDbBoolean(!!insertGroup.isAnnouncement),
     };
     this.groups.set(id, group);
     return group;
@@ -170,39 +221,43 @@ export class MemStorage implements IStorage {
   async getGroupsByUserId(userId: number): Promise<Group[]> {
     const userGroupIds = new Set(
       Array.from(this.groupMembers.values())
-        .filter(member => member.userId === userId)
-        .map(member => member.groupId)
+        .filter((member) => member.userId === userId)
+        .map((member) => member.groupId),
     );
-    
-    return Array.from(this.groups.values())
-      .filter(group => userGroupIds.has(group.id));
+
+    return Array.from(this.groups.values()).filter((group) =>
+      userGroupIds.has(group.id),
+    );
   }
 
   async getAnnouncementGroups(): Promise<Group[]> {
-    return Array.from(this.groups.values())
-      .filter(group => group.isAnnouncement);
+    return Array.from(this.groups.values()).filter(
+      (group) => group.isAnnouncement,
+    );
   }
 
   // Group member operations
   async addGroupMember(insertMember: InsertGroupMember): Promise<GroupMember> {
     const id = this.currentGroupMemberId++;
-    const member: GroupMember = { 
-      ...insertMember, 
+    const member: GroupMember = {
+      ...insertMember,
       id,
-      isAdmin: insertMember.isAdmin ?? false
+      isAdmin: convertHelpers.toDbBoolean(!!(insertMember.isAdmin ?? false)),
     };
     this.groupMembers.set(id, member);
     return member;
   }
 
   async getGroupMembers(groupId: number): Promise<GroupMember[]> {
-    return Array.from(this.groupMembers.values())
-      .filter(member => member.groupId === groupId);
+    return Array.from(this.groupMembers.values()).filter(
+      (member) => member.groupId === groupId,
+    );
   }
 
   async isUserInGroup(userId: number, groupId: number): Promise<boolean> {
-    return Array.from(this.groupMembers.values())
-      .some(member => member.userId === userId && member.groupId === groupId);
+    return Array.from(this.groupMembers.values()).some(
+      (member) => member.userId === userId && member.groupId === groupId,
+    );
   }
 
   // Request operations
@@ -212,26 +267,37 @@ export class MemStorage implements IStorage {
 
   async createRequest(insertRequest: InsertRequest): Promise<Request> {
     const id = this.currentRequestId++;
-    const now = new Date();
-    const request: Request = { 
-      ...insertRequest, 
-      id, 
+    const now = convertHelpers.toDbDate(new Date());
+
+    const newRequest: Request = {
+      ...insertRequest,
+      id,
       createdAt: now,
       updatedAt: now,
-      status: insertRequest.status ?? "pending",
-      assigneeId: insertRequest.assigneeId ?? null
+      deadline: insertRequest.deadline ?? NULL_DATE,
+      category: insertRequest.category ?? NULL_TEXT,
+      requestStatus: insertRequest.requestStatus ?? "new",
+      assigneeId: insertRequest.assigneeId ?? null,
+      whoAccepted: insertRequest.whoAccepted ?? NULL_TEXT,
+      subdivision: insertRequest.subdivision ?? NULL_TEXT,
+      grade: insertRequest.grade ?? null,
+      reviewText: insertRequest.reviewText ?? NULL_TEXT,
     };
-    this.requests.set(id, request);
-    return request;
+
+    this.requests.set(id, newRequest);
+    return newRequest;
   }
 
-  async updateRequestStatus(id: number, status: string): Promise<Request | undefined> {
+  async updateRequestStatus(
+    id: number,
+    status: string,
+  ): Promise<Request | undefined> {
     const request = await this.getRequest(id);
     if (request) {
-      const updatedRequest = { 
-        ...request, 
-        status,
-        updatedAt: new Date()
+      const updatedRequest = {
+        ...request,
+        requestStatus: status,
+        updatedAt: convertHelpers.toDbDate(new Date()),
       };
       this.requests.set(id, updatedRequest);
       return updatedRequest;
@@ -241,19 +307,49 @@ export class MemStorage implements IStorage {
 
   async getUserRequests(userId: number): Promise<Request[]> {
     return Array.from(this.requests.values())
-      .filter(request => request.creatorId === userId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .filter((request) => request.creatorId === userId)
+      .sort((a, b) => convertHelpers.compareDates(b.createdAt, a.createdAt));
   }
 
   async getAssignedRequests(userId: number): Promise<Request[]> {
     return Array.from(this.requests.values())
-      .filter(request => request.assigneeId === userId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .filter((request) => request.assigneeId === userId)
+      .sort((a, b) => convertHelpers.compareDates(b.createdAt, a.createdAt));
   }
 
   async listRequests(): Promise<Request[]> {
-    return Array.from(this.requests.values())
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return Array.from(this.requests.values()).sort((a, b) =>
+      convertHelpers.compareDates(b.createdAt, a.createdAt),
+    );
+  }
+
+  async updateRequestComplete(
+    requestId: number,
+    updateFields: Partial<Request>,
+  ): Promise<Request> {
+    const request = await this.getRequest(requestId);
+    if (!request) {
+      throw new Error("Request not found");
+    }
+
+    const updatedRequest = {
+      ...request,
+      ...updateFields,
+      updatedAt: convertHelpers.toDbDate(new Date()),
+    };
+
+    this.requests.set(requestId, updatedRequest);
+    return updatedRequest;
+  }
+
+  // Fix date comparisons
+  private compareDates(a: string, b: string): number {
+    return new Date(a).getTime() - new Date(b).getTime();
+  }
+
+  // Change getGroupMessages to getMessages
+  async getMessages(groupId: number) {
+    // ... implementation
   }
 }
 

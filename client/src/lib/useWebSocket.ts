@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { useAuth } from '@/hooks/use-auth';
-import { useElectron } from '@/hooks/use-electron';
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { useElectron } from "@/hooks/use-electron";
 
 interface Message {
   type: string;
@@ -11,7 +11,7 @@ interface WebSocketHook {
   sendMessage: (message: Message) => void;
   lastMessage: Message | null;
   readyState: number;
-  connectionStatus: 'connecting' | 'open' | 'closing' | 'closed' | 'offline';
+  connectionStatus: "connecting" | "open" | "closing" | "closed" | "offline";
 }
 
 export function useWebSocket(): WebSocketHook {
@@ -30,15 +30,15 @@ export function useWebSocket(): WebSocketHook {
           const online = await api.system.isOnline();
           setIsOffline(!online);
         } catch (error) {
-          console.error('Failed to check online status:', error);
+          console.error("Failed to check online status:", error);
           setIsOffline(true);
         }
       };
-      
+
       checkOnlineStatus();
       // Check online status every 30 seconds
       const interval = setInterval(checkOnlineStatus, 30000);
-      
+
       return () => clearInterval(interval);
     }
   }, [isElectron, api]);
@@ -54,17 +54,17 @@ export function useWebSocket(): WebSocketHook {
             setLastMessage(messages[messages.length - 1]);
           }
         } catch (error) {
-          console.error('Failed to load messages from local storage:', error);
+          console.error("Failed to load messages from local storage:", error);
         }
       };
-      
+
       loadOfflineMessages();
     }
   }, [isElectron, isOffline, api, user]);
 
   useEffect(() => {
     if (!user) return;
-    
+
     // Skip WebSocket connection in Electron if offline
     if (isElectron && isOffline) {
       setReadyState(WebSocket.CLOSED);
@@ -72,11 +72,11 @@ export function useWebSocket(): WebSocketHook {
     }
 
     // Setup WebSocket connection
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
-    
+
     let socket: WebSocket;
-    
+
     try {
       socket = new WebSocket(wsUrl);
       socketRef.current = socket;
@@ -84,25 +84,29 @@ export function useWebSocket(): WebSocketHook {
       socket.onopen = () => {
         setReadyState(WebSocket.OPEN);
         // Authenticate the WebSocket connection
-        socket.send(JSON.stringify({
-          type: 'auth',
-          userId: user.id.toString()
-        }));
+        socket.send(
+          JSON.stringify({
+            type: "auth",
+            userId: user.id.toString(),
+          }),
+        );
       };
 
       socket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
           setLastMessage(data);
-          
+
           // Save message to Electron local storage if in Electron mode
-          if (isElectron && api?.storage && data.type === 'message') {
-            api.storage.saveMessage(data).catch(err => 
-              console.error('Failed to save message to local storage:', err)
-            );
+          if (isElectron && api?.storage && data.type === "message") {
+            api.storage
+              .saveMessage(data)
+              .catch((err) =>
+                console.error("Failed to save message to local storage:", err),
+              );
           }
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+          console.error("Error parsing WebSocket message:", error);
         }
       };
 
@@ -111,10 +115,10 @@ export function useWebSocket(): WebSocketHook {
       };
 
       socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        console.error("WebSocket error:", error);
         setReadyState(WebSocket.CLOSED);
       };
-      
+
       // Clean up the WebSocket connection on unmount
       return () => {
         if (socket && socket.readyState === WebSocket.OPEN) {
@@ -122,59 +126,75 @@ export function useWebSocket(): WebSocketHook {
         }
       };
     } catch (error) {
-      console.error('Failed to create WebSocket connection:', error);
+      console.error("Failed to create WebSocket connection:", error);
       setReadyState(WebSocket.CLOSED);
     }
   }, [user, isElectron, isOffline, api]);
 
   // Function to send a message through the WebSocket
-  const sendMessage = useCallback((message: Message) => {
-    // In Electron offline mode, store the message locally
-    if (isElectron && isOffline && api?.storage && message.type === 'message') {
-      // Add timestamp for offline messages
-      const offlineMessage = {
-        ...message,
-        timestamp: new Date().toISOString(),
-        offline: true
-      };
-      
-      // Store the message locally
-      api.storage.saveMessage(offlineMessage).catch(err => 
-        console.error('Failed to save offline message to local storage:', err)
-      );
-      
-      // Update UI immediately with the offline message
-      setLastMessage(offlineMessage);
-      
-      return;
-    }
-    
-    // Normal online mode
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify(message));
-    } else {
-      console.warn('WebSocket not connected, cannot send message');
-    }
-  }, [isElectron, isOffline, api]);
+  const sendMessage = useCallback(
+    (message: Message) => {
+      // In Electron offline mode, store the message locally
+      if (
+        isElectron &&
+        isOffline &&
+        api?.storage &&
+        message.type === "message"
+      ) {
+        // Add timestamp for offline messages
+        const offlineMessage = {
+          ...message,
+          timestamp: new Date().toISOString(),
+          offline: true,
+        };
+
+        // Store the message locally
+        api.storage
+          .saveMessage(offlineMessage)
+          .catch((err) =>
+            console.error(
+              "Failed to save offline message to local storage:",
+              err,
+            ),
+          );
+
+        // Update UI immediately with the offline message
+        setLastMessage(offlineMessage);
+
+        return;
+      }
+
+      // Normal online mode
+      if (
+        socketRef.current &&
+        socketRef.current.readyState === WebSocket.OPEN
+      ) {
+        socketRef.current.send(JSON.stringify(message));
+      } else {
+        console.warn("WebSocket not connected, cannot send message");
+      }
+    },
+    [isElectron, isOffline, api],
+  );
 
   // Convert readyState to a more readable status
   const getConnectionStatus = () => {
     // Override status if in Electron offline mode
     if (isElectron && isOffline) {
-      return 'offline';
+      return "offline";
     }
-    
+
     switch (readyState) {
       case WebSocket.CONNECTING:
-        return 'connecting';
+        return "connecting";
       case WebSocket.OPEN:
-        return 'open';
+        return "open";
       case WebSocket.CLOSING:
-        return 'closing';
+        return "closing";
       case WebSocket.CLOSED:
-        return 'closed';
+        return "closed";
       default:
-        return 'closed';
+        return "closed";
     }
   };
 
@@ -182,6 +202,6 @@ export function useWebSocket(): WebSocketHook {
     sendMessage,
     lastMessage,
     readyState,
-    connectionStatus: getConnectionStatus()
+    connectionStatus: getConnectionStatus(),
   };
 }

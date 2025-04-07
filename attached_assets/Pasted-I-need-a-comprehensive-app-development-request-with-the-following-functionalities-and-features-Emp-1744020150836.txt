@@ -1,0 +1,96 @@
+I need a comprehensive app development request with the following functionalities and features:
+
+Employee Wiki Page:
+
+A dedicated wiki page for employees, similar to standard wikis found on platforms like GitHub or Yandex.
+
+Structured and easily editable by admins.
+
+Chat System:
+
+Chat functionality similar to Telegram.
+
+Admin-only capability to easily add interactive buttons within chats.
+
+Admin Accounts:
+
+Secure admin account management with differentiated access levels and privileges.
+
+Data Encryption:
+
+Robust encryption methods for securing all data transfers and stored information.
+
+Message Handling:
+
+Messages initially stored securely on the server until delivered to the recipient upon login.
+
+After the user logs in and receives the message, it's stored locally on their device.
+
+Upon delivery confirmation from the user's device, the server deletes the message permanently.
+
+Peer-to-Peer (P2P) Messaging:
+
+Direct P2P messaging when both users are online.
+
+Server's role limited to confirming both users' online status without handling the message content.
+
+Announcements Page:
+
+Dedicated announcements page or admin-only chat section.
+
+Only admins permitted to post or modify content.
+
+Request Submission System:
+
+Requests saved in a PostgreSQL database.
+
+Request details include:
+
+Sequential request number
+
+Request creation date
+
+Optional deadline for task completion
+
+Task selection from predefined options (e.g., replacing printer cartridge, minor tasks, etc.)
+
+Location format: manual selection or structured address input (e.g., "2d15" where the first digit indicates the floor, the second character indicates the building segment or part: buildings a,b,c for the first building; d,e,f for the second building; and the last two digits specify the room number)
+
+Internal building contact number automatically linked to the requester’s profile (editable by admin)
+
+Comments section for the requester
+
+Secondary comments section for feedback upon task completion
+
+Information auto-filled for the user accepting the request, including their name and position, triggered by clicking an "Accept Request" button
+
+Status indicators: New, Completed, Urgent
+
+Department information selected from a predefined, admin-controlled list
+
+Post-Request Chat:
+
+Dedicated chat attached to each request, including all relevant information (comments, room details, status updates, etc.).
+
+Request Creation Forms:
+
+A detailed form as described above.
+
+A simplified quick-entry form, auto-filling most fields based on user data.
+
+Notifications:
+
+Mobile push notifications.
+
+Browser sound alerts.
+
+Browser-based notification permission requests upon first login.
+
+Integrated Admin Panel:
+
+Comprehensive admin panel within the app for managing users, content, permissions, tasks, and settings.
+
+Database choice: PostgreSQL
+
+The application's design must prioritize intuitive navigation, ease of use, security, and robust performance.
+

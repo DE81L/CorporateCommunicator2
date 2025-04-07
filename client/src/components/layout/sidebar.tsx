@@ -9,63 +9,85 @@ import {
   SettingsIcon,
   XIcon,
   WifiIcon,
-  WifiOffIcon
+  WifiOffIcon,
+  LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { type SectionType } from "@/types/sections";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 interface SidebarProps {
-  activeSection: string;
-  setActiveSection: (section: string) => void;
+  activeSection: SectionType;
+  setActiveSection: (section: SectionType) => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  connectionStatus: 'connecting' | 'open' | 'closing' | 'closed' | 'offline';
+  connectionStatus: "connecting" | "online" | "offline" | "disconnected";
 }
 
-export default function Sidebar({ 
-  activeSection, 
-  setActiveSection, 
-  isOpen, 
+export default function Sidebar({
+  activeSection,
+  setActiveSection,
+  isOpen,
   setIsOpen,
-  connectionStatus 
+  connectionStatus,
 }: SidebarProps) {
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   if (!user) return null;
 
-  const navItems = [
-    { id: "messages", icon: MessageSquareIcon, label: "Messages" },
-    { id: "groups", icon: UsersIcon, label: "Groups" },
-    { id: "announcements", icon: MegaphoneIcon, label: "Announcements" },
-    { id: "requests", icon: ClipboardCheckIcon, label: "Requests", badge: 2 },
-    { id: "contacts", icon: ContactIcon, label: "Contacts" },
-    { id: "settings", icon: SettingsIcon, label: "Settings" },
-  ];
-
-  const handleNavItemClick = (id: string) => {
+  const handleNavItemClick = (id: SectionType) => {
     setActiveSection(id);
     if (window.innerWidth < 768) {
       setIsOpen(false);
     }
   };
 
+  const navItems: Array<{
+    id: SectionType;
+    icon: LucideIcon;
+    label: string;
+    badge?: number;
+  }> = [
+    {
+      id: "messages",
+      icon: MessageSquareIcon,
+      label: t("navigation.messages"),
+    },
+    { id: "groups", icon: UsersIcon, label: t("navigation.groups") },
+    {
+      id: "announcements",
+      icon: MegaphoneIcon,
+      label: t("navigation.announcements"),
+    },
+    {
+      id: "requests",
+      icon: ClipboardCheckIcon,
+      label: t("navigation.requests"),
+      badge: 2,
+    },
+    { id: "contacts", icon: ContactIcon, label: t("navigation.contacts") },
+    { id: "settings", icon: SettingsIcon, label: t("navigation.settings") },
+  ];
+
   return (
     <>
       {/* Backdrop for mobile */}
-      <div 
+      <div
         className={cn(
           "fixed inset-0 bg-black/30 z-20 md:hidden transition-opacity duration-200",
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onClick={() => setIsOpen(false)}
       />
 
       {/* Sidebar */}
-      <aside 
+      <aside
         className={cn(
           "w-64 bg-white border-r border-gray-200 z-30 transition-transform duration-200 ease-in-out",
           "fixed left-0 top-0 bottom-0 md:relative md:translate-x-0",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         {/* Mobile close button */}
@@ -78,17 +100,17 @@ export default function Sidebar({
 
         {/* Connection status indicator */}
         <div className="px-4 py-2 flex items-center text-xs border-b border-gray-100">
-          {connectionStatus === 'open' ? (
+          {connectionStatus === "online" ? (
             <div className="flex items-center text-green-600">
               <WifiIcon className="h-3 w-3 mr-1" />
               <span>Connected</span>
             </div>
-          ) : connectionStatus === 'offline' ? (
+          ) : connectionStatus === "offline" ? (
             <div className="flex items-center text-blue-600">
               <WifiOffIcon className="h-3 w-3 mr-1" />
               <span>Offline Mode</span>
             </div>
-          ) : connectionStatus === 'connecting' ? (
+          ) : connectionStatus === "connecting" ? (
             <div className="flex items-center text-yellow-600">
               <WifiIcon className="h-3 w-3 mr-1 animate-pulse" />
               <span>Connecting...</span>
@@ -109,7 +131,8 @@ export default function Sidebar({
               variant="ghost"
               className={cn(
                 "w-full justify-start text-gray-600 hover:bg-gray-100 hover:text-gray-900",
-                activeSection === item.id && "bg-primary-50 text-primary-600 hover:bg-primary-50 hover:text-primary-600"
+                activeSection === item.id &&
+                  "bg-primary-50 text-primary-600 hover:bg-primary-50 hover:text-primary-600",
               )}
               onClick={() => handleNavItemClick(item.id)}
             >
@@ -129,11 +152,14 @@ export default function Sidebar({
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
-                {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+                {user.firstName.charAt(0)}
+                {user.lastName.charAt(0)}
               </div>
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
+              <p className="text-sm font-medium">
+                {user.firstName} {user.lastName}
+              </p>
               <p className="text-xs text-gray-500 truncate">{user.email}</p>
             </div>
           </div>

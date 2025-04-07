@@ -8,10 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { User, Group } from "@shared/schema";
-import {
-  Card,
-  CardContent
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -49,24 +46,21 @@ export default function GroupsSection() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
-  
+
   // Fetch groups
-  const { 
+  const {
     data: groups,
     isLoading: isLoadingGroups,
-    error: groupsError
+    error: groupsError,
   } = useQuery<Group[]>({
-    queryKey: ['/api/groups'],
+    queryKey: ["/api/groups"],
   });
-  
+
   // Fetch all users for adding to groups
-  const { 
-    data: users,
-    isLoading: isLoadingUsers
-  } = useQuery<User[]>({
-    queryKey: ['/api/users'],
+  const { data: users, isLoading: isLoadingUsers } = useQuery<User[]>({
+    queryKey: ["/api/users"],
   });
-  
+
   // Create group mutation
   const createGroupMutation = useMutation({
     mutationFn: async (data: CreateGroupFormValues) => {
@@ -74,7 +68,7 @@ export default function GroupsSection() {
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
       setIsCreateGroupDialogOpen(false);
       toast({
         title: "Group created",
@@ -89,7 +83,7 @@ export default function GroupsSection() {
       });
     },
   });
-  
+
   const form = useForm<CreateGroupFormValues>({
     resolver: zodResolver(createGroupSchema),
     defaultValues: {
@@ -98,20 +92,27 @@ export default function GroupsSection() {
       isAnnouncement: false,
     },
   });
-  
+
   const onSubmit = (data: CreateGroupFormValues) => {
     createGroupMutation.mutate(data);
   };
-  
+
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
   };
-  
+
   return (
     <div className="flex-1 overflow-auto p-6">
       <div className="mb-6 flex justify-between items-center">
         <h2 className="text-xl font-semibold">Groups</h2>
-        <Dialog open={isCreateGroupDialogOpen} onOpenChange={setIsCreateGroupDialogOpen}>
+        <Dialog
+          open={isCreateGroupDialogOpen}
+          onOpenChange={setIsCreateGroupDialogOpen}
+        >
           <DialogTrigger asChild>
             <Button className="flex items-center">
               <Plus className="mr-2 h-4 w-4" />
@@ -126,7 +127,10 @@ export default function GroupsSection() {
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="name"
@@ -177,8 +181,8 @@ export default function GroupsSection() {
                   )}
                 />
                 <DialogFooter>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={createGroupMutation.isPending}
                   >
                     {createGroupMutation.isPending ? (
@@ -196,7 +200,7 @@ export default function GroupsSection() {
           </DialogContent>
         </Dialog>
       </div>
-      
+
       {isLoadingGroups ? (
         <div className="flex justify-center items-center h-40">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -207,36 +211,57 @@ export default function GroupsSection() {
         </div>
       ) : groups && groups.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {groups.map(group => (
-            <Card key={group.id} className="overflow-hidden hover:shadow-md transition-shadow">
-              <div className={`h-24 flex items-center justify-center ${
-                group.isAnnouncement ? 'bg-secondary-100' : 'bg-primary-100'
-              }`}>
-                <Users className={`h-12 w-12 ${
-                  group.isAnnouncement ? 'text-secondary-600' : 'text-primary-600'
-                }`} />
+          {groups.map((group) => (
+            <Card
+              key={group.id}
+              className="overflow-hidden hover:shadow-md transition-shadow"
+            >
+              <div
+                className={`h-24 flex items-center justify-center ${
+                  group.isAnnouncement ? "bg-secondary-100" : "bg-primary-100"
+                }`}
+              >
+                <Users
+                  className={`h-12 w-12 ${
+                    group.isAnnouncement
+                      ? "text-secondary-600"
+                      : "text-primary-600"
+                  }`}
+                />
               </div>
               <CardContent className="p-4">
                 <h3 className="font-medium">{group.name}</h3>
                 {group.description && (
-                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">{group.description}</p>
+                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                    {group.description}
+                  </p>
                 )}
                 <div className="mt-4 flex justify-between items-center">
                   <div className="flex -space-x-2">
                     <Avatar className="h-6 w-6 border border-white">
-                      <AvatarFallback className="text-xs bg-blue-100">A</AvatarFallback>
+                      <AvatarFallback className="text-xs bg-blue-100">
+                        A
+                      </AvatarFallback>
                     </Avatar>
                     <Avatar className="h-6 w-6 border border-white">
-                      <AvatarFallback className="text-xs bg-green-100">B</AvatarFallback>
+                      <AvatarFallback className="text-xs bg-green-100">
+                        B
+                      </AvatarFallback>
                     </Avatar>
                     <Avatar className="h-6 w-6 border border-white">
-                      <AvatarFallback className="text-xs bg-yellow-100">C</AvatarFallback>
+                      <AvatarFallback className="text-xs bg-yellow-100">
+                        C
+                      </AvatarFallback>
                     </Avatar>
                     <Avatar className="h-6 w-6 border border-white">
-                      <AvatarFallback className="text-xs bg-purple-100">+2</AvatarFallback>
+                      <AvatarFallback className="text-xs bg-purple-100">
+                        +2
+                      </AvatarFallback>
                     </Avatar>
                   </div>
-                  <Button variant="link" className="text-primary p-0 h-auto">View</Button>
+                  <Button variant="link" className="text-primary p-0 h-auto">
+                    View
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -248,7 +273,9 @@ export default function GroupsSection() {
             <Users className="h-10 w-10 text-gray-400" />
           </div>
           <h3 className="text-lg font-medium mb-2">No Groups Found</h3>
-          <p className="text-gray-500 mb-6">Create your first group to start collaborating with your team.</p>
+          <p className="text-gray-500 mb-6">
+            Create your first group to start collaborating with your team.
+          </p>
           <Button
             onClick={() => setIsCreateGroupDialogOpen(true)}
             className="flex items-center mx-auto"

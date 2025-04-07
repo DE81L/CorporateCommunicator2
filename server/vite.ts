@@ -26,7 +26,7 @@ export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
     hmr: { server },
-    allowedHosts: true,
+    allowedHosts: true as true, // Type assertion to match expected type
   };
 
   const vite = await createViteServer({
@@ -79,10 +79,11 @@ export function serveStatic(app: Express) {
     );
   }
 
+  // Сначала пробуем отдать статические файлы
   app.use(express.static(distPath));
 
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
+  // Для всех остальных запросов отдаем index.html
+  app.get("*", (_req, res) => {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }

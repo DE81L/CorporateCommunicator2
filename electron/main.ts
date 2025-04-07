@@ -1,5 +1,3 @@
-// Main process for Electron app
-
 import { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, Notification } from 'electron';
 import path from 'path';
 import { initEncryption } from './encryption';
@@ -24,17 +22,17 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
-      nodeIntegration: false,
+      nodeIntegration: true,
     },
     frame: false, // Frameless window for custom title bar
     icon: path.join(__dirname, 'icons', 'icon.png'),
   });
 
-  // Load the app URL
+  // Determine if we’re in development
   const isDev = process.env.NODE_ENV !== 'production';
   const url = isDev
-    ? 'http://localhost:5000'
-    : `file://${path.join(__dirname, '..', 'client', 'dist', 'index.html')}`;
+    ? 'http://localhost:5173'
+    : `file://${path.join(__dirname, '..', 'dist', 'index.html')}`;
 
   mainWindow.loadURL(url);
 
@@ -71,10 +69,13 @@ function createWindow() {
   });
 
   // Handle version info
-  ipcMain.handle('app-get-version', () => {
+  ipcMain.handle('app-get-version', () => app.getVersion());
+
+  // Correct: handler name matches preload call
+  ipcMain.handle('get-app-version', () => {
     return app.getVersion();
   });
-  
+
   // Handle system info
   ipcMain.handle('get-system-info', () => {
     const os = require('os');
@@ -88,21 +89,24 @@ function createWindow() {
       }
     };
   });
-  
+
   // Handle connectivity check
-  ipcMain.handle('is-online', () => {
-    // Simple connectivity check - in production this would be more robust
-    return require('dns').promises.lookup('google.com')
-      .then(() => true)
-      .catch(() => false);
+  ipcMain.handle('is-online', async () => {
+    const dns = require('dns').promises;
+    try {
+      await dns.lookup('google.com');
+      return true;
+    } catch {
+      return false;
+    }
   });
-  
+
   // Handle notifications
   ipcMain.handle('show-notification', (_event, title, body) => {
-    const notification = new Notification({ 
-      title, 
+    const notification = new Notification({
+      title,
       body,
-      icon: path.join(__dirname, 'icons', 'icon.png')
+      icon: path.join(__dirname, 'icons', 'icon.png'),
     });
     notification.show();
     return true;
@@ -110,13 +114,17 @@ function createWindow() {
 
   // Initialize the application tray
   createTray();
+
+  // Initialize modules
+  initStorage();
+  initEncryption();
 }
 
 // Create the application tray icon and menu
 function createTray() {
   const icon = nativeImage.createFromPath(path.join(__dirname, 'icons', 'icon.png'));
   tray = new Tray(icon.resize({ width: 16, height: 16 }));
-  
+
   const contextMenu = Menu.buildFromTemplate([
     { 
       label: 'Open Nexus Messaging', 
@@ -133,10 +141,10 @@ function createTray() {
       } 
     },
   ]);
-  
+
   tray.setToolTip('Nexus Corporate Messaging');
   tray.setContextMenu(contextMenu);
-  
+
   tray.on('click', () => {
     mainWindow?.show();
   });
@@ -144,10 +152,6 @@ function createTray() {
 
 // App is ready to start
 app.whenReady().then(() => {
-  // Initialize encryption and storage modules
-  initEncryption();
-  initStorage();
-  
   // Create the main window
   createWindow();
 

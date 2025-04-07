@@ -1,93 +1,183 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
-  email: text("email").notNull(),
-  company: text("company").notNull(),
-  avatarUrl: text("avatar_url"),
-  isOnline: boolean("is_online").default(false)
+// Define special null-like values
+export const NULL_DATE = new Date("1900-01-01").toISOString();
+export const NULL_TEXT = "__NULL_VALUE_7f9c2b3a4e";
+export const NULL_NUMBER = -999999;
+
+// Define base schemas for insert operations
+export const insertMessageSchema = z.object({
+  senderId: z.number(),
+  receiverId: z.number().optional(),
+  groupId: z.number().optional(),
+  content: z.string(),
+  timestamp: z.string(), // Change from date to string
+  isRead: z.number().optional(), // Change from boolean to number
 });
 
-export const messages = pgTable("messages", {
-  id: serial("id").primaryKey(),
-  senderId: integer("sender_id").notNull(),
-  receiverId: integer("receiver_id"),
-  groupId: integer("group_id"),
-  content: text("content").notNull(),
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
-  isRead: boolean("is_read").default(false),
+export const insertGroupSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  creatorId: z.number(),
+  isAnnouncement: z.number().optional(), // Change from boolean to number
 });
 
+export const insertGroupMemberSchema = z.object({
+  groupId: z.number(),
+  userId: z.number(),
+  isAdmin: z.number().optional(), // Change from boolean to number
+});
+
+export const insertRequestSchema = z.object({
+  numberOfRequest: z.string(),
+  dateOfRequest: z.string(), // Change from date to string
+  deadline: z.string().optional(), // Change from date to string
+  category: z.string().optional(),
+  cabinet: z.string(),
+  localNumber: z.string(),
+  comment: z.string(),
+  whoAccepted: z.string(),
+  requestStatus: z.string(),
+  subdivision: z.string().optional(),
+  grade: z.number().optional(),
+  reviewText: z.string().optional(),
+  creatorId: z.number(),
+  createdAt: z.string(), // Add required fields
+  updatedAt: z.string(),
+});
+
+// Export the validation schema
+export const insertUserSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  email: z.string().email("Invalid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  avatarUrl: z.string().optional(),
+});
+
+// Table definitions
 export const groups = pgTable("groups", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  description: text("description"),
+  description: text("description").default(NULL_TEXT),
   creatorId: integer("creator_id").notNull(),
-  isAnnouncement: boolean("is_announcement").default(false),
+  isAnnouncement: integer("is_announcement").default(0),
 });
 
 export const groupMembers = pgTable("group_members", {
   id: serial("id").primaryKey(),
   groupId: integer("group_id").notNull(),
   userId: integer("user_id").notNull(),
-  isAdmin: boolean("is_admin").default(false),
+  isAdmin: integer("is_admin").default(0),
 });
 
+// Make sure these are exported
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull(),
+  email: text("email").notNull(),
+  password: text("password").notNull(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  isOnline: integer("is_online").default(0),
+  avatarUrl: text("avatar_url").default(NULL_TEXT),
+});
+
+// Таблица заявок с требуемыми полями
 export const requests = pgTable("requests", {
   id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
+
+  // Номер заявки
+  numberOfRequest: text("number_of_request").notNull(),
+
+  // Дата заявки
+  dateOfRequest: date("date_of_request").notNull(),
+
+  // Using default values instead of nullable
+  deadline: date("deadline").default(NULL_DATE),
+
+  // Категория (null при отсутствии)
+  category: text("category").default(NULL_TEXT),
+
+  // Кабинет
+  cabinet: text("cabinet").notNull(),
+
+  // Локальный номер
+  localNumber: text("local_number").notNull(),
+
+  // Комментарий
+  comment: text("comment").notNull(),
+
+  // Кто принял заявку
+  whoAccepted: text("who_accepted").notNull(),
+
+  // Состояние заявки (например, "новая", "выполнена", "в процессе", и т.д.)
+  requestStatus: text("request_status").notNull(),
+
+  // Подразделение (null при отсутствии)
+  subdivision: text("subdivision").default(NULL_TEXT),
+
+  // Оценка (от 1 до 5; null, если заявка не завершена или не оценена)
+  grade: integer("grade").default(NULL_NUMBER),
+
+  // Текстовый отзыв (заполняется только если grade < 5)
+  reviewText: text("review_text").default(NULL_TEXT),
+
+  createdAt: date("created_at").notNull(),
+  updatedAt: date("updated_at").notNull(),
+  assigneeId: integer("assignee_id").default(NULL_NUMBER),
   creatorId: integer("creator_id").notNull(),
-  assigneeId: integer("assignee_id"),
-  status: text("status").notNull().default("pending"), // pending, in-progress, completed, denied
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Insert schemas
-export const insertUserSchema = createInsertSchema(users).omit({ 
-  id: true,
-  isOnline: true
+// Для удобных проверок данных при вставке/обновлении
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  senderId: integer("sender_id").notNull(),
+  receiverId: integer("receiver_id").default(NULL_NUMBER),
+  groupId: integer("group_id").default(NULL_NUMBER),
+  content: text("content").notNull(),
+  timestamp: date("timestamp").notNull(),
+  isRead: integer("is_read").default(0),
 });
 
-export const insertMessageSchema = createInsertSchema(messages).omit({ 
-  id: true,
-  timestamp: true,
-  isRead: true
-});
-
-export const insertGroupSchema = createInsertSchema(groups).omit({ 
-  id: true 
-});
-
-export const insertGroupMemberSchema = createInsertSchema(groupMembers).omit({ 
-  id: true 
-});
-
-export const insertRequestSchema = createInsertSchema(requests).omit({ 
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-
-// Types
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
-
-export type InsertMessage = z.infer<typeof insertMessageSchema>;
+// Type definitions
 export type Message = typeof messages.$inferSelect;
+export type InsertMessage = typeof messages.$inferInsert;
 
-export type InsertGroup = z.infer<typeof insertGroupSchema>;
 export type Group = typeof groups.$inferSelect;
+export type InsertGroup = typeof groups.$inferInsert;
 
-export type InsertGroupMember = z.infer<typeof insertGroupMemberSchema>;
 export type GroupMember = typeof groupMembers.$inferSelect;
+export type InsertGroupMember = typeof groupMembers.$inferInsert;
 
-export type InsertRequest = z.infer<typeof insertRequestSchema>;
 export type Request = typeof requests.$inferSelect;
+export type InsertRequest = typeof requests.$inferInsert;
+
+// Export the User type
+export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
+
+// Add these helper functions
+export const convertHelpers = {
+  toDbBoolean: (value: boolean): number => (value ? 1 : 0),
+  fromDbBoolean: (value: number): boolean => value === 1,
+  toDbDate: (date: Date): string => date.toISOString(),
+  fromDbDate: (dateStr: string): Date => new Date(dateStr),
+  compareDates: (a: string, b: string): number =>
+    new Date(a).getTime() - new Date(b).getTime(),
+};
+
+// Update isNullValue helper
+export const isNullValue = {
+  date: (value: string) => value === NULL_DATE,
+  text: (value: string) => value === NULL_TEXT,
+  number: (value: number) => value === NULL_NUMBER,
+};
+
+// Add to existing types
+export interface RandomUserResponse extends Omit<User, "password"> {
+  // All user fields except password
+}

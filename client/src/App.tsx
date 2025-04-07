@@ -9,12 +9,13 @@ import NotFound from "@/pages/not-found";
 import { ProtectedRoute } from "./lib/protected-route";
 import { WindowFrame } from "@/components/ui/window-frame";
 import { useElectron } from "@/hooks/use-electron";
+import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 
 function Router() {
   return (
     <Switch>
-      <ProtectedRoute path="/" component={HomePage} />
       <Route path="/auth" component={AuthPage} />
+      <ProtectedRoute path="/" component={HomePage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -26,13 +27,15 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <div className="flex flex-col h-screen">
-          {isElectron && <WindowFrame />}
-          <div className={`flex-1 overflow-auto ${isElectron ? 'pt-0' : ''}`}>
-            <Router />
+        <LanguageProvider>
+          <div className="flex flex-col h-screen">
+            {isElectron && <WindowFrame />}
+            <div className={`flex-1 overflow-auto ${isElectron ? "pt-0" : ""}`}>
+              <Router />
+            </div>
           </div>
-        </div>
-        <Toaster />
+          <Toaster />
+        </LanguageProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

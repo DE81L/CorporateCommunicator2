@@ -1,10 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useElectron } from '@/hooks/use-electron';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useWebSocket } from '@/lib/useWebSocket';
-import { Cpu, Database, HardDrive, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useElectron } from "@/hooks/use-electron";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useWebSocket } from "@/lib/useWebSocket";
+import {
+  Cpu,
+  Database,
+  HardDrive,
+  RefreshCw,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
+import { useLanguage } from "@/lib/i18n/LanguageContext.tsx";
 
 interface SystemInfo {
   platform: string;
@@ -23,6 +31,7 @@ export default function ElectronInfo() {
   const [appVersion, setAppVersion] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(true);
   const { connectionStatus } = useWebSocket();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (isElectron && api) {
@@ -32,20 +41,20 @@ export default function ElectronInfo() {
 
       // Set up a timer to check online status periodically
       const interval = setInterval(checkOnlineStatus, 30000);
-      
+
       return () => clearInterval(interval);
     }
   }, [isElectron, api]);
 
   const fetchSystemInfo = async () => {
     if (!api?.system) return;
-    
+
     setIsLoading(true);
     try {
       const info = await api.system.getSystemInfo();
       setSystemInfo(info);
     } catch (error) {
-      console.error('Failed to fetch system info:', error);
+      console.error("Failed to fetch system info:", error);
     } finally {
       setIsLoading(false);
     }
@@ -53,35 +62,35 @@ export default function ElectronInfo() {
 
   const fetchAppVersion = async () => {
     if (!api?.app) return;
-    
+
     try {
       const version = await api.app.getVersion();
       setAppVersion(version);
     } catch (error) {
-      console.error('Failed to fetch app version:', error);
+      console.error("Failed to fetch app version:", error);
     }
   };
 
   const checkOnlineStatus = async () => {
     if (!api?.system) return;
-    
+
     try {
       const online = await api.system.isOnline();
       setIsOnline(online);
     } catch (error) {
-      console.error('Failed to check online status:', error);
+      console.error("Failed to check online status:", error);
       setIsOnline(false);
     }
   };
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    
+    if (bytes === 0) return "0 Bytes";
+
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   if (!isElectron) {
@@ -91,7 +100,9 @@ export default function ElectronInfo() {
   return (
     <Card>
       <CardHeader className="bg-gray-50 border-b border-gray-200 px-4 py-3">
-        <CardTitle className="text-base font-medium">Desktop App Information</CardTitle>
+        <CardTitle className="text-base font-medium">
+          {t("system_info.title")}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 py-4">
         <div className="flex items-center justify-between">
@@ -101,17 +112,20 @@ export default function ElectronInfo() {
             ) : (
               <WifiOff className="h-4 w-4 text-yellow-500" />
             )}
-            <span className="font-medium">Connection Status:</span>
+            <span className="font-medium">
+              {t("system_info.connection_status")}:
+            </span>
           </div>
-          <Badge 
+          <Badge
             variant={
-              connectionStatus === 'open' ? 'default' : 
-              connectionStatus === 'offline' ? 'secondary' : 'destructive'
+              connectionStatus === "open"
+                ? "default"
+                : connectionStatus === "offline"
+                  ? "secondary"
+                  : "destructive"
             }
           >
-            {connectionStatus === 'open' ? 'Connected' : 
-             connectionStatus === 'offline' ? 'Offline Mode' : 
-             connectionStatus === 'connecting' ? 'Connecting...' : 'Disconnected'}
+            {t(`connection.${connectionStatus}`)}
           </Badge>
         </div>
 
@@ -126,26 +140,28 @@ export default function ElectronInfo() {
           <>
             <div className="flex items-center space-x-2">
               <Cpu className="h-4 w-4 text-gray-500" />
-              <span className="font-medium">System Information</span>
+              <span className="font-medium">
+                {t("system_info.system_info")}
+              </span>
             </div>
-            
+
             <div className="pl-6 space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span>Platform:</span>
+                <span>{t("system_info.platform")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
                   {systemInfo.platform}
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-between">
-                <span>Architecture:</span>
+                <span>{t("system_info.architecture")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
                   {systemInfo.arch}
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-between">
-                <span>Node Version:</span>
+                <span>{t("system_info.node_version")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
                   {systemInfo.version}
                 </span>
@@ -154,55 +170,61 @@ export default function ElectronInfo() {
 
             <div className="flex items-center space-x-2">
               <HardDrive className="h-4 w-4 text-gray-500" />
-              <span className="font-medium">Memory</span>
+              <span className="font-medium">{t("system_info.memory")}</span>
             </div>
-            
+
             <div className="pl-6 space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span>Total Memory:</span>
+                <span>{t("system_info.total_memory")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
                   {formatBytes(systemInfo.memory.total)}
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-between">
-                <span>Free Memory:</span>
+                <span>{t("system_info.free_memory")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
                   {formatBytes(systemInfo.memory.free)}
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-between">
-                <span>Used Memory:</span>
+                <span>{t("system_info.used_memory")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-                  {formatBytes(systemInfo.memory.total - systemInfo.memory.free)}
+                  {formatBytes(
+                    systemInfo.memory.total - systemInfo.memory.free,
+                  )}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center space-x-2">
               <Database className="h-4 w-4 text-gray-500" />
-              <span className="font-medium">Local Storage</span>
+              <span className="font-medium">
+                {t("system_info.local_storage")}
+              </span>
             </div>
-            
+
             <div className="pl-6 space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span>Status:</span>
+                <span>{t("system_info.status")}:</span>
                 <Badge variant="outline">Active</Badge>
               </div>
             </div>
           </>
         )}
 
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="mt-4 w-full"
           onClick={fetchSystemInfo}
           disabled={isLoading}
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh System Info
+          <RefreshCw
+            className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+          />
+          {t("system_info.refresh")}
         </Button>
       </CardContent>
     </Card>

@@ -50,7 +50,7 @@ export default function AnnouncementsSection() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  
+
   // Fetch announcements
   const { 
     data: announcements,
@@ -59,7 +59,7 @@ export default function AnnouncementsSection() {
   } = useQuery<Announcement[]>({
     queryKey: ['/api/announcements'],
   });
-  
+
   // Create announcement mutation (creates a group with isAnnouncement=true)
   const createAnnouncementMutation = useMutation({
     mutationFn: async (data: CreateAnnouncementFormValues) => {
@@ -82,7 +82,7 @@ export default function AnnouncementsSection() {
       });
     },
   });
-  
+
   const form = useForm<CreateAnnouncementFormValues>({
     resolver: zodResolver(createAnnouncementSchema),
     defaultValues: {
@@ -91,23 +91,23 @@ export default function AnnouncementsSection() {
       isAnnouncement: true,
     },
   });
-  
+
   const onSubmit = (data: CreateAnnouncementFormValues) => {
     createAnnouncementMutation.mutate(data);
   };
-  
+
   // Mock function to get department name for demo
   const getDepartmentName = (id: number) => {
     const departments = ["HR Department", "Executive Team", "Marketing Team", "Engineering Team"];
     return departments[id % departments.length];
   };
-  
+
   // Mock function to get post date for demo
   const getRelativeTime = (id: number) => {
     const times = ["2 hours ago", "Yesterday", "2 days ago", "Last week"];
     return times[id % times.length];
   };
-  
+
   return (
     <div className="flex-1 overflow-auto p-6">
       <div className="mb-6 flex justify-between items-center">
@@ -178,7 +178,7 @@ export default function AnnouncementsSection() {
           </DialogContent>
         </Dialog>
       </div>
-      
+
       {isLoading ? (
         <div className="flex justify-center items-center h-40">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
