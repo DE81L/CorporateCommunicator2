@@ -14,11 +14,17 @@ import {
   requests,
   type Request,
   type InsertRequest,
+  wikiEntries,
+  type WikiEntry,
+  type InsertWikiEntry,
+  wikiCategories,
+  type WikiCategory,
+  type InsertWikiCategory,
   convertHelpers,
   NULL_NUMBER,
   NULL_TEXT,
   NULL_DATE,
-} from "@shared/schema";
+} from "../shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { Store } from "express-session";
@@ -40,7 +46,8 @@ export interface IStorage {
 
   // Message operations
   getMessage(id: number): Promise<Message | undefined>;
-  getMessages(senderId: number, receiverId: number): Promise<Message[]>;
+  getDirectMessages(senderId: number, receiverId: number): Promise<Message[]>;
+  getMessages(groupId: number): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
   deleteMessage(id: number): Promise<void>;
 
@@ -67,6 +74,23 @@ export interface IStorage {
     id: number,
     updateFields: Partial<Request>,
   ): Promise<Request>;
+  
+  // Wiki operations
+  getWikiEntry(id: number): Promise<WikiEntry | undefined>;
+  getWikiEntryByTitle(title: string): Promise<WikiEntry | undefined>;
+  createWikiEntry(entry: InsertWikiEntry): Promise<WikiEntry>;
+  updateWikiEntry(id: number, entry: Partial<WikiEntry>): Promise<WikiEntry>;
+  deleteWikiEntry(id: number): Promise<void>;
+  listWikiEntries(): Promise<WikiEntry[]>;
+  getWikiEntriesByCategory(category: string): Promise<WikiEntry[]>;
+  
+  // Wiki category operations
+  getWikiCategory(id: number): Promise<WikiCategory | undefined>;
+  createWikiCategory(category: InsertWikiCategory): Promise<WikiCategory>;
+  updateWikiCategory(id: number, category: Partial<WikiCategory>): Promise<WikiCategory>;
+  deleteWikiCategory(id: number): Promise<void>;
+  listWikiCategories(): Promise<WikiCategory[]>;
+  getWikiCategoriesByParent(parentId: number): Promise<WikiCategory[]>;
 
   // Session store
   sessionStore: Store;
@@ -78,6 +102,8 @@ export class MemStorage implements IStorage {
   private groups: Map<number, Group>;
   private groupMembers: Map<number, GroupMember>;
   private requests: Map<number, Request>;
+  private wikiEntries: Map<number, WikiEntry>;
+  private wikiCategories: Map<number, WikiCategory>;
 
   sessionStore: Store;
   currentUserId: number = 1;
@@ -85,6 +111,8 @@ export class MemStorage implements IStorage {
   currentGroupId: number = 1;
   currentGroupMemberId: number = 1;
   currentRequestId: number = 1;
+  currentWikiEntryId: number = 1;
+  currentWikiCategoryId: number = 1;
 
   constructor() {
     this.users = new Map();
@@ -92,6 +120,8 @@ export class MemStorage implements IStorage {
     this.groups = new Map();
     this.groupMembers = new Map();
     this.requests = new Map();
+    this.wikiEntries = new Map();
+    this.wikiCategories = new Map();
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
     });
@@ -169,7 +199,7 @@ export class MemStorage implements IStorage {
     return this.messages.get(id);
   }
 
-  async getMessages(senderId: number, receiverId: number): Promise<Message[]> {
+  async getDirectMessages(senderId: number, receiverId: number): Promise<Message[]> {
     return Array.from(this.messages.values())
       .filter(
         (msg) =>
@@ -347,9 +377,124 @@ export class MemStorage implements IStorage {
     return new Date(a).getTime() - new Date(b).getTime();
   }
 
-  // Change getGroupMessages to getMessages
-  async getMessages(groupId: number) {
-    // ... implementation
+  // Get messages for a group
+  async getMessages(groupId: number): Promise<Message[]> {
+    return Array.from(this.messages.values())
+      .filter(msg => msg.groupId === groupId)
+      .sort((a, b) => this.compareDates(a.timestamp, b.timestamp));
+  }
+
+  // Wiki Entry operations
+  async getWikiEntry(id: number): Promise<WikiEntry | undefined> {
+    return this.wikiEntries.get(id);
+  }
+
+  async getWikiEntryByTitle(title: string): Promise<WikiEntry | undefined> {
+    return Array.from(this.wikiEntries.values()).find(
+      (entry) => entry.title.toLowerCase() === title.toLowerCase()
+    );
+  }
+
+  async createWikiEntry(insertEntry: InsertWikiEntry): Promise<WikiEntry> {
+    const id = this.currentWikiEntryId++;
+    const now = convertHelpers.toDbDate(new Date());
+    
+    const entry: WikiEntry = {
+      ...insertEntry,
+      id,
+      createdAt: now,
+      updatedAt: now,
+      category: insertEntry.category ?? NULL_TEXT,
+    };
+    
+    this.wikiEntries.set(id, entry);
+    return entry;
+  }
+
+  async updateWikiEntry(id: number, updateFields: Partial<WikiEntry>): Promise<WikiEntry> {
+    const entry = await this.getWikiEntry(id);
+    if (!entry) {
+      throw new Error("Wiki entry not found");
+    }
+    
+    const updatedEntry = {
+      ...entry,
+      ...updateFields,
+      updatedAt: convertHelpers.toDbDate(new Date()),
+    };
+    
+    this.wikiEntries.set(id, updatedEntry);
+    return updatedEntry;
+  }
+
+  async deleteWikiEntry(id: number): Promise<void> {
+    this.wikiEntries.delete(id);
+  }
+
+  async listWikiEntries(): Promise<WikiEntry[]> {
+    return Array.from(this.wikiEntries.values()).sort((a, b) => 
+      a.title.localeCompare(b.title)
+    );
+  }
+
+  async getWikiEntriesByCategory(category: string): Promise<WikiEntry[]> {
+    return Array.from(this.wikiEntries.values())
+      .filter(entry => entry.category === category)
+      .sort((a, b) => a.title.localeCompare(b.title));
+  }
+
+  // Wiki Category operations
+  async getWikiCategory(id: number): Promise<WikiCategory | undefined> {
+    return this.wikiCategories.get(id);
+  }
+
+  async createWikiCategory(insertCategory: InsertWikiCategory): Promise<WikiCategory> {
+    const id = this.currentWikiCategoryId++;
+    const now = convertHelpers.toDbDate(new Date());
+    
+    const category: WikiCategory = {
+      ...insertCategory,
+      id,
+      createdAt: now,
+      updatedAt: now,
+      description: insertCategory.description ?? NULL_TEXT,
+      parentId: insertCategory.parentId ?? NULL_NUMBER,
+    };
+    
+    this.wikiCategories.set(id, category);
+    return category;
+  }
+
+  async updateWikiCategory(id: number, updateFields: Partial<WikiCategory>): Promise<WikiCategory> {
+    const category = await this.getWikiCategory(id);
+    if (!category) {
+      throw new Error("Wiki category not found");
+    }
+    
+    const updatedCategory = {
+      ...category,
+      ...updateFields,
+      updatedAt: convertHelpers.toDbDate(new Date()),
+    };
+    
+    this.wikiCategories.set(id, updatedCategory);
+    return updatedCategory;
+  }
+
+  async deleteWikiCategory(id: number): Promise<void> {
+    this.wikiCategories.delete(id);
+  }
+
+  async listWikiCategories(): Promise<WikiCategory[]> {
+    return Array.from(this.wikiCategories.values()).sort((a, b) => 
+      a.name.localeCompare(b.name)
+    );
+  }
+
+  async getWikiCategoriesByParent(parentId: number): Promise<WikiCategory[]> {
+    return Array.from(this.wikiCategories.values())
+      .filter(category => category.parentId === parentId)
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 }
 

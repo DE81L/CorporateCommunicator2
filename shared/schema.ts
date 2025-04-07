@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, date } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, date, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -176,6 +176,55 @@ export const isNullValue = {
   text: (value: string) => value === NULL_TEXT,
   number: (value: number) => value === NULL_NUMBER,
 };
+
+// Wiki entries schema and tables
+export const wikiEntries = pgTable("wiki_entries", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  creatorId: integer("creator_id").notNull(),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+  lastEditorId: integer("last_editor_id").notNull(),
+  category: text("category").default(NULL_TEXT),
+});
+
+export const wikiCategories = pgTable("wiki_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").default(NULL_TEXT),
+  parentId: integer("parent_id").default(NULL_NUMBER),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+// Wiki schema for inserting entries
+export const insertWikiEntrySchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  content: z.string().min(1, "Content is required"),
+  creatorId: z.number(),
+  category: z.string().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  lastEditorId: z.number(),
+});
+
+// Wiki schema for inserting categories
+export const insertWikiCategorySchema = z.object({
+  name: z.string().min(1, "Category name is required"),
+  description: z.string().optional(),
+  parentId: z.number().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+// Type definitions for Wiki entries
+export type WikiEntry = typeof wikiEntries.$inferSelect;
+export type InsertWikiEntry = typeof wikiEntries.$inferInsert;
+
+// Type definitions for Wiki categories
+export type WikiCategory = typeof wikiCategories.$inferSelect;
+export type InsertWikiCategory = typeof wikiCategories.$inferInsert;
 
 // Add to existing types
 export interface RandomUserResponse extends Omit<User, "password"> {

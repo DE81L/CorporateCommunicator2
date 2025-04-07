@@ -8,9 +8,11 @@ import {
   insertGroupSchema,
   insertGroupMemberSchema,
   insertRequestSchema,
-} from "@shared/schema";
+  insertWikiEntrySchema,
+  insertWikiCategorySchema,
+  convertHelpers
+} from "../shared/schema";
 import { z } from "zod";
-import { convertHelpers } from "@shared/schema";
 import { pool } from "./db"; // Updated import
 
 interface WebSocketClient extends WebSocket {
@@ -33,7 +35,8 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  isOnline: boolean;
+  isOnline: number; // Store as number (0 or 1) for database compatibility
+  isAdmin?: number; // 0 or 1 for boolean values
   avatarUrl: string | null;
 }
 
@@ -42,6 +45,9 @@ export type UserWithoutPassword = Omit<User, "password">;
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   setupAuth(app);
+  
+  // Add Wiki routes
+  addWikiRoutes(app);
 
   // WebSocket setup
   const wss = new WebSocketServer({
@@ -149,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid user IDs" });
       }
 
-      const messages = await storage.getMessages(currentUserId, otherUserId);
+      const messages = await storage.getDirectMessages(currentUserId, otherUserId);
       res.json(messages);
     } catch (error) {
       res.status(500).json({ message: "Error fetching messages" });
@@ -174,7 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Not a member of this group" });
       }
 
-      const messages = await storage.getGroupMessages(groupId);
+      const messages = await storage.getMessages(groupId);
       res.json(messages);
     } catch (error) {
       res.status(500).json({ message: "Error fetching group messages" });
@@ -416,3 +422,285 @@ const getUsers = async () => {
 const handleUserUpdate = async (user: UserWithoutPassword) => {
   // ... implementation
 };
+
+// Wiki API Routes - Add after existing routes
+function addWikiRoutes(app: Express) {
+  // Wiki entries
+  app.get("/api/wiki", async (req, res) => {
+    if (!req.isAuthenticated())
+      return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const entries = await storage.listWikiEntries();
+      res.json(entries);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching wiki entries" });
+    }
+  });
+
+  app.get("/api/wiki/:id", async (req, res) => {
+    if (!req.isAuthenticated())
+      return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const entryId = parseInt(req.params.id);
+      if (isNaN(entryId)) {
+        return res.status(400).json({ message: "Invalid entry ID" });
+      }
+
+      const entry = await storage.getWikiEntry(entryId);
+      if (!entry) {
+        return res.status(404).json({ message: "Wiki entry not found" });
+      }
+
+      res.json(entry);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching wiki entry" });
+    }
+  });
+
+  app.post("/api/wiki", async (req, res) => {
+    if (!req.isAuthenticated())
+      return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      // Only admins can create wiki entries
+      const user = req.user as User;
+      if (!user || user.isAdmin !== 1) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      const entryData = {
+        ...req.body,
+        creatorId: user.id,
+        lastEditorId: user.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const parsedEntry = insertWikiEntrySchema.parse(entryData);
+      const entry = await storage.createWikiEntry(parsedEntry);
+
+      res.status(201).json(entry);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.issues });
+      }
+      res.status(400).json({ message: "Invalid wiki entry data" });
+    }
+  });
+
+  app.put("/api/wiki/:id", async (req, res) => {
+    if (!req.isAuthenticated())
+      return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      // Only admins can update wiki entries
+      const user = req.user as User;
+      if (!user || user.isAdmin !== 1) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      const entryId = parseInt(req.params.id);
+      if (isNaN(entryId)) {
+        return res.status(400).json({ message: "Invalid entry ID" });
+      }
+
+      const existingEntry = await storage.getWikiEntry(entryId);
+      if (!existingEntry) {
+        return res.status(404).json({ message: "Wiki entry not found" });
+      }
+
+      const updateData = {
+        ...req.body,
+        lastEditorId: user.id,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const updatedEntry = await storage.updateWikiEntry(entryId, updateData);
+      res.json(updatedEntry);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.issues });
+      }
+      res.status(500).json({ message: "Error updating wiki entry" });
+    }
+  });
+
+  app.delete("/api/wiki/:id", async (req, res) => {
+    if (!req.isAuthenticated())
+      return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      // Only admins can delete wiki entries
+      const user = req.user as User;
+      if (!user || user.isAdmin !== 1) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      const entryId = parseInt(req.params.id);
+      if (isNaN(entryId)) {
+        return res.status(400).json({ message: "Invalid entry ID" });
+      }
+
+      const existingEntry = await storage.getWikiEntry(entryId);
+      if (!existingEntry) {
+        return res.status(404).json({ message: "Wiki entry not found" });
+      }
+
+      await storage.deleteWikiEntry(entryId);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting wiki entry" });
+    }
+  });
+
+  // Wiki categories
+  app.get("/api/wiki/categories", async (req, res) => {
+    if (!req.isAuthenticated())
+      return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const categories = await storage.listWikiCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching wiki categories" });
+    }
+  });
+
+  app.get("/api/wiki/categories/:id", async (req, res) => {
+    if (!req.isAuthenticated())
+      return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const categoryId = parseInt(req.params.id);
+      if (isNaN(categoryId)) {
+        return res.status(400).json({ message: "Invalid category ID" });
+      }
+
+      const category = await storage.getWikiCategory(categoryId);
+      if (!category) {
+        return res.status(404).json({ message: "Wiki category not found" });
+      }
+
+      res.json(category);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching wiki category" });
+    }
+  });
+
+  app.get("/api/wiki/categories/:id/entries", async (req, res) => {
+    if (!req.isAuthenticated())
+      return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      const categoryId = parseInt(req.params.id);
+      if (isNaN(categoryId)) {
+        return res.status(400).json({ message: "Invalid category ID" });
+      }
+
+      const category = await storage.getWikiCategory(categoryId);
+      if (!category) {
+        return res.status(404).json({ message: "Wiki category not found" });
+      }
+
+      const entries = await storage.getWikiEntriesByCategory(category.name);
+      res.json(entries);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching category entries" });
+    }
+  });
+
+  app.post("/api/wiki/categories", async (req, res) => {
+    if (!req.isAuthenticated())
+      return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      // Only admins can create wiki categories
+      const user = req.user as User;
+      if (!user || user.isAdmin !== 1) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      const categoryData = {
+        ...req.body,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const parsedCategory = insertWikiCategorySchema.parse(categoryData);
+      const category = await storage.createWikiCategory(parsedCategory);
+
+      res.status(201).json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.issues });
+      }
+      res.status(400).json({ message: "Invalid wiki category data" });
+    }
+  });
+
+  app.put("/api/wiki/categories/:id", async (req, res) => {
+    if (!req.isAuthenticated())
+      return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      // Only admins can update wiki categories
+      const user = req.user as User;
+      if (!user || user.isAdmin !== 1) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      const categoryId = parseInt(req.params.id);
+      if (isNaN(categoryId)) {
+        return res.status(400).json({ message: "Invalid category ID" });
+      }
+
+      const existingCategory = await storage.getWikiCategory(categoryId);
+      if (!existingCategory) {
+        return res.status(404).json({ message: "Wiki category not found" });
+      }
+
+      const updateData = {
+        ...req.body,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const updatedCategory = await storage.updateWikiCategory(categoryId, updateData);
+      res.json(updatedCategory);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.issues });
+      }
+      res.status(500).json({ message: "Error updating wiki category" });
+    }
+  });
+
+  app.delete("/api/wiki/categories/:id", async (req, res) => {
+    if (!req.isAuthenticated())
+      return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+      // Only admins can delete wiki categories
+      const user = req.user as User;
+      if (!user || user.isAdmin !== 1) {
+        return res.status(403).json({ message: "Admin privileges required" });
+      }
+
+      const categoryId = parseInt(req.params.id);
+      if (isNaN(categoryId)) {
+        return res.status(400).json({ message: "Invalid category ID" });
+      }
+
+      const existingCategory = await storage.getWikiCategory(categoryId);
+      if (!existingCategory) {
+        return res.status(404).json({ message: "Wiki category not found" });
+      }
+
+      await storage.deleteWikiCategory(categoryId);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting wiki category" });
+    }
+  });
+}

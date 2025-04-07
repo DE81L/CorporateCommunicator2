@@ -29,6 +29,4 @@ export function getNextId(collection: Map<number, any>): number {
   return Math.max(0, ...Array.from(collection.keys())) + 1;
 }
 
-// Using PostgreSQL (for production)
-const { pool } = require("./db");
-await pool.query("SELECT * FROM users WHERE id = $1", [1]);
+// These lines are removed as they cause circular import issues
