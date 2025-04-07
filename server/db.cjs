@@ -1,5 +1,5 @@
-import { Pool } from 'pg';
-import dotenv from 'dotenv';
+const { Pool } = require('pg');
+const dotenv = require('dotenv');
 
 // Load environment variables
 dotenv.config();
@@ -11,7 +11,7 @@ const isReplit = process.env.REPLIT_DB_URL !== undefined;
 /**
  * Configure database connection based on environment
  */
-export const pool = new Pool({
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: isReplit ? { rejectUnauthorized: false } : undefined,
 });
@@ -19,7 +19,7 @@ export const pool = new Pool({
 /**
  * Execute a SQL query against the database
  */
-export async function query(text: string, params?: any[]) {
+async function query(text, params) {
   const start = Date.now();
   try {
     const res = await pool.query(text, params);
@@ -35,7 +35,7 @@ export async function query(text: string, params?: any[]) {
 /**
  * Connect to the database and verify connection
  */
-export async function connectToDb(): Promise<void> {
+async function connectToDb() {
   try {
     // Test connection
     const client = await pool.connect();
@@ -64,6 +64,16 @@ export async function connectToDb(): Promise<void> {
 /**
  * Helper function to generate incremental IDs for in-memory collections
  */
-export function getNextId(collection: Map<number, any>): number {
-  return collection.size > 0 ? Math.max(...collection.keys()) + 1 : 1;
+function getNextId(collection) {
+  if (collection.size > 0) {
+    return Math.max(...Array.from(collection.keys())) + 1;
+  }
+  return 1;
 }
+
+module.exports = {
+  pool,
+  query,
+  connectToDb,
+  getNextId
+};
