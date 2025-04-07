@@ -9,7 +9,7 @@ const path = require('path');
 
 // Run the simple server on port 5000 to satisfy Replit workflow requirements
 console.log('Starting simple server for Replit workflow on port 5000...');
-const simpleServer = spawn('node', ['replit-simple-server.js'], { 
+const simpleServer = spawn('node', ['simple-server.js'], { 
   stdio: 'inherit',
   detached: true 
 });

@@ -11,6 +11,7 @@ import {
   WifiIcon,
   WifiOffIcon,
   LucideIcon,
+  BookOpenIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +69,7 @@ export default function Sidebar({
       badge: 2,
     },
     { id: "contacts", icon: ContactIcon, label: t("navigation.contacts") },
+    { id: "wiki", icon: BookOpenIcon, label: t("navigation.wiki") || "Wiki" },
     { id: "settings", icon: SettingsIcon, label: t("navigation.settings") },
   ];
 

@@ -210,7 +210,6 @@ function RegisterForm({
       email: "",
       password: "",
       confirmPassword: "",
-      avatarUrl: "",
     },
   });
 
@@ -313,19 +312,7 @@ function RegisterForm({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="avatarUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Avatar URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your avatar URL" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
           </CardContent>
           <CardFooter className="flex justify-end">
             <Button disabled={isPending} type="submit">

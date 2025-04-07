@@ -132,18 +132,14 @@ export class MemStorage implements IStorage {
       lastName: "Doe",
       username: "johndoe",
       email: "john.doe@example.com",
-      company: "Acme Inc.",
       password: "password",
-      avatarUrl: NULL_TEXT,
     });
     this.createUser({
       firstName: "Jane",
       lastName: "Smith",
       username: "janesmith",
       email: "jane.smith@example.com",
-      company: "Beta Corp",
       password: "password",
-      avatarUrl: NULL_TEXT,
     });
   }
 
@@ -168,7 +164,7 @@ export class MemStorage implements IStorage {
       ...insertUser,
       id,
       isOnline: convertHelpers.toDbBoolean(false),
-      avatarUrl: insertUser.avatarUrl ?? NULL_TEXT,
+      avatarUrl: NULL_TEXT,
     };
     this.users.set(id, user);
     return user;

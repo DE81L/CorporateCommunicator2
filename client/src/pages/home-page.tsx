@@ -7,16 +7,10 @@ import AnnouncementsSection from "@/pages/announcements-section";
 import RequestsSection from "@/pages/requests-section";
 import ContactsSection from "@/pages/contacts-section";
 import SettingsSection from "@/pages/settings-section";
+import WikiSection from "@/pages/wiki-section";
 import CallModal from "@/components/call-modal";
 import { useWebSocket } from "@/lib/useWebSocket";
-
-type SectionType =
-  | "messages"
-  | "groups"
-  | "announcements"
-  | "requests"
-  | "contacts"
-  | "settings";
+import { SectionType } from "@/types/sections";
 
 export default function HomePage() {
   const [activeSection, setActiveSection] = useState<SectionType>("messages");
@@ -71,6 +65,8 @@ export default function HomePage() {
           )}
 
           {activeSection === "settings" && <SettingsSection />}
+
+          {activeSection === "wiki" && <WikiSection />}
         </main>
       </div>
 

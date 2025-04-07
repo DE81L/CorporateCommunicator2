@@ -30,11 +30,12 @@ export interface User {
   lastName: string;
   email: string;
   isOnline: boolean;
-  avatarUrl: string | null;
+  avatarUrl?: string | null;
 }
 
 export type UserWithoutPassword = Omit<User, "password"> & {
   isOnline: number | boolean;
+  isAdmin?: number;
 };
 
 const registerSchema = insertUserSchema
@@ -225,6 +226,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         lastName: "User",
         email: "demo@example.com",
         isOnline: 1 as number,
+        isAdmin: 1 as number, // Set as admin for testing
         avatarUrl: null,
       } as UserWithoutPassword;
     }
