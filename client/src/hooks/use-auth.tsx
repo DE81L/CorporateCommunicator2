@@ -29,7 +29,7 @@ export interface AuthContextType {
   error: Error | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (data: z.infer<typeof registerSchema>) => Promise<void>;
+  register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<void>;
   sendIPC: any;
 }
 
@@ -52,7 +52,7 @@ export const createLoginSchema = (t: (key: string) => string) =>
 
 export const registerSchema = (t: (key: string) => string) => {
   const { shape: { username, password } } = createLoginSchema(t);
-  const passwordsDontMatch = t('auth.passwordsDontMatch');
+  const passwordsDontMatch = t('auth.passwordsDontMatch')
   return z.object({ username, password, confirmPassword: z.string() })
     .refine(data => data.password === data.confirmPassword, {
       message: passwordsDontMatch,
@@ -63,23 +63,19 @@ export const registerSchema = (t: (key: string) => string) => {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslations();
-  const loginSchema = useMemo(() => createLoginSchema((key) => t(key)), [t]);
+  const loginSchema = useMemo(() => createLoginSchema((key: string) => t(key)), [t]);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [isLoading] = useState(true);
   const [authError, setAuthError] = useState<Error | null>(null);
 
   const { data: user } = useQuery<UserWithoutPassword | null>({
-
     queryKey: ["/api/user"],
-    queryFn: () => getQueryFn({ on401: "returnNull" }),
+    queryFn: getQueryFn({ on401: "returnNull" }),
   });
-  
   const loginMutation = useMutation({
     mutationFn: async (credentials: z.infer<typeof loginSchema>) => {
       const res = await apiRequest("POST", "/api/login", credentials);
-      const { isElectron } = useElectron();
-      const apiClient = createApiClient(isElectron);
       return res.json();
       
     }
@@ -103,8 +99,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async (userData: z.infer<typeof registerSchema>) => {
       const { confirmPassword, ...data } = userData;
 
-      const { isElectron } = useElectron();
-      const apiClient = createApiClient(isElectron);
       const res = await apiClient.request("POST", "/api/register", data);
 
       return res.json();
@@ -152,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
   const { sendIPC } = useElectron();
-
+  
   const value: AuthContextType = {
     user: user || null,
     isLoading,
@@ -160,9 +154,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     register,
-    sendIPC: sendIPC || null,
+    sendIPC,
   };
-  if (sendIPC) value.sendIPC = sendIPC;
 
   return (
     <AuthContext.Provider value={value} >
