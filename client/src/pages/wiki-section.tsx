@@ -99,8 +99,8 @@ export default function WikiSection() {
     queryKey: ['/api/wiki/categories', activeCategoryId, 'entries'],
     queryFn: () => {
       if (!activeCategoryId) return Promise.resolve([] as WikiEntry[]);
-      return apiRequest<WikiEntry[]>(`/api/wiki/categories/${activeCategoryId}/entries`);
-      return request<WikiEntry[]>(`/api/wiki/categories/${activeCategoryId}/entries`);
+      return request('GET', `/api/wiki/categories/${activeCategoryId}/entries`).then((res) => res.json());
+    },
     enabled: !!activeCategoryId,
   });
 
@@ -369,9 +369,13 @@ export default function WikiSection() {
       
       while (currentCategoryId) {
         const category = categories.find(c => c.id === currentCategoryId);
-        if (category && category.parentId !== null ) {
+        if (category) {
           crumbs.unshift(category);
-          currentCategoryId = category.parentId || null;
+          if (category.parentId !== null) {
+            currentCategoryId = category.parentId;
+          } else {
+            break;
+          }
         } else {
           break;
         }
