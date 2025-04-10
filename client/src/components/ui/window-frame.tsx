@@ -2,11 +2,10 @@ import { X, Minimize, Maximize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useElectron } from '@/hooks/use-electron';
 import { ElectronAPI } from '@/lib/electron-types';
-
 export const WindowFrame = () => {
-  const {api, isElectron} = useElectron();
-  if (!isElectron) return null;
-
+  const { isElectron, api } = useElectron();
+    if (!isElectron) return null;
+  
   const handleMinimize = () => {
     api?.app?.minimize();
   };
@@ -51,12 +50,12 @@ export const WindowFrame = () => {
 };
 
 export const WindowFrameHeader = ({ title = 'Nexus Corporate Messaging' }: { title?: string }) => {
-  const { api, isElectron } = useElectron();
+  const { isElectron } = useElectron();
   if (!isElectron) return null;
   return (
     <div className="bg-primary/5 h-9 flex items-center justify-between px-4 select-none draggable">
       <div className="flex items-center space-x-2">
-        <img src="/electron/icons/icon.png" alt="App Logo" className="w-5 h-5" />
+        <img src="/electron/icons/icon.png" alt="App Logo" className="w-5 h-5"/>
         <span className="text-sm font-medium">{title}</span>
       </div>
       <WindowFrame />

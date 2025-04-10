@@ -110,8 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async (userData: z.infer<typeof regSchema>): Promise<any> => {
       const { confirmPassword, ...data } = userData;
       const { isElectron } = useElectron();
-      const apiClient = createApiClient(isElectron);
-      const res = await apiClient.request({ method: "POST", path: "/api/register", body: data });
+      const apiClient = createApiClient(isElectron);      const res = await apiClient.request({ method: "POST", path: "/api/register", body: data });
       return res.json();
     },
   });
@@ -127,7 +126,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
         register: async (data) => {
             return registerMutation.mutateAsync(data);
-        },
-        user: user ?? null, }} >{children}</AuthContext.Provider>
+        },user: user ?? null }} >{children}</AuthContext.Provider>
   );
-}
