@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth, apiRequest } from "../hooks/use-auth";
+import { useAuth } from "../hooks/use-auth";
 import { queryClient, createApiClient } from "../lib/queryClient";
 import { useToast } from "../hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -34,6 +34,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 
 const createGroupSchema = z.object({
+  
   name: z.string().min(1, "Group name is required"),
   description: z.string().optional(),
   isAnnouncement: z.boolean().default(false),

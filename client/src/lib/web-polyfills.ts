@@ -205,8 +205,8 @@ function createMockElectronAPI(): ElectronAPI {
 // Install mock Electron API if needed
 export function installMockElectronAPI(): void {
   if (typeof window !== 'undefined' && !window.electron && import.meta.env.VITE_WEB_ONLY === 'true') {
-    const mockAPI = createMockElectronAPI();
-    window.electron = mockAPI as unknown as ElectronAPI;
+    const mockAPI = createMockElectronAPI()
+    window.electron = mockAPI
     console.log('Installed mock Electron API for web environment');
   }
 }

@@ -70,8 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading] = useState(true);
   const [authError, setAuthError] = useState<Error | null>(null); 
   const { data: user } = useQuery<UserWithoutPassword | null>({
-    queryKey: ['/api/user'], queryFn: () => getQueryFn({ on401: 'returnNull' })
-  });
+    queryKey: ['/api/user'], queryFn: getQueryFn('returnNull')
+  });  
   const loginMutation = useMutation({
     mutationFn: async (credentials: z.infer<typeof loginSchema>) => {
       const res = await apiRequest("POST", "/api/login", credentials);
@@ -149,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { api } = useElectron();
   
   const value: AuthContextType = {
-    user: user ?? null, 
+    user: user, 
     isLoading, 
     error: authError,
     login,
