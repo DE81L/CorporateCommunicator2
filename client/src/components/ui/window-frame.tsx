@@ -8,18 +8,18 @@ export const WindowFrame = () => {
   
   const handleMinimize = () => {
     api?.app?.minimize();
-  };  
+  };
 
   const handleMaximize = () => {
     console.log('Window: Maximize triggered');
     api?.app?.maximize();
-  }
+  };
 
   const handleClose = () => {
     console.log('Window: Close triggered');
     api?.app?.quit();
   };
-
+  if (!api?.isElectron) return null;
   useEffect(() => {
     console.log('Window: api value changed', api);
   }, [api]);
