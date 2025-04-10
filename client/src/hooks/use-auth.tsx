@@ -44,11 +44,10 @@ export const useAuth = () => {
 };
 
 export const createLoginSchema = (t: (key: string) => string) =>
-  return z.object({
+  z.object({
     username: z.string().min(1, t('auth.usernameRequired')),
     password: z.string().min(1, t('auth.passwordRequired')),
-  );
-};
+  });
 
 
 export const registerSchema = (t: (key: string) => string) => {
