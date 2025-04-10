@@ -31,7 +31,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Loader2, Plus, Users } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { useAuth } from "@/hooks/use-auth";
 import { useElectron } from "@/hooks/use-electron";
 const createGroupSchema = z.object({
   
@@ -99,20 +98,6 @@ export default function GroupsSection() {
     },
     onSuccess: async () => {
       const createGroup = async (data: CreateGroupFormValues) => {
-        try {
-          const res = await fetch('/api/groups', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-          });
-          if (!res.ok) throw new Error(`Failed to create group: ${res.status}`);
-          const newGroup = await res.json();
-          setGroups(prevGroups => [...prevGroups, newGroup]);
-        } catch (err: any) {
-          console.error("Failed to create group:", err);
-          throw err;
-        }
-      };
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
       setIsCreateGroupDialogOpen(false);  
       toast({
@@ -165,11 +150,6 @@ export default function GroupsSection() {
       throw err;
     }
   };
-  const createGroup = async (data: CreateGroupFormValues) => {
-    await createGroupMutation.mutateAsync(data);
-    await fetchGroups();
-  };
-  
 
   const form = useForm<CreateGroupFormValues>({
     resolver: zodResolver(createGroupSchema),
@@ -181,7 +161,7 @@ export default function GroupsSection() {
   });
 
   const onSubmit = (data: CreateGroupFormValues) => {
-    createGroup(data);
+    createGroupMutation.mutate(data)
   };
 
   return (

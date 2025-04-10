@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
@@ -40,10 +40,10 @@ export default function AnnouncementsSection() {
     isLoading: isAnnouncementsLoading, 
     error: announcementsError,
   } = useQuery(['/api/announcements'], async () => {
-    const response = await fetch("/api/groups?isAnnouncement=true"); // Fetch groups with isAnnouncement=true
+    const response = await fetch("/api/groups?isAnnouncement=true"); 
     if (!response.ok) {
       throw new Error("Failed to fetch announcements");
-    }
+    }    
     const data = await response.json();
     return data;
   });
@@ -52,9 +52,8 @@ export default function AnnouncementsSection() {
     const createAnnouncementMutation = useMutation({
       
       mutationFn: async (data: CreateAnnouncementFormValues) => {
-        const { apiRequest } = useAuth(); // get the request function from useAuth
-        if (!apiRequest) throw new Error("apiRequest is not available");
-          const response = await fetch("/api/groups", {
+        
+          await fetch("/api/groups", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -63,6 +62,7 @@ export default function AnnouncementsSection() {
           });
           return null
       },
+      
       onSuccess: () => { 
         queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
         setIsCreateDialogOpen(false);
@@ -78,6 +78,7 @@ export default function AnnouncementsSection() {
           variant: "destructive",
         });
       },
+      
     });
 
   const form = useForm<CreateAnnouncementFormValues>({
