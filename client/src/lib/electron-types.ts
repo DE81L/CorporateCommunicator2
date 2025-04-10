@@ -11,6 +11,8 @@ export interface ElectronAPI {
     getVersion: () => Promise<string>;
     getPath: (name: string) => Promise<string>;
     quit: () => Promise<void>;
+    minimize: () => Promise<void>;
+    maximize: () => Promise<void>;
   };
   // System utilities
   system: {

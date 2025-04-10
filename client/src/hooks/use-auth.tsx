@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useState, useMemo, useEffect } from "react";
+import { createContext, ReactNode, useContext, useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { useToast } from "./use-toast"; 
@@ -29,7 +29,7 @@ export interface AuthContextType {
   error: Error | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<void>; 
+  register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<any>;
   sendIPC: any;
 }
 
@@ -41,6 +41,21 @@ export const useAuth = () => {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
+};
+
+export const apiRequest = async (
+  method: string,
+  url: string,
+  body?: any
+): Promise<Response> => {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  return fetch(url, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  });
 };
 
 export const createLoginSchema = (t: (key: string) => string) => 
@@ -99,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { isElectron } = useElectron();
       const apiClient = createApiClient(isElectron); 
       const res = await apiClient.request({ method:"POST", url:"/api/register", body:data });
+      return res.data
     }
   });
 }

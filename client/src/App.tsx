@@ -82,7 +82,7 @@ function App() {
 
   return (
  <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+      <AuthProvider >
         <LanguageProvider>
           <div className="flex flex-col h-screen">
             {/* Only show window frame in Electron */}
