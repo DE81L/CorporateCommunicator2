@@ -5,7 +5,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button, Avatar, AvatarFallback, AvatarImage, Dialog } from "@/components/ui/";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog } from "@/components/ui/dialog";
 import { MicOffIcon, VideoOffIcon, PhoneOffIcon, UserIcon } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 

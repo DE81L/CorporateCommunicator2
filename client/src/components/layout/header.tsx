@@ -125,6 +125,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
           </DropdownMenu>
         </div>
       </div>
+      </div>
     </header>
   );
 }

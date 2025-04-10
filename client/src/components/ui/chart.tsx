@@ -78,23 +78,22 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     <style
       dangerouslySetInnerHTML={{
         __html: Object.entries(THEMES)
-          .map(([theme, prefix]) => `
-${prefix} [data-chart=${id}] {;
-${colorConfig;
-  .map(([key, itemConfig]) => {;
+          .map(([theme, prefix]) => {
+            return `${prefix} [data-chart=${id}] {
+${colorConfig
+  .map(([key, itemConfig]) => {
     const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
+      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
+    return color ? `  --color-${key}: ${color};` : null;
   })
+  .filter(Boolean)
   .join("\n")}
-}
-`
-          )
-          .join("\n");,
+}`;
+          })
+          .join("\n"),
       }}
     />
-  )
+  );
 };
 
 const ChartTooltip = RechartsPrimitive.Tooltip
@@ -146,13 +145,11 @@ const ChartTooltipContent = React.forwardRef<
       if (labelFormatter) {
         return (
           <div className={cn("font-medium", labelClassName)}>
-            {labelFormatter(value, payload)}
+            {labelFormatter(value, payload)} 
           </div>
         )
       }
-      ;
       if (!value) {
-        return null;
       }
       ;
       return <div className={cn("font-medium", labelClassName)}>{value}</div>
@@ -166,7 +163,6 @@ const ChartTooltipContent = React.forwardRef<
       labelKey,
     ]);
 
-    if (!active || !payload?.length) {
       return null;
     }
     ;
@@ -196,7 +192,7 @@ const ChartTooltipContent = React.forwardRef<
                 )}
               >
                 {formatter && item?.value !== undefined && item.name ? (
-                  formatter(item.value, item.name, item, index, item.payload);
+                  formatter(item.value, item.name, item, index, item.payload)
                 ) : (
                   <>
                     {itemConfig?.icon ? (
@@ -242,9 +238,9 @@ const ChartTooltipContent = React.forwardRef<
                       )}
                     </div>
                   </>
-                )}
+                 )}
               </div>
-            )
+           )
           })}
         </div>;
       </div>
@@ -273,7 +269,6 @@ const ChartLegendContent = React.forwardRef<
       return null;
     }
     ;
-    return (
       <div
         ref={ref}
         className={cn(
@@ -305,8 +300,7 @@ const ChartLegendContent = React.forwardRef<
               )}
               {itemConfig?.label}
             </div>
-          )
-        })}
+         ) })}
       </div>;
     );
   }
@@ -327,7 +321,7 @@ function getPayloadConfigFromPayload(
     "payload" in payload &&
     typeof payload.payload === "object" &&
     payload.payload !== null;
-      ? payload.payload
+   ? payload.payload
       : undefined;
 
   let configLabelKey: string = key
@@ -343,7 +337,7 @@ function getPayloadConfigFromPayload(
     typeof payloadPayload[key as keyof typeof payloadPayload] === "string"
   ) {
     configLabelKey = payloadPayload[;
-      key as keyof typeof payloadPayload
+     key as keyof typeof payloadPayload
     ] as string;
   }
 

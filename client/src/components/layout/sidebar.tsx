@@ -14,7 +14,8 @@ import {
   BookOpenIcon,
   sendIPC
 } from "lucide-react";
-import { Button,Badge } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { type SectionType } from "@/types/sections";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
