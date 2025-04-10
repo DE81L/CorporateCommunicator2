@@ -29,7 +29,7 @@ export interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<UserWithoutPassword>;
   logout: () => Promise<void>;
   register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<void>;
-  sendIPC: Dispatch<SetStateAction<((channel: string, data: any) => void) | null>>;
+  
   }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -122,14 +122,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return await loginMutation.mutateAsync(credentials)
   }, [loginMutation]);
 
-  const [sendIPC, setSendIPC] = useState<((channel: string, data: any) => void) | null>(null);
-  
-  // if (typeof window !== 'undefined' && window.electronAPI) {
-  //   sendIPC = window.electronAPI.sendIPC;
-  // }
-  
+ const sendIPC: Dispatch<SetStateAction<((channel: string, data: any) => void) | null>> = ()=>{
+    
+  } 
 
- return (
+  return (
     <AuthContext.Provider
     value={{
       user: user || null,
@@ -138,7 +135,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       logout: () => logoutMutation.mutateAsync(),
       register: (data) => registerMutation.mutateAsync(data),
-      sendIPC:setSendIPC,
     }}
     >
       {children}

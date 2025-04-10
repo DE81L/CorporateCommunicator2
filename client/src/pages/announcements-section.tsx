@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
@@ -29,13 +29,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus, User } from "lucide-react";
 
 import { z } from "zod";
-interface Announcement {
-  id?: number;
-  name: string;
-  description: string;
-  creatorId: number;
-  isAnnouncement: boolean;
-}
 
 const createAnnouncementSchema = z.object({
   name: z.string().min(1, "Title is required"),
@@ -49,18 +42,17 @@ export default function AnnouncementsSection() {
   const { toast } = useToast();
   const { } = useAuth();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
-    const { request } = useAuth();
 
   // Fetch announcements
   const { 
     data: announcements, 
-
     isLoading: isAnnouncementsLoading, 
     error: announcementsError,
   } = useQuery({
     queryKey: ['/api/announcements'],
     queryFn: async () => {
-      const { request: apiRequest } = useAuth(); // get the request function from useAuth
+      const { apiRequest } = useAuth(); // get the request function from useAuth
+      const request = apiRequest;
       if(!apiRequest) throw new Error("apiRequest is not available");
       if(request) {
         const response = await request("GET", "/api/announcements");
@@ -75,7 +67,8 @@ export default function AnnouncementsSection() {
     const createAnnouncementMutation = useMutation({
       
       mutationFn: async (data: CreateAnnouncementFormValues) => {
-        const { request: apiRequest } = useAuth();
+        const { apiRequest } = useAuth();
+        const request = apiRequest;
         if(!apiRequest) throw new Error("apiRequest is not available");
         if(request){
           const res = await request("POST", "/api/groups", data); // call the apiRequest function from useAuth
@@ -206,7 +199,7 @@ export default function AnnouncementsSection() {
         </div>
       ) : announcements && announcements.length > 0 ? (
         <div className="space-y-4">
-          {announcements.map(announcement => (
+          {announcements.map((announcement: any) => (
             <div key={announcement?.id} className="bg-white rounded-lg shadow-sm p-4">
               <div className="flex justify-between">
                 <h3 className="font-medium">{announcement.name}</h3>

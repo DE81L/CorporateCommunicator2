@@ -45,7 +45,7 @@ type CreateGroupFormValues = z.infer<typeof createGroupSchema>;
 
 export default function GroupsSection() {
   const { isElectron } = useElectron();
-  const { request } = useAuth();  
+  const { request: apiRequest } = useAuth();  
   const { toast } = useToast();
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
 
@@ -56,14 +56,14 @@ export default function GroupsSection() {
     error: groupsError,
   } = useQuery<Group[], Error>({
     queryKey: ["/api/groups",isElectron],
-    queryFn: () => request("GET", "/api/groups"),
+    queryFn: () => apiRequest("GET", "/api/groups"),
   });
 
   // Fetch all users for adding to groups
   useQuery<User[], Error>({
     queryKey: ["/api/users",isElectron],
-    queryFn: () => request("GET", "/api/users"),
-  });
+    queryFn: () => apiRequest("GET", "/api/users")
+  })
 
   // Create group mutation
   const createGroupMutation = useMutation({
