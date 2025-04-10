@@ -43,32 +43,39 @@ export const useAuth = () => {
   return context;
 };
 
-export const createLoginSchema = (t: (key: string) => string) => z.object({
-  username: z.string().min(1, () => t('auth.usernameRequired')()),
-  password: z.string().min(1, () => t('auth.passwordRequired')())
-});
+export const createLoginSchema = (t: (key: string) => string) =>
+  return z.object({
+    username: z.string().min(1, t('auth.usernameRequired')),
+    password: z.string().min(1, t('auth.passwordRequired')),
+  );
+};
 
-export const registerSchema = createLoginSchema((key) => key).extend({
-  confirmPassword: z.string()
-}).refine(
-  data => data.password === data.confirmPassword,
-  { message: () => 'auth.passwordsDontMatch' }
-);
+
+export const registerSchema = (t: (key: string) => string) => {
+  const { shape: { username, password } } = createLoginSchema(t);
+  const passwordsDontMatch = t('auth.passwordsDontMatch');
+  return z.object({ username, password, confirmPassword: z.string() })
+    .refine(data => data.password === data.confirmPassword, {
+      message: passwordsDontMatch,
+      path: ["confirmPassword"]
+    });
+};
+
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslations();
-  const loginSchema = useMemo(() => createLoginSchema(t), [t]);
+  const loginSchema = useMemo(() => createLoginSchema((key) => t(key)), [t]);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading] = useState(true);
   const [authError, setAuthError] = useState<Error | null>(null);
 
   const { data: user } = useQuery<UserWithoutPassword | null>({
-    
-    queryKey: ["/api/user"],
-    queryFn: getQueryFn({ on401: "returnNull" })
-  });
 
+    queryKey: ["/api/user"],
+    queryFn: () => getQueryFn({ on401: "returnNull" }),
+  });
+  
   const loginMutation = useMutation({
     mutationFn: async (credentials: z.infer<typeof loginSchema>) => {
       const res = await apiRequest("POST", "/api/login", credentials);
@@ -154,8 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     register,
-    sendIPC: null,
-
+    sendIPC: sendIPC || null,
   };
   if (sendIPC) value.sendIPC = sendIPC;
 
@@ -168,25 +174,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 async function apiRequest(method: string, path: string, body?: unknown) {
   const { isElectron } = useElectron();
   const apiClient = createApiClient(isElectron);
-  
-    
-    const response = await apiClient.request(method, path, body);
 
-    if (!response.ok) {
-      let errorDetails;
-      try {
-        errorDetails = await response.json();
-      } catch (e) {
-        errorDetails = { message: `Failed to parse error response: ${response.status}` };
-      }
-  
-      const errorMessage = errorDetails.message || `HTTP error! Status: ${response.status}`;
-      const error = new Error(errorMessage);
-      Object.assign(error, errorDetails); 
-      throw error;
+
+  const response = await apiClient.request(method, path, body);
+
+  if (!response.ok) {
+    let errorDetails;
+    try {
+      errorDetails = await response.json();
+    } catch (e) {
+      errorDetails = { message: `Failed to parse error response: ${response.status}` };
     }
 
-  
-    return response;
-
+    const errorMessage = errorDetails.message || `HTTP error! Status: ${response.status}`;
+    const error = new Error(errorMessage);
+    Object.assign(error, errorDetails);
+    throw error;
   }
+
+
+  return response;
+
+}
