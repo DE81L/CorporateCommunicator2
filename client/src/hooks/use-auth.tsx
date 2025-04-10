@@ -101,3 +101,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await apiClient.request({ method:"POST", url:"/api/register", body:data });
     }
   });
+}
