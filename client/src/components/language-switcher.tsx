@@ -11,16 +11,16 @@ import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function LanguageSwitcher() {
-  const { t, i18n } = useTranslation();
-  const currentLanguage = i18n.language;
+    const { t, i18n } = useTranslation();
+    const currentLanguage: string = i18n.language;
 
-  const handleLanguageChange = async (value: string) => {
-    await changeLanguage(value);
-  };
+    const handleLanguageChange = async (value: string) => {
+        await i18n.changeLanguage(value);
+    };
 
-  return (
-    <div className="flex flex-col space-y-2">
-      <Label htmlFor="language-select">{t('settings.general')}</Label>
+    return (
+        <div className="flex flex-col space-y-2">
+            <Label htmlFor="language-select">{t('settings.general')}</Label>
       <Select
         value={currentLanguage}
         onValueChange={handleLanguageChange}
@@ -33,7 +33,6 @@ export function LanguageSwitcher() {
           <SelectItem value="en">English</SelectItem>
           <SelectItem value="es">Español</SelectItem>
           <SelectItem value="ru">Русский</SelectItem>
-          <SelectItem value="en">English</SelectItem>
         </SelectContent>
       </Select>
     </div>

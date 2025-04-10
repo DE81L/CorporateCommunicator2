@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/use-auth";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import {
   MessageSquareIcon,
@@ -11,10 +12,9 @@ import {
   WifiIcon,
   WifiOffIcon,
   LucideIcon,
-  BookOpenIcon,
+  BookOpenIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { type SectionType } from "@/types/sections";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
@@ -34,7 +34,7 @@ export default function Sidebar({
   connectionStatus,
 }: SidebarProps) {
   const { user, sendIPC } = useAuth();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
 
   if (!user) return null;
 
@@ -54,27 +54,27 @@ export default function Sidebar({
     {
       id: "messages",
       icon: MessageSquareIcon,
-      label: t("nav.messages"),
+      label: t("sidebar.nav.messages"), 
     },
-    { id: "groups", icon: UsersIcon, label: t("nav.groups") },
+    { id: "groups", icon: UsersIcon, label: t("sidebar.nav.groups") }, 
     {
       id: "announcements",
       icon: MegaphoneIcon,
-      label: t("nav.announcements"),
+      label: t("sidebar.nav.announcements"), 
     },
     {
       id: "requests",
       icon: ClipboardCheckIcon,
-      label: t("nav.requests"),
+      label: t("sidebar.nav.requests"), 
       badge: 2,
     },
-    { id: "contacts", icon: ContactIcon, label: t("nav.users") },
-    { id: "wiki", icon: BookOpenIcon, label: t("nav.wiki") || "Wiki" },
-    { id: "settings", icon: SettingsIcon, label: t("nav.settings") },
+    { id: "contacts", icon: ContactIcon, label: t("sidebar.nav.users") }, 
+    { id: "wiki", icon: BookOpenIcon, label: t("sidebar.nav.wiki") || "Wiki" },
+    { id: "settings", icon: SettingsIcon, label: t("sidebar.nav.settings") }, 
   ];
 
   return (
-    <>
+    <>\
       {/* Backdrop for mobile */}
       <div
         className={cn(
@@ -143,7 +143,7 @@ export default function Sidebar({
               
               <span>{item.label}</span>
               {item.badge && (
-                <Badge className="ml-auto" variant="destructive">
+                <Badge className="ml-auto" variant="destructive"> // i dont have this type imported
                   {item.badge}
                 </Badge>
               )}
@@ -173,10 +173,3 @@ export default function Sidebar({
     </>
   );
 }
-
-const handleClick = (event: any) => {
-
-}
-
-
-

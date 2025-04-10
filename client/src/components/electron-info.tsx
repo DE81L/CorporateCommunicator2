@@ -13,7 +13,6 @@ import {
   WifiOff,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { TranslationKey } from "@/lib/i18n/translations";
 
 interface SystemInfo {
   platform: string;

@@ -7,7 +7,7 @@ import { getQueryFn, createApiClient, queryClient } from "../lib/queryClient";//
 import { useTranslations } from "./use-translations";//relative path
 
 import { useElectron } from "./use-electron";
-export interface User {
+export type User = {
   id: number;
   username: string;
   password: string;
@@ -16,7 +16,7 @@ export interface User {
   email: string;
   isOnline: boolean;
   avatarUrl?: string | null;
-}
+};
 
 export type UserWithoutPassword = Omit<User, "password"> & {
   isOnline: number | boolean;
@@ -30,6 +30,7 @@ export interface AuthContextType {
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (data: z.infer<typeof registerSchema>) => Promise<void>;
+  sendIPC: any;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -144,15 +145,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     }
   };
+  const { sendIPC } = useElectron();
 
   const value: AuthContextType = {
-    user: user ?? null,
+    user: user || null,
     isLoading,
     error: authError,
     login,
     logout,
-    register
+    register,
+    sendIPC: null,
+
   };
+  if (sendIPC) value.sendIPC = sendIPC;
 
   return (
     <AuthContext.Provider value={value} >
