@@ -1,4 +1,4 @@
-import { useState, useEffect,  } from "react";
+import { useState, useEffect } from "react";
 import { useElectron } from "@/hooks/use-electron";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useTranslation } from "react-i18next";
 import { TranslationKey } from "@/lib/i18n/translations";
 
 interface SystemInfo {
@@ -32,7 +32,7 @@ export default function ElectronInfo() {
   const [appVersion, setAppVersion] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(true);
   const { connectionStatus } = useWebSocket();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (isElectron && api) {
@@ -102,7 +102,7 @@ export default function ElectronInfo() {
     <Card>
       <CardHeader className="bg-gray-50 border-b border-gray-200 px-4 py-3">
           <CardTitle className="text-base font-medium">
-          {t("profile.title" as TranslationKey)}
+          {t("profile.title")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 py-4">
@@ -114,8 +114,8 @@ export default function ElectronInfo() {
               <WifiOff className="h-4 w-4 text-yellow-500" />
             )}
             <span className="font-medium">
-              {t("profile.status" as TranslationKey)}:
-            </span>
+              {t("profile.status")}:
+            </span> 
           </div>
           <Badge
             variant={
@@ -127,14 +127,14 @@ export default function ElectronInfo() {
             }
           >
             {connectionStatus === "offline"
-              ? t("profile.status" as TranslationKey)
+              ? t("profile.status")
               : connectionStatus === "open"
-                ? t("profile.online" as TranslationKey)
+                ? t("profile.online")
                 : connectionStatus === "connecting"
-                  ? t("nav.home" as TranslationKey)
+                  ? t("nav.home")
                   : connectionStatus === "closing" ||
                     connectionStatus === "closed"
-                    ? t("common.refresh" as TranslationKey) : t("common.refresh" as TranslationKey)}
+                    ? t("common.refresh") : t("common.refresh")}
           </Badge>
         </div>
 
@@ -150,13 +150,13 @@ export default function ElectronInfo() {
             <div className="flex items-center space-x-2">
               <Cpu className="h-4 w-4 text-gray-500" />
               <span className="font-medium">
-                {t("common.appName" as TranslationKey)}
+                {t("common.appName")}
               </span>
             </div>
 
             <div className="pl-6 space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span>{t("system_info.platform" as TranslationKey)}:</span>
+                <span>{t("system_info.platform")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded" >
                   {systemInfo.platform}
                 </span>
@@ -170,7 +170,7 @@ export default function ElectronInfo() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span>{t("system_info.version" as TranslationKey)}:</span>
+                <span>{t("system_info.version")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
                   {systemInfo.version}
                 </span>
@@ -179,8 +179,8 @@ export default function ElectronInfo() {
 
             <div className="flex items-center space-x-2" >
               <HardDrive className="h-4 w-4 text-gray-500" />                
-              <span className="font-medium">{t("system_info.total_memory" as TranslationKey)}</span>
-            </div> 
+              <span className="font-medium">{t("system_info.total_memory")}</span>
+            </div>
 
             <div className="pl-6 space-y-2 text-sm">
               <div className="flex items-center justify-between">                
@@ -210,14 +210,14 @@ export default function ElectronInfo() {
             <div className="flex items-center space-x-2">
               <Database className="h-4 w-4 text-gray-500" />
               <span className="font-medium">
-                {t("system_info.local_storage" as TranslationKey)}
+                {t("system_info.local_storage")}
               </span>
             </div>
 
             <div className="pl-6 space-y-2 text-sm">
               <div className="flex items-center justify-between" >
-                <span>{t("system_info.connection_status" as TranslationKey)}:</span>
-                <Badge variant="outline">Active</Badge>               
+                <span>{t("system_info.connection_status")}:</span>
+                <Badge variant="outline">Active</Badge>
               </div>
             </div>
           </>
@@ -233,7 +233,7 @@ export default function ElectronInfo() {
           <RefreshCw
             className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
           />
-          {t("common.refresh" as TranslationKey)}
+          {t("common.refresh")}
         </Button>
       </CardContent>
     </Card>

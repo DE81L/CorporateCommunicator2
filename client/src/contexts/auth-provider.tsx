@@ -3,6 +3,7 @@ import type { User } from "@shared/schema";
 
 interface AuthContextType {
   user: User | null;
+  sendIPC: any;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -32,9 +33,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // ... rest of auth implementation
 
-  return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+    return (
+        <AuthContext.Provider value={{ user, loading, login, logout , sendIPC: ()=>{}}}>
+            {children}
+        </AuthContext.Provider>
+    );
 }

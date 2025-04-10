@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/use-auth"; // Import useAuth from hooks
-import { LanguageContext } from "@/lib/i18n/LanguageContext";
 import { useLocation } from "wouter";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"; // Updated import
 import {
@@ -28,7 +28,7 @@ interface HeaderProps {
 export default function Header({ toggleSidebar }: HeaderProps) {
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [notificationCount] = useState(3); // In real app, this would come from API/state
 
   if (!user) return null;
