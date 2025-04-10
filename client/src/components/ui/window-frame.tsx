@@ -60,8 +60,7 @@ export function WindowFrame({ title = 'Nexus Corporate Messaging' }: { title?: s
           <X className="h-4 w-4" />
         </Button>
       </div>
-    </div>
-  );
+    </div>);
   };
 
   if (!isElectron) return null;
@@ -101,4 +100,4 @@ export function WindowFrame({ title = 'Nexus Corporate Messaging' }: { title?: s
       </div>
     </div>
   );
-}
+};
