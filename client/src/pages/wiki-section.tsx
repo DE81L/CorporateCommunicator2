@@ -427,61 +427,59 @@ export default function WikiSection() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Employee Wiki</h1>
         <div className="flex space-x-2">
-          {(user?.isAdmin === 1 || user?.isAdmin === true) && (
+          {user?.isAdmin === 1 && (
             <>
-              {(user?.isAdmin === true) && (
-                <>
-                  <Button onClick={handleAddEntry} size="sm">
-                    <PlusCircle className="h-4 w-4 mr-2" />
-                    New Entry
-                  </Button>
-                  <Button onClick={handleAddCategory} size="sm" variant="outline">
-                    <PlusCircle className="h-4 w-4 mr-2" />
-                    New Category
-                  </Button>
-                </>
-              )}
+              <Button onClick={handleAddEntry} size="sm">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                New Entry
+              </Button>
+              <Button onClick={handleAddCategory} size="sm" variant="outline">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                New Category
+              </Button>
             </>
           )}
         </div>
+      </div>
       <div className="mb-4">
-        <Input
-          placeholder="Search wiki..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="max-w-md"
-          prefix={<Search className="h-4 w-4 mr-2 text-gray-400" />} // Change this line to accept element instead of string
-        />
-
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="Search wiki..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
         </div>
-        {breadcrumbs.length > 0 && (
-          <Breadcrumb className="mb-4">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink onClick={() => setActiveCategoryId(null)}>
-                  Root
-                </BreadcrumbLink>
+      </div>
+      {breadcrumbs.length > 0 && (
+        <Breadcrumb className="mb-4">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink onClick={() => setActiveCategoryId(null)}>
+                Root
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            {breadcrumbs.map((category, index) => (
+              <BreadcrumbItem key={category.id}>
+                {index === breadcrumbs.length - 1 ? (
+                  <BreadcrumbPage>{category.name}</BreadcrumbPage>
+                ) : (
+                  <>
+                    <BreadcrumbLink onClick={() => setActiveCategoryId(category.id)}>
+                      {category.name}
+                    </BreadcrumbLink>
+                    <BreadcrumbSeparator />
+                  </>
+                )}
               </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              {breadcrumbs.map((category, index) => (
-                <BreadcrumbItem key={category.id}>
-                  {index === breadcrumbs.length - 1 ? (
-                    <BreadcrumbPage>{category.name}</BreadcrumbPage>
-                  ) : (
-                    <>
-                      <BreadcrumbLink onClick={() => setActiveCategoryId(category.id)}>
-                        {category.name}
-                      </BreadcrumbLink>
-                      <BreadcrumbSeparator />
-                    </>
-                  )}
-                </BreadcrumbItem>
-              ))}
-            </BreadcrumbList>
-          </Breadcrumb>
-        )}
+            ))}
+          </BreadcrumbList>
+        </Breadcrumb>
+      )}
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden">
         <TabsList className="grid w-60 grid-cols-2">
           <TabsTrigger value="entries">Wiki Entries</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
@@ -619,12 +617,10 @@ export default function WikiSection() {
         </div>
       </Tabs>
 
-          </div>
-        )}
       {/* Wiki Entry Dialog */}
       <Dialog open={showEntryDialog} onOpenChange={setShowEntryDialog}>
         <DialogContent className="max-w-3xl">
-            <DialogHeader>
+          <DialogHeader>
             <DialogTitle>{editingEntry ? "Edit Wiki Entry" : "New Wiki Entry"}</DialogTitle>
             <DialogDescription>
               {editingEntry
@@ -805,5 +801,5 @@ export default function WikiSection() {
         </DialogContent>
       </Dialog>
     </div>
-);
+  );
 }
