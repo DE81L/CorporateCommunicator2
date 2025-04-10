@@ -1,7 +1,7 @@
 import { X, Minimize, Maximize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useElectron, useElectronData } from '@/hooks/use-electron';
-import { useEffect, useMemo } from 'react';
+import { useElectron } from '@/hooks/use-electron';
+import { useEffect } from 'react';
 
 export const WindowFrame = ({ title = 'Nexus Corporate Messaging' }: { title?: string }) => {
   const api = useElectron();
@@ -23,8 +23,6 @@ export const WindowFrame = ({ title = 'Nexus Corporate Messaging' }: { title?: s
   useEffect(() => {
     console.log('Window: api value changed', api);
   }, [api]);
-
-  const { version, isElectron } = useElectronData(api);
 
   return (
       <div className="flex items-center">
@@ -55,19 +53,10 @@ export const WindowFrame = ({ title = 'Nexus Corporate Messaging' }: { title?: s
       </div>
   );
 };
-
 export const WindowFrameHeader = ({ title = 'Nexus Corporate Messaging' }: { title?: string }) => {
-  const { version, isElectron } = useElectronData();
-  if (!isElectron) return null;
+  const { api } = useElectron();
+  if (!api?.isElectron) return null;
   return (
-    <div className="bg-primary/5 h-9 flex items-center justify-between px-4 select-none draggable"> <div className="flex items-center space-x-2"> <img src="/electron/icons/icon.png" alt="App Logo" className="w-5 h-5" /> <span className="text-sm font-medium">{title}</span> {version && <span className="text-xs text-muted-foreground ml-2">v{version}</span>} </div> <WindowFrame/> </div>
+    <div className="bg-primary/5 h-9 flex items-center justify-between px-4 select-none draggable"> <div className="flex items-center space-x-2"> <img src="/electron/icons/icon.png" alt="App Logo" className="w-5 h-5" /> <span className="text-sm font-medium">{title}</span> </div> <WindowFrame/> </div>
   );
 };
-export const WindowFrameHeader = ({ title = 'Nexus Corporate Messaging' }: { title?: string }) => {
-  const { version, isElectron } = useElectronData();
-  if (!isElectron) return null;
-  return (
-    <div className="bg-primary/5 h-9 flex items-center justify-between px-4 select-none draggable"> <div className="flex items-center space-x-2"> <img src="/electron/icons/icon.png" alt="App Logo" className="w-5 h-5" /> <span className="text-sm font-medium">{title}</span> {version && <span className="text-xs text-muted-foreground ml-2">v{version}</span>} </div> <WindowFrame/> </div>
->>>>>>> 53c1d0b53dc3b2ef2e2a0a8e54ca796297327a5f
-  );
-}
