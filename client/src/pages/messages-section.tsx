@@ -5,7 +5,6 @@ import { useWebSocket } from "../hooks/useWebSocket";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useToast } from "@/hooks/use-toast";
 import { Loader2, Phone, Video, Paperclip, Send } from "lucide-react";
 import { formatDistance } from "date-fns";
 import { ru } from "date-fns/locale";

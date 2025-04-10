@@ -428,7 +428,7 @@ export default function WikiSection() {
         <h1 className="text-2xl font-bold">Employee Wiki</h1>
         <div className="flex space-x-2">
           {user?.isAdmin === 1 && (
-            <>
+            <>          
               <Button onClick={handleAddEntry} size="sm">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 New Entry
@@ -494,7 +494,7 @@ export default function WikiSection() {
             ) : filteredEntries.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-gray-500">
                 <p>No wiki entries found</p>
-                {(user?.isAdmin === true) && (
+                {user?.isAdmin && (
                   <Button variant="link" onClick={handleAddEntry} className="mt-2">
                     <PlusCircle className="h-4 w-4 mr-2" />
                     Create a new entry
@@ -509,7 +509,7 @@ export default function WikiSection() {
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
                           <CardTitle className="text-xl">{entry.title}</CardTitle>
-                          {(user?.isAdmin === true) && (
+                          {user?.isAdmin && (
                             <div className="flex space-x-1">
                               <Button size="icon" variant="ghost" onClick={() => handleEditEntry(entry)}>
                                 <Edit className="h-4 w-4" />
@@ -568,7 +568,7 @@ export default function WikiSection() {
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
                           <CardTitle className="text-lg">{category.name}</CardTitle>
-                          {(user?.isAdmin === true) && (
+                          {user?.isAdmin && (
                             <div className="flex space-x-1" onClick={e => e.stopPropagation()}>
                               <Button size="icon" variant="ghost" onClick={() => handleEditCategory(category)}>
                                 <Edit className="h-4 w-4" />
@@ -603,7 +603,7 @@ export default function WikiSection() {
                 {getSubcategories(activeCategoryId).length === 0 && (
                   <div className="flex flex-col items-center justify-center text-gray-500 py-8">
                     <p>No categories found</p>
-                    {(user?.isAdmin === true) && (
+                    {user?.isAdmin && (
                       <Button variant="link" onClick={handleAddCategory} className="mt-2">
                         <PlusCircle className="h-4 w-4 mr-2" />
                         Create a new category
