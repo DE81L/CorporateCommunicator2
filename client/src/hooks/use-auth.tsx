@@ -111,11 +111,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { confirmPassword, ...data } = userData;
       const { isElectron } = useElectron();
       const apiClient = createApiClient(isElectron);      
-      const res = await apiClient.request("/api/register", {method: "POST", body: data });
+      const res = await apiClient.request({method: "POST", body: data }, "/api/register");
         return res.json();
     },
   },);
-  return (
+   return (
     <AuthContext.Provider
       value={{
         user,
