@@ -17,7 +17,7 @@ export type User = {
   isOnline: boolean;
   avatarUrl?: string | null;
 };
-
+export type LoginCredentials = z.infer<ReturnType<typeof createLoginSchema>>
 export type UserWithoutPassword = Omit<User, "password"> & {
   isOnline: number | boolean;
   isAdmin?: number;
@@ -27,7 +27,7 @@ export interface AuthContextType {
   user: UserWithoutPassword | null;
   isLoading?: boolean;
   error: Error | null | undefined;
-  login: (username: string, password: string) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<any>;
   sendIPC: any;
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ["/api/user"], queryFn: getQueryFn("/api/user"),
   });
   const loginMutation = useMutation({
-    mutationFn: async (credentials: z.infer<typeof loginSchema>): Promise<any> => {
+    mutationFn: async (credentials: LoginCredentials): Promise<any> => {
             const res = await fetch("/api/login", { method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { confirmPassword, ...data } = userData;
       const { isElectron } = useElectron();
       const apiClient = createApiClient(isElectron);      
-      const res = await apiClient.request("/api/register", {method: "POST", body: data });
+      const res = await apiClient.request("/api/register", {method: "POST", body: JSON.stringify(data) });
         return res.json();
     },  
   },);
@@ -123,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           error: authError,
 
       sendIPC: null,
-      login: (username, password) => loginMutation.mutateAsync({ username, password }),
+      login: (credentials) => loginMutation.mutateAsync(credentials),
         logout: () => {
             return logoutMutation.mutateAsync();
         },
