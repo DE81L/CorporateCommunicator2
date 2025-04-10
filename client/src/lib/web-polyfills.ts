@@ -160,20 +160,20 @@ export const clipboard = {
 // IPC Renderer operations
 export const ipcRenderer = {
     // Send an event to the main process
-    send: async (channel: string, ...args: any[]): Promise<void> => {
+    send: async (): Promise<void> => {
         return Promise.resolve()
     },
     
     // Receive an event from the main process
-    on: async (channel: string, listener: (event: any, ...args: any[]) => void): Promise<void> => {
+    on: async (): Promise<void> => {
         return Promise.resolve();
     },
       // Invoke a method on the main process
-    invoke: async (channel: string, ...args: any[]): Promise<any> => {
-        return Promise.resolve({});
+    invoke: async (): Promise<any> => {
+        return Promise.resolve();
     },
       // Remove a listener from the main process
-    removeListener: async (channel: string, listener: Function): Promise<void> => {
+    removeListener: async (): Promise<void> => {
         return Promise.resolve();
     }
 };
