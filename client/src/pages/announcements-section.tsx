@@ -6,7 +6,6 @@ import { useToast } from "../hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { useElectron } from "@/hooks/use-electron";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
   Dialog,
@@ -25,6 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

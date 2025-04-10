@@ -157,6 +157,20 @@ export const clipboard = {
   }
 };
 
+// IPC Renderer operations
+export const ipcRenderer = {
+    // Send an event to the main process
+    send: async (channel: string, ...args: any[]): Promise<void> => {
+        return Promise.resolve();
+    },
+    
+    // Receive an event from the main process
+    on: async (channel: string, listener: (event: any, ...args: any[]) => void): Promise<void> => {
+        return Promise.resolve();
+    }
+};
+
+
 // Create a complete mock Electron API
 function createMockElectronAPI(): ElectronAPI {
   return {
@@ -184,6 +198,10 @@ function createMockElectronAPI(): ElectronAPI {
       saveMessage: (message: any) => { localStorage.setItem(`message-${message.id}`, JSON.stringify(message)); return Promise.resolve()},
       deleteMessage: (id: number) => { localStorage.removeItem(`message-${id}`); return Promise.resolve();},
     },
+      ipcRenderer,
+      fs: fileSystem,
+      dialog,
+      clipboard
 
   };
 }
