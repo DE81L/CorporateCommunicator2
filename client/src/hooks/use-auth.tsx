@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useState, useMemo } from "react";
+import { createContext, ReactNode, useContext, useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { useToast } from "./use-toast";//relative path
@@ -63,8 +63,8 @@ export const registerSchema = (t: (key: string) => string) => {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslations();
-  const loginSchema = useMemo(() => createLoginSchema((key) => t(key as any)), [t]);
-  const regSchema = useMemo(() => registerSchema((key:string) => t(key as any)), [t]);
+  const loginSchema = useMemo(() => createLoginSchema((key) => t(key as any)), [t]); // Type casting added here
+  const regSchema = useMemo(() => registerSchema((key:string) => t(key as any)), [t]); // Type casting added here
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [isLoading] = useState(true);
@@ -73,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ['/api/user'], queryFn: getQueryFn('returnNull')
   });  
   const loginMutation = useMutation({
+
     mutationFn: async (credentials: z.infer<typeof loginSchema>) => {
       const res = await apiRequest("POST", "/api/login", credentials);
       return res.json();
@@ -108,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Implement the login/logout methods
   const login = async (username: string, password: string) => {
+    console.log("Auth: запускаем вход для", username);
     try {
       await loginMutation.mutateAsync({ username, password });
       setLocation("/");
@@ -120,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    console.log("Auth: Выходим из системы");
     try {
       await logoutMutation.mutateAsync();
     } catch (error) {
@@ -136,6 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (data: z.infer<typeof regSchema>) => {
+    console.log("Auth: Начинаем регистрацию для", data.username, data.email);
     try {
       await registerMutation.mutateAsync(data);
       setLocation("/");
@@ -146,6 +150,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     }
   };
+  useEffect(() => {
+    console.log("Auth: Состояние пользователя изменилось", user);
+  }, [user]);
+
   const { api } = useElectron();
   
   const value: AuthContextType = {
@@ -164,7 +172,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     </AuthContext.Provider>
   );
 }
-async function apiRequest(method: string, path: string, body?: unknown) {
+
+export async function apiRequest(method: string, path: string, body?: unknown) { // export keyword added here
+  console.log(`Auth: Запрос к ${path} методом ${method}`);
   const { isElectron } = useElectron();
   const apiClient = createApiClient(isElectron);
 

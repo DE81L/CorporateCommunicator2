@@ -60,6 +60,7 @@ async function createWindow() {
       mainWindow?.maximize();
     }
   });
+  ipcMain.handle('app-quit',    () => { app.quit(); });
   ipcMain.handle('window-close', () => mainWindow?.hide());
 
   // System information handlers

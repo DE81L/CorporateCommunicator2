@@ -8,11 +8,11 @@ import { contextBridge, ipcRenderer } from "electron";
 contextBridge.exposeInMainWorld("electron", {
   app: {
     getVersion: () => ipcRenderer.invoke("app-get-version"),
+    minimize:    () => ipcRenderer.invoke("window-minimize"),
+    maximize:    () => ipcRenderer.invoke("window-maximize"),
+    quit:        () => ipcRenderer.invoke("app-quit"),
   },
-  window: {
-    minimize: () => ipcRenderer.invoke("window-minimize"),
-    maximize: () => ipcRenderer.invoke("window-maximize"),
-    close: () => ipcRenderer.invoke("window-close"),
+  window: {    close: () => ipcRenderer.invoke("window-close"),
   },
   storage: {
     getUserData: () => ipcRenderer.invoke("get-user-data"),

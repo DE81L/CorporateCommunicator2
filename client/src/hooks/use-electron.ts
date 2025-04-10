@@ -8,6 +8,8 @@ export function useElectron() {
   const [api, setApi] = useState<ElectronAPI | null>(null);
 
   useEffect(() => {
+    console.log("useElectron: useEffect - api changed", api);
+    
     // Safely check and set Electron environment
     const electronApi = (window.electron ?? null) as unknown as ElectronAPI;
     setIsElectron(!!electronApi);

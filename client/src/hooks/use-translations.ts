@@ -12,6 +12,7 @@ export function useTranslations() {
   }, [translate]);
 
   const changeLanguage = useCallback(async (language: string) => {
+    console.log("Changing language to:", language);
     try {
       await i18n.changeLanguage(language);
       localStorage.setItem('preferredLanguage', language);
