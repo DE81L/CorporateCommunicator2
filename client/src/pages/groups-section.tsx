@@ -97,23 +97,24 @@ export default function GroupsSection() {
           return await res.json();
     },
     onSuccess: async () => {
-      const createGroup = async (data: CreateGroupFormValues) => {
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
       setIsCreateGroupDialogOpen(false);  
       toast({
         title: "Group created",
         description: "Your new group has been created successfully.",
       });
-    },
+    }, 
     onError: (error: Error) => {
       toast({
         title: "Failed to create group",
         description: error.message,
         variant: "destructive",
       });
-    },
+    }
   });
-
+  const createGroup = async (data: CreateGroupFormValues) => {
+    createGroupMutation.mutate(data)
+  };
   const updateGroup = async (id: number, data: Partial<Group>) => {
     try {
       const res = await fetch(`/api/groups/${id}`, {
@@ -161,7 +162,7 @@ export default function GroupsSection() {
   });
 
   const onSubmit = (data: CreateGroupFormValues) => {
-    createGroupMutation.mutate(data)
+    createGroup(data);
   };
 
   return (
