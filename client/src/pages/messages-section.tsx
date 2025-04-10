@@ -2,14 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
 import { useWebSocket } from "../hooks/useWebSocket";
-import { Input } from "@/components/ui/input";import type { TranslationKey } from "@/lib/i18n";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Loader2, Phone, Video, Paperclip, Send } from "lucide-react";
 import { formatDistance } from "date-fns";
 import { ru } from "date-fns/locale";
 import { queryClient } from "@/lib/queryClient";
-import { useLanguage } from "@/lib/i18n/LanguageContext.tsx";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface Message {
   id: number;
@@ -43,7 +43,7 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
   const [messageInput, setMessageInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { sendMessage, lastMessage } = useWebSocket();
-  const { t } = useLanguage();
+  const { t } = useTranslations();
 
   // Получение списка пользователей
   const { data: users, isLoading: isLoadingUsers } = useQuery<User[]>({
@@ -59,14 +59,14 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
   // Прослушивание новых сообщений из WebSocket
   useEffect(() => {
     if (lastMessage) {
-      if (lastMessage.chatId) {
+        if (lastMessage) {
         // Если сообщение от выбранного пользователя, обновляем список сообщений
         if (
           selectedUser &&
           ((lastMessage.sender?.id === selectedUser.id &&
-            lastMessage.chatId) ||
+              lastMessage.chatId) ||
             (lastMessage.sender?.id === user?.id &&
-              lastMessage.chatId))
+                lastMessage.chatId))
               ) {
           queryClient.invalidateQueries({
             queryKey: ["/api/messages", selectedUser.id],
@@ -230,20 +230,20 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
                 variant="ghost"
                 size="icon"
                 title="Прикрепить файл"
-              >
+              > 
                 <Paperclip className="h-5 w-5" />
               </Button>
               <Input
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
-                placeholder={t("messages.enterMessage")}
+                placeholder={t("messages.enterMessage" )}
                 className="flex-1 rounded-full"
               />
               <Button
                 type="submit"
                 size="icon"
-                className="rounded-full disabled:opacity-50"
-                title={t("messages.send")}
+                className="rounded-full disabled:opacity-50" 
+                title={t("messages.send" )}
               >
                 <Send className="h-5 w-5" />
               </Button>
@@ -269,12 +269,12 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
             </svg>
           </div>
           <h2 className="text-xl font-medium mb-2">
-            {t("messages.noChat" as any)}
+            {t("messages.noChat" )}
           </h2>  
           <div className="w-full max-w-md">
-            <h3 className="font-medium mb-3">{t("nav.users")}</h3>
+            <h3 className="font-medium mb-3">{t("nav.users" )}</h3>
             {isLoadingUsers ? (
-              <div className="flex justify-center py-4">
+              <div className="flex justify-center items-center py-4">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : users && users.length > 0 ? (
@@ -310,9 +310,9 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
                         </p>
                       </div>
                     </button>
-                  ))}
+                  ))} 
               </div>
-            ) : (   
+            ) : (
               <div className="text-center py-4 text-gray-500">
                 {t("messages.noContacts" as any)}
               </div>
