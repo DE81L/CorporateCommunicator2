@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "../hooks/use-auth"; // Import useAuth from hooks
+import { useAuth, apiRequest } from "../hooks/use-auth"; // Import useAuth from hooks
 import { queryClient, createApiClient } from "@/lib/queryClient";
 import { useToast } from "../hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -8,7 +8,6 @@ import { useElectron } from "@/hooks/use-electron";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { formatDistance } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -48,7 +47,6 @@ const createAnnouncementSchema = z.object({
 type CreateAnnouncementFormValues = z.infer<typeof createAnnouncementSchema>;
 
 export default function AnnouncementsSection() {
-  const { user } = useAuth();
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { isElectron } = useElectron();
@@ -70,8 +68,7 @@ export default function AnnouncementsSection() {
   // Create announcement mutation (creates a group with isAnnouncement=true)
   const createAnnouncementMutation = useMutation({
     mutationFn: async (data: CreateAnnouncementFormValues) => {
-      const apiClient = createApiClient(isElectron);
-      const res = await apiRequest("POST", "/api/groups", data);
+      const res = await apiRequest("POST", "/api/groups", data); // call the apiRequest function from useAuth
       return await res.json();
     },
     onSuccess: () => { 

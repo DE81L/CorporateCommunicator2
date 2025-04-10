@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading] = useState(true);
   const [authError, setAuthError] = useState<Error | null>(null); 
   const { data: user } = useQuery<UserWithoutPassword | null>({
-    queryKey: ['/api/user'], queryFn: getQueryFn({ on401: 'returnNull' })
+    queryKey: ['/api/user'], queryFn: () => getQueryFn({ on401: 'returnNull' })
   });
   const loginMutation = useMutation({
     mutationFn: async (credentials: z.infer<typeof loginSchema>) => {

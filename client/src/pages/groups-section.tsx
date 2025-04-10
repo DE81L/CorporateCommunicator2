@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "../hooks/use-auth";
+import { useAuth, apiRequest } from "../hooks/use-auth";
 import { queryClient, createApiClient } from "../lib/queryClient";
 import { useToast } from "../hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -42,7 +42,6 @@ const createGroupSchema = z.object({
 type CreateGroupFormValues = z.infer<typeof createGroupSchema>;
 
 export default function GroupsSection() {
-  const { user } = useAuth();
   const apiClient = createApiClient(false); // Assuming not running in electron by default
   const { toast } = useToast();
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
@@ -58,9 +57,10 @@ export default function GroupsSection() {
   });
 
   // Fetch all users for adding to groups
-  const { data: users, isLoading: isLoadingUsers } = useQuery<User[]>({
+  useQuery<User[]>({
     queryKey: ["/api/users"],
-    queryFn: () => apiRequest("GET", "/api/users").then((res) => res.json()),
+    queryFn: () =>
+      apiRequest("GET", "/api/users").then((res) => res.json()),
   });
 
   // Create group mutation

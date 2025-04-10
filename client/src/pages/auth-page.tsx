@@ -23,7 +23,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Loader2 } from "lucide-react";
 import { insertUserSchema } from "../../../shared/schema";
 import { useTranslation } from 'react-i18next';
 
@@ -43,7 +42,11 @@ const registerSchema = insertUserSchema
 
 export default function AuthPage() {
   const { t } = useTranslation();
-  const { user, login, register } = useAuth();
+  const { user, login: loginFn, register } = useAuth();
+  const login = async (data: z.infer<typeof loginSchema>) => {
+    const { username, password } = data;
+    await loginFn(username, password);
+  };
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
   if (user) {

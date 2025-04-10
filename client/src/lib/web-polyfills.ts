@@ -165,12 +165,6 @@ function createMockElectronAPI(): ElectronAPI {
       getPath: () => Promise.resolve(''),
       quit: () => Promise.resolve(),
     },
-    window: {
-      minimize: () => Promise.resolve(),
-      maximize: () => Promise.resolve(),
-      close: () => Promise.resolve(),
-      isMaximized: () => Promise.resolve(false),
-    },
     system: {
       getSystemInfo: () => Promise.resolve({
         platform: 'web',
