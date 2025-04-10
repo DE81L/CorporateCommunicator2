@@ -130,3 +130,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
         user: user ?? null, }} >{children}</AuthContext.Provider>
   );
+}
