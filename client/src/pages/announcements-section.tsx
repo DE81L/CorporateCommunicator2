@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
@@ -33,15 +33,15 @@ export default function AnnouncementsSection() {
   const { toast } = useToast();
   const { } = useAuth();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
+    const [announcements, setAnnouncements] = useState<any[]>([]);
 
     // Fetch announcements
-  const { 
-    data: announcements, 
+  const {
     isLoading: isAnnouncementsLoading, 
     error: announcementsError,
-  } = useQuery(['/api/announcements'], async () => {
+  } = useQuery({queryKey: ['/api/announcements'], queryFn: async () => {
     const response = await fetch("/api/groups?isAnnouncement=true"); 
-    if (!response.ok) {
+       if (!response.ok) {
       throw new Error("Failed to fetch announcements");
     }    
     const data = await response.json();
@@ -79,6 +79,12 @@ export default function AnnouncementsSection() {
         });
       },
       
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
+      }
+
+      
+
     });
 
   const form = useForm<CreateAnnouncementFormValues>({
@@ -92,6 +98,13 @@ export default function AnnouncementsSection() {
   
   const onSubmit = (data: CreateAnnouncementFormValues) => {
     createAnnouncementMutation.mutate(data);
+  };
+
+  useEffect(() => {
+    if (announcements && announcements.length > 0) {
+      setAnnouncements(announcements);
+    }
+  }, [announcements]);
   };
 
   // Mock function to get department name for demo
@@ -185,7 +198,7 @@ export default function AnnouncementsSection() {
         <div className="text-center py-10 text-red-500">
           Error loading announcements: {announcementsError.message}. Please try again.
         </div>
-      ) : announcements && announcements.length > 0 ? (
+      ) : announcements.length > 0 ? (
         <div className="space-y-4">
           {announcements.map((announcement: any) => (
             <div key={announcement?.id} className="bg-white rounded-lg shadow-sm p-4">
