@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useMemo, useCallback } from "react";
+import { createContext, ReactNode, useContext, useMemo, useCallback, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { useLocation } from "wouter";
@@ -29,7 +29,7 @@ export interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<UserWithoutPassword>;
   logout: () => Promise<void>;
   register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<void>;
-  sendIPC: null;
+  sendIPC: ((channel: string, data: any) => void) | null;
   }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -122,6 +122,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return await loginMutation.mutateAsync(credentials)
   }, [loginMutation]);
 
+
+  const sendIPC = useState<(channel: string, data: any) => void | null>(null)[0];
+  
+  // if (typeof window !== 'undefined' && window.electronAPI) {
+  //   sendIPC = window.electronAPI.sendIPC;
+  // }
+
+
  return (
     <AuthContext.Provider
     value={{
@@ -131,6 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       logout: () => logoutMutation.mutateAsync(),
       register: (data) => registerMutation.mutateAsync(data),
+      sendIPC,
     }}
     >
       {children}

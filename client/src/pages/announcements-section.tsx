@@ -55,10 +55,12 @@ export default function AnnouncementsSection() {
     data: announcements, 
     isLoading: isAnnouncementsLoading, 
     error: announcementsError,
-  } = useQuery<Announcement[]>({
+  } = useQuery({
     queryKey: ['/api/announcements'],
-    queryFn: async (): Promise<Announcement[]> => {
-      const { request: apiRequest } = useAuth();
+    queryFn: async () => {
+      const { request: apiRequest } = useAuth(); // get the request function from useAuth
+      if(!apiRequest) throw new Error("apiRequest is not available");
+
       const response = await apiRequest("GET", "/api/announcements");
       const data = await response.json()
       return data
@@ -69,8 +71,10 @@ export default function AnnouncementsSection() {
     const createAnnouncementMutation = useMutation({
       
       mutationFn: async (data: CreateAnnouncementFormValues) => {
-        const { request } = useAuth();
-        const res = await request("POST", "/api/groups", data); // call the apiRequest function from useAuth
+        const { request: apiRequest } = useAuth();
+         if(!apiRequest) throw new Error("apiRequest is not available");
+
+        const res = await apiRequest("POST", "/api/groups", data); // call the apiRequest function from useAuth
         return res;
       },
       onSuccess: () => { 
