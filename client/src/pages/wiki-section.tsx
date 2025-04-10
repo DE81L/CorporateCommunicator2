@@ -428,19 +428,22 @@ export default function WikiSection() {
         <h1 className="text-2xl font-bold">Employee Wiki</h1>
         <div className="flex space-x-2">
           {(user?.isAdmin === 1 || user?.isAdmin === true) && (
-          {(user?.isAdmin === true) && (
-              <Button onClick={handleAddEntry} size="sm">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                New Entry
-              </Button>
-              <Button onClick={handleAddCategory} size="sm" variant="outline">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                New Category
-              </Button>
+            <>
+              {(user?.isAdmin === true) && (
+                <>
+                  <Button onClick={handleAddEntry} size="sm">
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    New Entry
+                  </Button>
+                  <Button onClick={handleAddCategory} size="sm" variant="outline">
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    New Category
+                  </Button>
+                </>
+              )}
             </>
+          )}
         </div>
-      </div>
-
       <div className="mb-4">
         <Input
           placeholder="Search wiki..."
@@ -449,36 +452,36 @@ export default function WikiSection() {
           className="max-w-md"
           prefix={<Search className="h-4 w-4 mr-2 text-gray-400" />} // Change this line to accept element instead of string
         />
-      </div>
 
-      {breadcrumbs.length > 0 && (
-        <Breadcrumb className="mb-4">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink onClick={() => setActiveCategoryId(null)}>
-                Root
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            {breadcrumbs.map((category, index) => (
-              <BreadcrumbItem key={category.id}>
-                {index === breadcrumbs.length - 1 ? (
-                  <BreadcrumbPage>{category.name}</BreadcrumbPage>
-                ) : (
-                  <>
-                    <BreadcrumbLink onClick={() => setActiveCategoryId(category.id)}>
-                      {category.name}
-                    </BreadcrumbLink>
-                    <BreadcrumbSeparator />
-                  </>
-                )}
+        </div>
+        {breadcrumbs.length > 0 && (
+          <Breadcrumb className="mb-4">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink onClick={() => setActiveCategoryId(null)}>
+                  Root
+                </BreadcrumbLink>
               </BreadcrumbItem>
-            ))}
-          </BreadcrumbList>
-        </Breadcrumb>
-      )}
+              <BreadcrumbSeparator />
+              {breadcrumbs.map((category, index) => (
+                <BreadcrumbItem key={category.id}>
+                  {index === breadcrumbs.length - 1 ? (
+                    <BreadcrumbPage>{category.name}</BreadcrumbPage>
+                  ) : (
+                    <>
+                      <BreadcrumbLink onClick={() => setActiveCategoryId(category.id)}>
+                        {category.name}
+                      </BreadcrumbLink>
+                      <BreadcrumbSeparator />
+                    </>
+                  )}
+                </BreadcrumbItem>
+              ))}
+            </BreadcrumbList>
+          </Breadcrumb>
+        )}
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden">
         <TabsList className="grid w-60 grid-cols-2">
           <TabsTrigger value="entries">Wiki Entries</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
