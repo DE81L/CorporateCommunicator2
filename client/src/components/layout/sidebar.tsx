@@ -142,11 +142,11 @@ export default function Sidebar({
               <item.icon className="mr-3 h-5 w-5" />
 
               <span>{item.label}</span>
-              {item.badge ?(
+              {item.badge ? (
                 <Badge className="ml-auto" variant="destructive"> // i dont have this type imported
                   {item.badge}
                 </Badge>
-              )})}
+              ) : null}
             </Button>
           ))}
         </nav>
