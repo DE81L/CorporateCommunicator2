@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient, createApiClient, ApiRequest } from "../lib/queryClient";
+import { queryClient, createApiClient } from "../lib/queryClient";
 import { useToast } from "../hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,6 +31,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Loader2, Plus, Users } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { apiRequest } from "../hooks/use-auth";
 
 const createGroupSchema = z.object({
   
@@ -59,13 +60,9 @@ export default function GroupsSection() {
   // Fetch all users for adding to groups
   useQuery<User[]>({
     queryKey: ["/api/users"],
-    queryFn: () =>
-      ApiRequest("GET", "/api/users").then((res) => res.json()),
+    queryFn: () => apiRequest("GET", "/api/users").then((res) => res.json()),
   });
 
-  const apiRequest = (method: string, path: string, body?: unknown) => {
-    return ApiRequest(method, path, body);
-  }
   // Create group mutation
   const createGroupMutation = useMutation({
     mutationFn: async (data: CreateGroupFormValues) => {
