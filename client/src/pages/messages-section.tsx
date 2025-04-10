@@ -69,9 +69,9 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
               lastMessage.receiverId === selectedUser.id))
         ) {
           queryClient.invalidateQueries({
-
-          queryKey: ["/api/messages", selectedUser.id],
-        });
+            queryKey: ["/api/messages", selectedUser.id],
+          });
+        }
       }
     }
   }, [lastMessage, selectedUser, user]);
