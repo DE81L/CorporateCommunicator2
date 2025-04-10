@@ -1,9 +1,9 @@
-import { useState, } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "../hooks/use-toast";
-import { useForm } from "react-hook-form";
+import { useForm, } from "react-hook-form";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   Form,
@@ -39,29 +39,28 @@ export default function AnnouncementsSection() {
     data: announcements, 
     isLoading: isAnnouncementsLoading, 
     error: announcementsError,
-  } = useQuery({
-    queryKey: ['/api/announcements'],
-    queryFn: async () => {
-      const { apiRequest } = useAuth();
-      if(!apiRequest) throw new Error("apiRequest not available");
-        const response = await apiRequest("GET", "/api/announcements");
-        const data = await response.json()
-        return data
-      
-        return []
-    },
+  } = useQuery(['/api/announcements'], async () => {
+    const response = await fetch("/api/groups?isAnnouncement=true"); // Fetch groups with isAnnouncement=true
+    if (!response.ok) {
+      throw new Error("Failed to fetch announcements");
+    }
+    const data = await response.json();
+    return data;
   });
-
+  
   // Create announcement mutation (creates a group with isAnnouncement=true)
     const createAnnouncementMutation = useMutation({
       
       mutationFn: async (data: CreateAnnouncementFormValues) => {
         const { apiRequest } = useAuth(); // get the request function from useAuth
         if (!apiRequest) throw new Error("apiRequest is not available");
-        
-          const res = await apiRequest("POST", "/api/groups", data); // call the apiRequest function from useAuth
-          return res;
-        
+          const response = await fetch("/api/groups", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
           return null
       },
       onSuccess: () => { 
@@ -191,7 +190,7 @@ export default function AnnouncementsSection() {
             <div key={announcement?.id} className="bg-white rounded-lg shadow-sm p-4">
               <div className="flex justify-between">
                 <h3 className="font-medium">{announcement.name}</h3>
-                <span className="text-xs text-gray-500">{getRelativeTime(announcement.id)}</span>
+                <span className="text-xs text-gray-500">{getRelativeTime(announcement?.id)}</span>
               </div>
               <p className="text-sm text-gray-600 mt-2">{announcement.description}</p>
               <div className="mt-4 flex justify-between items-center">

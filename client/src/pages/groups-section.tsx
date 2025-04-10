@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -43,34 +43,76 @@ const createGroupSchema = z.object({
 type CreateGroupFormValues = z.infer<typeof createGroupSchema>;
 
 export default function GroupsSection() {
-  const { isElectron } = useElectron();
-  const { request: apiRequest } = useAuth();  
+  const { isElectron } = useElectron();  
   const { toast } = useToast();
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [isLoadingGroups, setIsLoadingGroups] = useState(true);
+  const [groupsError, setGroupsError] = useState<string | null>(null);
+
+  const fetchGroups = useCallback(async () => {
+      setIsLoadingGroups(true);
+      setGroupsError(null);
+      try {
+        const res = await fetch("/api/groups");
+        if (!res.ok) {
+          throw new Error(`Failed to fetch groups: ${res.status}`);
+        }
+        const data = await res.json();
+        setGroups(data);
+      } catch (err: any) {
+        setGroupsError(err.message);
+      } finally {
+        setIsLoadingGroups(false);
+      }  }, []);
+
+    useEffect(() => {
+      fetchGroups();
+    }, [fetchGroups]);
 
   // Fetch groups
-  const {
-    data: groups,
-    isLoading: isLoadingGroups,
-    error: groupsError,
-  } = useQuery<Group[], Error>({
-    queryKey: ["/api/groups",isElectron],
-    queryFn: () => apiRequest("GET", "/api/groups"),
-  });  
-
+  
+  
   // Fetch all users for adding to groups
   useQuery<User[], Error>({
     queryKey: ["/api/users",isElectron],
-    queryFn: () => apiRequest("GET", "/api/users")
+    queryFn: async () => {
+      const res = await fetch("/api/users");
+      if (!res.ok) {
+        throw new Error(`Failed to fetch users: ${res.status}`);
+      }
+      return res.json();
+    },
   })
 
   // Create group mutation
   const createGroupMutation = useMutation({
       mutationFn: async (data: CreateGroupFormValues) => {
-      const res = await apiRequest("POST", "/api/groups", data);
-      return await res.json();
+          const res = await fetch('/api/groups', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data),
+          });
+          return await res.json();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      const createGroup = async (data: CreateGroupFormValues) => {
+        try {
+          const res = await fetch('/api/groups', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+          if (!res.ok) throw new Error(`Failed to create group: ${res.status}`);
+          const newGroup = await res.json();
+          setGroups(prevGroups => [...prevGroups, newGroup]);
+        } catch (err: any) {
+          console.error("Failed to create group:", err);
+          throw err;
+        }
+      };
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
       setIsCreateGroupDialogOpen(false);  
       toast({
@@ -87,6 +129,48 @@ export default function GroupsSection() {
     },
   });
 
+  const updateGroup = async (id: number, data: Partial<Group>) => {
+    try {
+      const res = await fetch(`/api/groups/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to update group: ${res.status}`);
+      }
+      const updatedGroup = await res.json();
+      setGroups((prevGroups) =>
+        prevGroups.map((group) => (group.id === id ? updatedGroup : group))
+      );
+    } catch (err: any) {
+      console.error("Failed to update group:", err);
+      throw err;
+    }
+  };
+
+  const deleteGroup = async (id: number) => {
+    try {
+      const res = await fetch(`/api/groups/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to delete group: ${res.status}`);
+      }
+      setGroups((prevGroups) => prevGroups.filter((group) => group.id !== id));
+    } catch (err: any) {
+      console.error("Failed to delete group:", err);
+      throw err;
+    }
+  };
+  const createGroup = async (data: CreateGroupFormValues) => {
+    await createGroupMutation.mutateAsync(data);
+    await fetchGroups();
+  };
+  
+
   const form = useForm<CreateGroupFormValues>({
     resolver: zodResolver(createGroupSchema),
     defaultValues: {
@@ -97,7 +181,7 @@ export default function GroupsSection() {
   });
 
   const onSubmit = (data: CreateGroupFormValues) => {
-    createGroupMutation.mutate(data);
+    createGroup(data);
   };
 
   return (
@@ -231,14 +315,16 @@ export default function GroupsSection() {
                     {group.description}
                   </p>
                 )}
+
                 <div className="mt-4 flex justify-between items-center">
                   <div className="flex -space-x-2">
+
                     <Avatar className="h-6 w-6 border border-white">
                       <AvatarFallback className="text-xs bg-blue-100">
                         A
                       </AvatarFallback>
                     </Avatar>
-                    <Avatar className="h-6 w-6 border border-white">
+                     <Avatar className="h-6 w-6 border border-white">
                       <AvatarFallback className="text-xs bg-green-100">
                         B
                       </AvatarFallback>
@@ -256,6 +342,22 @@ export default function GroupsSection() {
                   </div>
                   <Button variant="link" className="text-primary p-0 h-auto">
                     View
+                  </Button>
+                  <Button
+                    variant="link"
+                    className="text-primary p-0 h-auto"
+                    onClick={() =>
+                      updateGroup(group.id, {
+                        name: `Updated Name ${group.id}`,
+                        description: `Updated Description ${group.id}`,
+                      })
+                    }
+                  >
+                    Update
+                  </Button>
+                  <Button variant="destructive" className="p-0 h-auto" onClick={() => deleteGroup(group.id)}>
+                  
+                    Delete
                   </Button>
                 </div>
               </CardContent>

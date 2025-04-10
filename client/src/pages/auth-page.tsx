@@ -23,7 +23,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { insertUserSchema } from "../../../shared/schema";
+import { insertUserSchema } from "../../../shared/schema.ts";
 import { useTranslation } from 'react-i18next';
 
 const loginSchema = z.object({
