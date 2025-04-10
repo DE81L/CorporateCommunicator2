@@ -228,3 +228,5 @@ export type InsertWikiCategory = typeof wikiCategories.$inferInsert;
 export interface RandomUserResponse extends Omit<User, "password"> {
   // All user fields except password
 }
+
+export { insertUserSchema };

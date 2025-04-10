@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
@@ -30,7 +30,7 @@ import { Loader2, Plus, User } from "lucide-react";
 
 import { z } from "zod";
 interface Announcement {
-  id: number;
+  id?: number;
   name: string;
   description: string;
   creatorId: number;
@@ -49,10 +49,12 @@ export default function AnnouncementsSection() {
   const { toast } = useToast();
   const { } = useAuth();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
+    const { request } = useAuth();
 
   // Fetch announcements
   const { 
     data: announcements, 
+
     isLoading: isAnnouncementsLoading, 
     error: announcementsError,
   } = useQuery({
@@ -60,10 +62,12 @@ export default function AnnouncementsSection() {
     queryFn: async () => {
       const { request: apiRequest } = useAuth(); // get the request function from useAuth
       if(!apiRequest) throw new Error("apiRequest is not available");
-
-      const response = await apiRequest("GET", "/api/announcements");
-      const data = await response.json()
-      return data
+      if(request) {
+        const response = await request("GET", "/api/announcements");
+        const data = await response.json()
+        return data
+      }
+        return []
     },
   });
 
@@ -72,10 +76,12 @@ export default function AnnouncementsSection() {
       
       mutationFn: async (data: CreateAnnouncementFormValues) => {
         const { request: apiRequest } = useAuth();
-         if(!apiRequest) throw new Error("apiRequest is not available");
-
-        const res = await apiRequest("POST", "/api/groups", data); // call the apiRequest function from useAuth
-        return res;
+        if(!apiRequest) throw new Error("apiRequest is not available");
+        if(request){
+          const res = await request("POST", "/api/groups", data); // call the apiRequest function from useAuth
+          return res;
+        }
+          return null
       },
       onSuccess: () => { 
         queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
@@ -201,7 +207,7 @@ export default function AnnouncementsSection() {
       ) : announcements && announcements.length > 0 ? (
         <div className="space-y-4">
           {announcements.map(announcement => (
-            <div key={announcement.id} className="bg-white rounded-lg shadow-sm p-4">
+            <div key={announcement?.id} className="bg-white rounded-lg shadow-sm p-4">
               <div className="flex justify-between">
                 <h3 className="font-medium">{announcement.name}</h3>
                 <span className="text-xs text-gray-500">{getRelativeTime(announcement.id)}</span>
