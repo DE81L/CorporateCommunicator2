@@ -9,7 +9,7 @@ export function WindowFrame({ title = 'Nexus Corporate Messaging' }: { title?: s
   const handleMinimize = () => {
     console.log('Window: Minimize triggered');
     api?.app?.minimize();
-  };
+  };  
 
   const handleMaximize = () => {
     console.log('Window: Maximize triggered');
@@ -23,9 +23,7 @@ export function WindowFrame({ title = 'Nexus Corporate Messaging' }: { title?: s
   useEffect(() => {
     console.log('Window: api value changed', api);
   }, [api])
-  const { isElectron, version} = api || {};
-
-  if (!isElectron) return null;
+  const { version} = api || {};
 
   return (
     <div className="bg-primary/5 h-9 flex items-center justify-between px-4 select-none draggable">
