@@ -1,12 +1,11 @@
 import { useState, useCallback } from "react";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth"; // Import useAuth from hooks
+import { LanguageContext } from "@/lib/i18n/LanguageContext";
 import { useLocation } from "wouter";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"; // Updated import
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -18,10 +17,11 @@ import {
   SettingsIcon,
   LogOutIcon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button"; // Updated import
+import { Badge } from "@/components/ui/badge"; // Updated import
+import {DropdownMenuItem} from "@/components/ui/dropdown-menu";
 
-interface HeaderProps {
+interface HeaderProps {  
   toggleSidebar: () => void;
 }
 
@@ -49,7 +49,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
   return (
     <header className="h-14 border-b border-gray-200 bg-white px-4 flex items-center justify-between">
       <h1 className="text-xl font-semibold text-primary-600">
-        {t("header.title")}
+        {t("common.appName")}
       </h1>
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-3">
@@ -80,12 +80,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                   {notificationCount}
                 </Badge>
               )}
-            </Button>
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
+            </Button><DropdownMenu> <DropdownMenuTrigger asChild> <Button
                 variant="ghost"
                 className="flex items-center space-x-1 focus:ring-0"
               >
@@ -104,9 +99,8 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                 <span className="hidden md:block text-sm">
                   {user.firstName} {user.lastName}
                 </span>
-                <ChevronDownIcon className="h-4 w-4 text-gray-500" />
-              </Button>
-            </DropdownMenuTrigger>
+                <ChevronDownIcon className="h-4 w-4 text-gray-500" /></Button>
+            </DropdownMenuTrigger>            
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuLabel>
                 {user?.firstName} {user?.lastName}

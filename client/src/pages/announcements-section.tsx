@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth"; // Import useAuth from hooks
 import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient"; // Import apiRequest from queryClient
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -53,11 +53,12 @@ export default function AnnouncementsSection() {
 
   // Fetch announcements
   const { 
-    data: announcements,
-    isLoading,
-    error
+    data: announcements, 
+    isLoading, 
+    error 
   } = useQuery<Announcement[]>({
     queryKey: ['/api/announcements'],
+
     queryFn: () => apiRequest("GET", "/api/announcements").then(res => res.json()),
   });
 
@@ -67,7 +68,7 @@ export default function AnnouncementsSection() {
       const res = await apiRequest("POST", "/api/groups", data);
       return await res.json();
     },
-    onSuccess: () => {
+    onSuccess: () => { 
       queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
       setIsCreateDialogOpen(false);
       toast({
@@ -92,7 +93,7 @@ export default function AnnouncementsSection() {
       isAnnouncement: true,
     },
   });
-
+  
   const onSubmit = (data: CreateAnnouncementFormValues) => {
     createAnnouncementMutation.mutate(data);
   };

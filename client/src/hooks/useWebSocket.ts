@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "./use-auth";
+import { useAuth } from "./use-auth"; // Import from the correct file
 import { useElectron } from "./use-electron";
 
 export function useWebSocket() {

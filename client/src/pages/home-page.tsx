@@ -46,7 +46,11 @@ export default function HomePage() {
           setActiveSection={setActiveSection}
           isOpen={isSidebarOpen}
           setIsOpen={setIsSidebarOpen}
-          connectionStatus={connectionStatus}
+          connectionStatus={
+            connectionStatus === "open" ? "online" :
+            connectionStatus === "closing" || connectionStatus === "closed" ? "disconnected" :
+            connectionStatus
+          }
         />
 
         <main className="flex-1 overflow-hidden flex flex-col">

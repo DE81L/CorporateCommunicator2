@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "./use-auth";
 import { useElectron } from "@/hooks/use-electron";
 
 interface Message {

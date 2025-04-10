@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useEffect, useState, useMemo } from "react";
+import { createContext, ReactNode, useContext, useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { useToast } from "./use-toast";
@@ -30,6 +30,16 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   register: (data: z.infer<typeof registerSchema>) => Promise<void>;
 }
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
 
 export const createLoginSchema = (t: (key: string) => string) => z.object({
   username: z.string().min(1, () => t('auth.usernameRequired')),
@@ -136,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={value} >
       {children}
     </AuthContext.Provider>
   );

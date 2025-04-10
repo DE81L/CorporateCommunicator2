@@ -81,7 +81,7 @@ function App() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
+ <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <LanguageProvider>
           <div className="flex flex-col h-screen">
@@ -107,7 +107,7 @@ function App() {
             <EnvironmentIndicator />
           </div>
           <Toaster />
-        </LanguageProvider>
+ </LanguageProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

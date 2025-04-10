@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useWebSocket } from "@/lib/useWebSocket";
+import { LanguageContext } from "@/lib/i18n/LanguageContext";
 import {
-  Cpu,
+  Cpu, 
   Database,
   HardDrive,
   RefreshCw,
@@ -14,20 +15,15 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext.tsx";
 
+
 type TranslationKey =
-  | "system_info.title"
   | "system_info.connection_status"
-  | "system_info.system_info"
-  | "system_info.platform"
+  | "nav.home"|"common.appName"
+  | "profile.status"| "profile.title"
   | "system_info.architecture"
-  | "system_info.node_version"
-  | "system_info.memory"
-  | "system_info.total_memory"
-  | "system_info.free_memory"
-  | "system_info.used_memory"
   | "system_info.local_storage"
-  | "system_info.status"
-  | "system_info.refresh";
+  | "common.refresh"
+  | "profile.title";
 
 interface SystemInfo {
   platform: string;
@@ -115,8 +111,8 @@ export default function ElectronInfo() {
   return (
     <Card>
       <CardHeader className="bg-gray-50 border-b border-gray-200 px-4 py-3">
-        <CardTitle className="text-base font-medium">
-          {t("system_info.title")}
+          <CardTitle className="text-base font-medium">
+          {t("profile.title")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 py-4">
@@ -128,7 +124,7 @@ export default function ElectronInfo() {
               <WifiOff className="h-4 w-4 text-yellow-500" />
             )}
             <span className="font-medium">
-              {t("system_info.connection_status")}:
+              {t("profile.status")}:
             </span>
           </div>
           <Badge
@@ -140,7 +136,15 @@ export default function ElectronInfo() {
                   : "destructive"
             }
           >
-            {t(`connection.${connectionStatus}`)}
+            {connectionStatus === "offline"
+              ? t("profile.offline")
+              : connectionStatus === "open"
+                ? t("profile.online")
+                : connectionStatus === "connecting"
+                  ? t("nav.home")
+                  : connectionStatus === "closing" ||
+                    connectionStatus === "closed"
+                    ? t("common.loading") : t("common.loading")}
           </Badge>
         </div>
 
@@ -156,27 +160,27 @@ export default function ElectronInfo() {
             <div className="flex items-center space-x-2">
               <Cpu className="h-4 w-4 text-gray-500" />
               <span className="font-medium">
-                {t("system_info.system_info")}
+                {t("common.appName")}
               </span>
             </div>
 
             <div className="pl-6 space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span>{t("system_info.platform")}:</span>
+                <span>{t("profile.title")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
                   {systemInfo.platform}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span>{t("system_info.architecture")}:</span>
+                <span>{t("profile.title")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
                   {systemInfo.arch}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span>{t("system_info.node_version")}:</span>
+                <span>{t("profile.title")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
                   {systemInfo.version}
                 </span>
@@ -185,26 +189,26 @@ export default function ElectronInfo() {
 
             <div className="flex items-center space-x-2">
               <HardDrive className="h-4 w-4 text-gray-500" />
-              <span className="font-medium">{t("system_info.memory")}</span>
+              <span className="font-medium">{t("profile.title")}</span>
             </div>
 
             <div className="pl-6 space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span>{t("system_info.total_memory")}:</span>
+                <span>{t("profile.title")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
                   {formatBytes(systemInfo.memory.total)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span>{t("system_info.free_memory")}:</span>
+                <span>{t("profile.title")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
                   {formatBytes(systemInfo.memory.free)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span>{t("system_info.used_memory")}:</span>
+                <span>{t("profile.title")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
                   {formatBytes(
                     systemInfo.memory.total - systemInfo.memory.free,
@@ -216,13 +220,13 @@ export default function ElectronInfo() {
             <div className="flex items-center space-x-2">
               <Database className="h-4 w-4 text-gray-500" />
               <span className="font-medium">
-                {t("system_info.local_storage")}
+                {t("profile.title")}
               </span>
             </div>
 
             <div className="pl-6 space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span>{t("system_info.status")}:</span>
+                <span>{t("profile.status")}:</span>
                 <Badge variant="outline">Active</Badge>
               </div>
             </div>
@@ -239,7 +243,7 @@ export default function ElectronInfo() {
           <RefreshCw
             className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
           />
-          {t("system_info.refresh")}
+          {t("common.refresh")}
         </Button>
       </CardContent>
     </Card>

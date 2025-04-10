@@ -147,7 +147,7 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
                 }
                 variant="ghost"
                 size="icon"
-                title={t("actions.call.audio")}
+                title={t("profile.title")}
               >
                 <Phone className="h-5 w-5" />
               </Button>
@@ -160,7 +160,7 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
                 }
                 variant="ghost"
                 size="icon"
-                title={t("actions.call.video")}
+                title={t("profile.title")}
               >
                 <Video className="h-5 w-5" />
               </Button>
@@ -246,14 +246,14 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
               <Input
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
-                placeholder={t("messages.typeMessage")}
+                placeholder={t("messages.enterMessage")}
                 className="flex-1 rounded-full"
               />
               <Button
                 type="submit"
                 size="icon"
                 className="rounded-full"
-                title={t("actions.send")}
+                title={t("messages.send")}
               >
                 <Send className="h-5 w-5" />
               </Button>
@@ -279,14 +279,14 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
             </svg>
           </div>
           <h2 className="text-xl font-medium mb-2">
-            {t("messages.yourMessages")}
+            {t("messages.title")}
           </h2>
           <p className="text-gray-500 text-center mb-6">
-            {t("messages.startDialogue")}
+            {t("messages.newMessage")}
           </p>
 
           <div className="w-full max-w-md">
-            <h3 className="font-medium mb-3">{t("messages.contacts")}</h3>
+            <h3 className="font-medium mb-3">{t("nav.users")}</h3>
             {isLoadingUsers ? (
               <div className="flex justify-center py-4">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -319,8 +319,8 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
                         </div>
                         <p className="text-sm text-gray-500">
                           {u.isOnline
-                            ? t("status.online")
-                            : t("status.offline")}
+                            ? t("profile.online")
+                            : t("profile.offline")}
                         </p>
                       </div>
                     </button>
@@ -328,7 +328,7 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
               </div>
             ) : (
               <div className="text-center py-4 text-gray-500">
-                {t("messages.selectContact")}
+                {t("messages.newMessage")}
               </div>
             )}
           </div>

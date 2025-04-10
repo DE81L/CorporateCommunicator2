@@ -1,4 +1,4 @@
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";import { LanguageContext } from "@/lib/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
 import {
   MessageSquareIcon,
@@ -12,9 +12,10 @@ import {
   WifiOffIcon,
   LucideIcon,
   BookOpenIcon,
+  sendIPC
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";import { sections, type SectionType } from "@/types/sections";
 import { type SectionType } from "@/types/sections";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
@@ -33,7 +34,7 @@ export default function Sidebar({
   setIsOpen,
   connectionStatus,
 }: SidebarProps) {
-  const { user } = useAuth();
+  const { user, sendIPC } = useAuth();
   const { t } = useLanguage();
 
   if (!user) return null;
@@ -54,23 +55,23 @@ export default function Sidebar({
     {
       id: "messages",
       icon: MessageSquareIcon,
-      label: t("navigation.messages"),
+      label: t("nav.messages"),
     },
-    { id: "groups", icon: UsersIcon, label: t("navigation.groups") },
+    { id: "groups", icon: UsersIcon, label: t("nav.groups") },
     {
       id: "announcements",
       icon: MegaphoneIcon,
-      label: t("navigation.announcements"),
+      label: t("nav.announcements"),
     },
     {
       id: "requests",
       icon: ClipboardCheckIcon,
-      label: t("navigation.requests"),
+      label: t("nav.requests"),
       badge: 2,
     },
-    { id: "contacts", icon: ContactIcon, label: t("navigation.contacts") },
-    { id: "wiki", icon: BookOpenIcon, label: t("navigation.wiki") || "Wiki" },
-    { id: "settings", icon: SettingsIcon, label: t("navigation.settings") },
+    { id: "contacts", icon: ContactIcon, label: t("nav.users") },
+    { id: "wiki", icon: BookOpenIcon, label: t("nav.wiki") || "Wiki" },
+    { id: "settings", icon: SettingsIcon, label: t("nav.settings") },
   ];
 
   return (
@@ -119,6 +120,7 @@ export default function Sidebar({
             </div>
           ) : (
             <div className="flex items-center text-red-600">
+              
               <WifiOffIcon className="h-3 w-3 mr-1" />
               <span>Disconnected</span>
             </div>
@@ -139,6 +141,7 @@ export default function Sidebar({
               onClick={() => handleNavItemClick(item.id)}
             >
               <item.icon className="mr-3 h-5 w-5" />
+              
               <span>{item.label}</span>
               {item.badge && (
                 <Badge className="ml-auto" variant="destructive">
@@ -152,6 +155,7 @@ export default function Sidebar({
         {/* User profile section - Could be added at the bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
           <div className="flex items-center">
+            
             <div className="flex-shrink-0">
               <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
                 {user.firstName.charAt(0)}
@@ -170,3 +174,10 @@ export default function Sidebar({
     </>
   );
 }
+
+const handleClick = (event: any) => {
+
+}
+
+
+

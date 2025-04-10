@@ -17,16 +17,16 @@ export function useTranslations() {
       localStorage.setItem('preferredLanguage', language);
       
       toast({
-        title: t('settings.languageChanged'),
-        description: t('settings.languageChangeSuccess'),
+        title: t('settings.changesApplied'),
+        description: t('settings.changesApplied'),
       });
     } catch (error) {
       console.error('Language change failed:', error);
       
       toast({
         variant: 'destructive',
-        title: t('settings.languageChangeFailed'),
-        description: t('settings.tryAgainLater'),
+        title: t('errors.languageChangeFailed'),
+        description: t('errors.tryAgainLater'),
       });
     }
   }, [i18n, t, toast]);

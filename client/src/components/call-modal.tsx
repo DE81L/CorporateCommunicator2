@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
 import {
-  Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button, Avatar, AvatarFallback, AvatarImage, Dialog } from "@/components/ui/";
 import { MicOffIcon, VideoOffIcon, PhoneOffIcon, UserIcon } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
-export type TranslationKey = "call.in_progress" | "call.end" | `call.${"video" | "audio"}`;
+export type TranslationKey = "call.in_progress" | "common.cancel" | `call.${"video" | "audio"}`;
 
 interface CallModalProps {
   isOpen: boolean;
@@ -146,7 +144,7 @@ export default function CallModal({
         )}
         <DialogFooter>
           <Button variant="destructive" onClick={onClose}>
-            {t("call.end")}
+            {t("common.cancel")}
           </Button>
         </DialogFooter>
       </DialogContent>
