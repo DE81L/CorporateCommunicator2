@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useMemo, useCallback, useState, Dispatch, SetStateAction } from "react";
+import { createContext, ReactNode, useContext, useMemo, useCallback } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { useLocation } from "wouter";
@@ -121,10 +121,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (credentials: LoginCredentials) => {
     return await loginMutation.mutateAsync(credentials)
   }, [loginMutation]);
-
- const sendIPC: Dispatch<SetStateAction<((channel: string, data: any) => void) | null>> = ()=>{
-    
-  } 
 
   return (
     <AuthContext.Provider

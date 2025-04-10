@@ -4,16 +4,7 @@ import { useAuth } from "../hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "../hooks/use-toast";
 import { useForm } from "react-hook-form";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -23,9 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Button, Input, Textarea } from "@/components/ui/ui";
 import { Loader2, Plus, User } from "lucide-react";
 
 import { z } from "zod";
@@ -41,7 +30,7 @@ type CreateAnnouncementFormValues = z.infer<typeof createAnnouncementSchema>;
 export default function AnnouncementsSection() {
   const { toast } = useToast();
   const { } = useAuth();
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
 
   // Fetch announcements
   const { 

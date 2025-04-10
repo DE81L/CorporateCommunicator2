@@ -33,7 +33,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
 import { useElectron } from "@/hooks/use-electron";
-
 const createGroupSchema = z.object({
   
   name: z.string().min(1, "Group name is required"),
@@ -57,7 +56,7 @@ export default function GroupsSection() {
   } = useQuery<Group[], Error>({
     queryKey: ["/api/groups",isElectron],
     queryFn: () => apiRequest("GET", "/api/groups"),
-  });
+  });  
 
   // Fetch all users for adding to groups
   useQuery<User[], Error>({
@@ -67,7 +66,7 @@ export default function GroupsSection() {
 
   // Create group mutation
   const createGroupMutation = useMutation({
-    mutationFn: async (data: CreateGroupFormValues) => {
+      mutationFn: async (data: CreateGroupFormValues) => {
       const res = await request("POST", "/api/groups", data);
       return await res.json();
     },
