@@ -65,26 +65,27 @@ export default function AnnouncementsSection() {
   });
 
   // Create announcement mutation (creates a group with isAnnouncement=true)
-  const createAnnouncementMutation = useMutation({
-    mutationFn: async (data: CreateAnnouncementFormValues) => {
-      const res = await apiRequest("POST", "/api/groups", data); // call the apiRequest function from useAuth
-
-    onSuccess: () => { 
-      queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
-      setIsCreateDialogOpen(false);
-      toast({
-        title: "Announcement created",
-        description: "Your announcement has been posted successfully.",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Failed to create announcement",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+    const createAnnouncementMutation = useMutation({
+      mutationFn: async (data: CreateAnnouncementFormValues) => {
+        const res = await apiRequest("POST", "/api/groups", data); // call the apiRequest function from useAuth
+        return res;
+      },
+      onSuccess: () => { 
+        queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
+        setIsCreateDialogOpen(false);
+        toast({
+          title: "Announcement created",
+          description: "Your announcement has been posted successfully.",
+        });
+      },
+      onError: (error: Error) => {
+        toast({
+          title: "Failed to create announcement",
+          description: error.message,
+          variant: "destructive",
+        });
+      },
+    });
 
   const form = useForm<CreateAnnouncementFormValues>({
     resolver: zodResolver(createAnnouncementSchema),
