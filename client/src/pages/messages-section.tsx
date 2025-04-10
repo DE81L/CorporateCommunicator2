@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
-import { useWebSocket, WebSocketMessage } from "../hooks/useWebSocket";
-import { Input } from "@/components/ui/input";
+import { useWebSocket } from "../hooks/useWebSocket";
+import { Input } from "@/components/ui/input";import type { TranslationKey } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Loader2, Phone, Video, Paperclip, Send } from "lucide-react";
@@ -42,7 +42,7 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messageInput, setMessageInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { sendMessage, lastMessage } = useWebSocket() || {};
+  const { sendMessage, lastMessage } = useWebSocket();
   const { t } = useLanguage();
 
   // Получение списка пользователей
@@ -59,15 +59,15 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
   // Прослушивание новых сообщений из WebSocket
   useEffect(() => {
     if (lastMessage) {
-      if (lastMessage.type === "chat") {
+      if (lastMessage.chatId) {
         // Если сообщение от выбранного пользователя, обновляем список сообщений
         if (
           selectedUser &&
-          ((lastMessage.senderId === selectedUser.id &&
-            lastMessage.receiverId === user?.id) ||
-            (lastMessage.senderId === user?.id &&
-              lastMessage.receiverId === selectedUser.id))
-        ) {
+          ((lastMessage.sender?.id === selectedUser.id &&
+            lastMessage.chatId) ||
+            (lastMessage.sender?.id === user?.id &&
+              lastMessage.chatId))
+              ) {
           queryClient.invalidateQueries({
             queryKey: ["/api/messages", selectedUser.id],
           });
@@ -86,11 +86,8 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
 
     if (!messageInput.trim() || !selectedUser) return;
 
-    sendMessage({
-      type: "chat",
-      receiverId: selectedUser.id,
-      content: messageInput.trim(),
-    });
+    sendMessage(messageInput.trim(), selectedUser.id);
+    
 
     // Очистка поля ввода
     setMessageInput("");
@@ -272,8 +269,8 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
             </svg>
           </div>
           <h2 className="text-xl font-medium mb-2">
-            {t("messages.noChat")}
-          </h2>
+            {t("messages.noChat" as any)}
+          </h2>  
           <div className="w-full max-w-md">
             <h3 className="font-medium mb-3">{t("nav.users")}</h3>
             {isLoadingUsers ? (
@@ -315,9 +312,9 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
                     </button>
                   ))}
               </div>
-            ) : (
+            ) : (   
               <div className="text-center py-4 text-gray-500">
-                {t("messages.noContacts")}
+                {t("messages.noContacts" as any)}
               </div>
             )}
           </div>

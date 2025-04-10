@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { useCallback } from 'react';
 import { useToast } from './use-toast';
-import type { TranslationKey } from '@/lib/i18n/translations';
+import type { TranslationKey } from '@/types';
 
 export function useTranslations() {
   const { t: translate, i18n } = useTranslation();
   const { toast } = useToast();
 
-  const t = useCallback((key: TranslationKey) => {
+  const t = useCallback((key: TranslationKey):string => {
     return translate(key);
   }, [translate]);
 
@@ -33,7 +33,7 @@ export function useTranslations() {
   }, [i18n, translate, toast]);
 
   return {
-    t,
+    t: t as (key: TranslationKey) => string,
     i18n,
     currentLanguage: i18n.language,
     changeLanguage
