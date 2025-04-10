@@ -53,14 +53,15 @@ export default function AnnouncementsSection() {
   // Fetch announcements
   const { 
     data: announcements, 
-    isLoading, 
-    error 
+    isLoading: isAnnouncementsLoading, 
+    error: announcementsError,
   } = useQuery<Announcement[]>({
     queryKey: ['/api/announcements'],
     queryFn: async (): Promise<Announcement[]> => {
-      const { apiRequest } = useAuth();
+      const { request: apiRequest } = useAuth();
       const response = await apiRequest("GET", "/api/announcements");
-      return response.json()
+      const data = await response.json()
+      return data
     },
   });
 
@@ -68,7 +69,8 @@ export default function AnnouncementsSection() {
     const createAnnouncementMutation = useMutation({
       
       mutationFn: async (data: CreateAnnouncementFormValues) => {
-        const res = await apiRequest("POST", "/api/groups", data); // call the apiRequest function from useAuth
+        const { request } = useAuth();
+        const res = await request("POST", "/api/groups", data); // call the apiRequest function from useAuth
         return res;
       },
       onSuccess: () => { 
@@ -184,13 +186,13 @@ export default function AnnouncementsSection() {
         </Dialog>
       </div>
 
-      {isLoading ? (
+      {isAnnouncementsLoading ? (
         <div className="flex justify-center items-center h-40">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      ) : error ? (
+      ) : announcementsError ? (
         <div className="text-center py-10 text-red-500">
-          Error loading announcements. Please try again.
+          Error loading announcements: {announcementsError.message}. Please try again.
         </div>
       ) : announcements && announcements.length > 0 ? (
         <div className="space-y-4">

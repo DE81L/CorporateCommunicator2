@@ -1,7 +1,7 @@
-import { createContext, ReactNode, useContext, useMemo, useCallback, useState } from "react";
+import { createContext, ReactNode, useContext, useMemo, useCallback } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { useLocation, NavigateOptions } from "wouter";
+import { useLocation } from "wouter";
 import { getQueryFn, createApiClient, queryClient } from "../lib/queryClient";
 import { useTranslations } from "./use-translations";
 
@@ -26,7 +26,7 @@ export interface AuthContextType {
   user: UserWithoutPassword | null;
   isLoading?: boolean;
   error: Error | null | undefined;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<UserWithoutPassword>;
   logout: () => Promise<void>;
   register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<void>;
   sendIPC: null;
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: {
           "Content-Type": "application/json",
         },
-         body: JSON.stringify(credentials),
+        body: JSON.stringify(credentials),
       });
       const user = await res.json();
       return user;
@@ -107,9 +107,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
     const registerMutation = useMutation({
     mutationFn: async (userData: z.infer<typeof regSchema>) => {
-      const { confirmPassword, ...data } = userData;
+      const { confirmPassword, ...data } = userData;      
       const apiClient = createApiClient(false);
-      const res = await apiClient.request("/api/register", { method: "POST", body: JSON.stringify(data) });
+      const res = await apiClient.request("/api/register", JSON.stringify(data));
       if (res.ok) {
         return res.json();
       }
@@ -118,18 +118,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  const login = useCallback(
-    async (credentials) => { await loginMutation.mutateAsync(credentials)},
-    [loginMutation]
-  )
+  const login = useCallback(async (credentials: LoginCredentials) => {
+    return await loginMutation.mutateAsync(credentials)
+  }, [loginMutation]);
+
  return (
     <AuthContext.Provider
     value={{
       user: user || null,
       isLoading,
       error: authError,
-      sendIPC: null,
-      login: async (credentials) => await loginMutation.mutateAsync(credentials),
+      login,
       logout: () => logoutMutation.mutateAsync(),
       register: (data) => registerMutation.mutateAsync(data),
     }}
