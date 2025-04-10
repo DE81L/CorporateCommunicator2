@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,  } from "react";
 import { useElectron } from "@/hooks/use-electron";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,17 +12,8 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
-import { useLanguage } from "@/lib/i18n/LanguageContext.tsx";
-
-
-export type TranslationKey =
-  | "system_info.connection_status" | "nav.home"
-  | "common.appName"
-  | "profile.status"
-  | "system_info.architecture"
-  | "system_info.local_storage" | "profile.title"
-  | "common.refresh"
-  | "profile.title";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { TranslationKey } from "@/lib/i18n/translations";
 
 interface SystemInfo {
   platform: string;
@@ -138,7 +129,7 @@ export default function ElectronInfo() {
             {connectionStatus === "offline"
               ? t("profile.status" as TranslationKey)
               : connectionStatus === "open"
-                ? t("profile.status" as TranslationKey)
+                ? t("profile.online" as TranslationKey)
                 : connectionStatus === "connecting"
                   ? t("nav.home" as TranslationKey)
                   : connectionStatus === "closing" ||
@@ -165,34 +156,34 @@ export default function ElectronInfo() {
 
             <div className="pl-6 space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span>{t("profile.title")}:</span>
-                <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-                  {systemInfo.platform} as TranslationKey
+                <span>{t("system_info.platform" as TranslationKey)}:</span>
+                <span className="font-mono bg-gray-100 px-2 py-1 rounded" >
+                  {systemInfo.platform}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span>{t("system_info.architecture" as TranslationKey)}:</span>
+                <span>{t("system_info.architecture")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-                  {systemInfo.arch} as TranslationKey
+                  {systemInfo.arch}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span>{t("common.appName" as TranslationKey)}:</span>
+                <span>{t("system_info.version" as TranslationKey)}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-                  {systemInfo.version} as TranslationKey
+                  {systemInfo.version}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <HardDrive className="h-4 w-4 text-gray-500" />
-              <span className="font-medium">{t("profile.title")}</span>
-            </div> as TranslationKey
+            <div className="flex items-center space-x-2" >
+              <HardDrive className="h-4 w-4 text-gray-500" />                
+              <span className="font-medium">{t("system_info.total_memory" as TranslationKey)}</span>
+            </div> 
 
             <div className="pl-6 space-y-2 text-sm">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between">                
                 <span>{t("profile.title")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
                   {formatBytes(systemInfo.memory.total)}
@@ -224,9 +215,9 @@ export default function ElectronInfo() {
             </div>
 
             <div className="pl-6 space-y-2 text-sm">
-              <div className="flex items-center justify-between" as TranslationKey>
-                <span>{t("profile.status")}:</span>
-                <Badge variant="outline">Active</Badge>
+              <div className="flex items-center justify-between" >
+                <span>{t("system_info.connection_status" as TranslationKey)}:</span>
+                <Badge variant="outline">Active</Badge>               
               </div>
             </div>
           </>
