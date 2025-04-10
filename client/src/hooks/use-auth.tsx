@@ -111,8 +111,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { confirmPassword, ...data } = userData;
       const { isElectron } = useElectron();
       const apiClient = createApiClient(isElectron);      
-      const res = await apiClient.request({method: "POST", path: "/api/register", body: data });
-      return res.json();
+      const res = await apiClient.request({method: "POST", body: data },"/api/register");
+        return res.json();
     },
   });
   return (
@@ -120,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isLoading,
-        error: authError,
+          error: authError,
 
       sendIPC: null,
       login: (username, password) => loginMutation.mutateAsync({ username, password }),
