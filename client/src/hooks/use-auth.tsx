@@ -44,8 +44,8 @@ export const useAuth = () => {
 };
 
 export const createLoginSchema = (t: (key: string) => string) => z.object({
-  username: z.string().min(1, () => t('auth.usernameRequired')),
-  password: z.string().min(1, () => t('auth.passwordRequired'))
+  username: z.string().min(1, () => t('auth.usernameRequired')()),
+  password: z.string().min(1, () => t('auth.passwordRequired')())
 });
 
 export const registerSchema = createLoginSchema((key) => key).extend({

@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useCallback } from "react";
 import type { User } from "@shared/schema";
 
 interface AuthContextType {
@@ -29,12 +29,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }
+  } 
 
-  // ... rest of auth implementation
+  const login = useCallback(async (email: string, password: string) => {
+        setLoading(true);
+        try {
+          // Placeholder: replace with actual login logic
+          const response = await fetch("/api/auth/login", {method: 'POST', body: JSON.stringify({email, password})});
+          const userData = await response.json()
+          setUser(userData); // Update user state upon successful login
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const logout = useCallback(async () => {
+        setUser(null);
+    }, []);
+
+    const sendIPC = () => {};
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout , sendIPC: ()=>{}}}>
+        <AuthContext.Provider value={{ user, loading, login, logout, sendIPC }}>
             {children}
         </AuthContext.Provider>
     );
