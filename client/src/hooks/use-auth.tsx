@@ -117,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{
         user,
-      isLoading,
+        isLoading,
       error: authError,
       sendIPC: null,
       login: (username, password) => loginMutation.mutateAsync({ username, password }),
@@ -126,5 +126,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
        register: async (data) => {
             return registerMutation.mutateAsync(data);
-       }, user: user ?? null }} >{children}</AuthContext.Provider>
+       },
+    }}>{children}</AuthContext.Provider>
   );
