@@ -81,33 +81,34 @@ function App() {
   }
 
   return (
- <QueryClientProvider client={queryClient}>
-      <AuthProvider >
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
         <LanguageProvider>
-          <div className="flex flex-col h-screen">
-            {/* Only show window frame in Electron */}
-            {isElectron && <WindowFrame />}
-            
-            {/* Header */}
-            <header className="flex justify-between items-center p-4">
-              <h1 className="text-2xl font-bold">{t('common.appName')}</h1>
-              <LanguageSwitcher />
-            </header>
-            
-            {/* Main content area with conditional padding */}
-            <div 
-              className={`flex-1 overflow-auto ${
-                isElectron ? "pt-0" : ""
-              }`}
-            >
-              <Router />
+            <Toaster />
+            <EnvironmentIndicator />
+          
+
+            <div className="flex flex-col h-screen">
+              {/* Only show window frame in Electron */}
+              {isElectron && <WindowFrame />}
+              
+              {/* Header */}
+              <header className="flex justify-between items-center p-4">
+                <h1 className="text-2xl font-bold">{t('common.appName')}</h1>
+                <LanguageSwitcher />
+              </header>
+              
+              {/* Main content area with conditional padding */}
+              <div 
+                className={`flex-1 overflow-auto ${
+                  isElectron ? "pt-0" : ""
+                }`}
+              >
+                <Router />
+              </div>          
             </div>
             
-            {/* Environment indicator for development */}
-            <EnvironmentIndicator />
-          </div>
-          <Toaster />
- </LanguageProvider>
+      </LanguageProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
