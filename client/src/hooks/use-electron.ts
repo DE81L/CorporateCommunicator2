@@ -17,10 +17,10 @@ export function useElectron() {
     
     // Safely check and set Electron environment
     const electronApi = (window.electron ?? null) as unknown as ElectronAPI;
-    setIsElectron(!!electronApi);
-    setApi(electronApi);
-    
-    if (electronApi) {
+        setData(prev => ({ ...prev, isElectron: !!electronApi, api: electronApi }));
+
+
+        if (electronApi) {
       // Get app version
       electronApi.app.getVersion()
         .then(ver => setData(prev => ({...prev, version: ver})))
@@ -29,13 +29,13 @@ export function useElectron() {
       // Set up online/offline status
       electronApi.system.isOnline()
         .then(status => setData(prev => ({
-          ...prev, isOnline: status
-        })))\
+          ...prev, isOnline: status,
+        })))
         .catch(err => console.error('Error getting online status:', err));
 
       // Listen for online/offline events
-      const handleOnline = () => setIsOnline(true);
-      const handleOffline = () => setIsOnline(false);
+      const handleOnline = () => setData(prev => ({ ...prev, isOnline: true }));;
+      const handleOffline = () => setData(prev => ({ ...prev, isOnline: false }));;
 
       window.addEventListener('online', handleOnline);
       window.addEventListener('offline', handleOffline);
