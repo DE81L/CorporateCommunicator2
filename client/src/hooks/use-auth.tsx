@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import { createContext, ReactNode, useContext, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { useToast } from "./use-toast";
@@ -43,11 +43,11 @@ export const useAuth = () => {
   return context;
 };
 
-export const createLoginSchema = (t: (key: string) => string) =>
+export const createLoginSchema = (t: (key: string) => string) => {
   z.object({
     username: z.string().min(1, t('auth.usernameRequired')),
     password: z.string().min(1, t('auth.passwordRequired'))
-  });
+  })};
 
 
 export const registerSchema = (t: (key: string) => string) => {
@@ -65,10 +65,8 @@ export const registerSchema = (t: (key: string) => string) => {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslations();
-  const loginSchema = useMemo(() => createLoginSchema((key) => t(key as any)), [
-    t,
-  ]); // Type casting added here
-  const regSchema = useMemo(
+
+   const regSchema = useMemo(
     () => registerSchema((key: string) => t(key as any)),
     [t],
   ); // Type casting added here
@@ -90,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(credentials),
+         body: JSON.stringify(credentials),
       });
 
       return res.json();
@@ -111,9 +109,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
   const registerMutation = useMutation({
     mutationFn: async (userData: z.infer<typeof regSchema>): Promise<unknown> => {
-      const { confirmPassword, ...data } = userData;
+       const { confirmPassword, ...data } = userData;
       const apiClient = createApiClient();
-      const res = await apiClient.request("/api/register", "POST", data);
+       const res = await apiClient.request("/api/register", {method: "POST", body: JSON.stringify(data) });
+       const user = await res.json();
       return res.json();
     },
   });
@@ -129,8 +128,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register: (data) => registerMutation.mutateAsync(data),
       }}
     >
-      {children}
-      </AuthContext.Provider>
-    );
-  }
+      {children}</AuthContext.Provider>);
+}
 }
