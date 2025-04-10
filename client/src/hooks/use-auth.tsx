@@ -17,7 +17,7 @@ export type User = {
   isOnline: boolean;
   avatarUrl?: string | null;
 };
-export type LoginCredentials = z.infer<ReturnType<typeof createLoginSchema>>
+export type LoginCredentials = z.infer<ReturnType<typeof createLoginSchema>>;
 export type UserWithoutPassword = Omit<User, 'password'> & {
   isOnline: number | boolean;
   isAdmin?: number;
@@ -29,8 +29,8 @@ export interface AuthContextType {
   error: Error | null | undefined;
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
-  register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<unknown>;
-  sendIPC: unknown;
+  register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<void>;
+  sendIPC: null;
   }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,12 +43,15 @@ export const useAuth = () => {
   return context;
 };
 
-export const createLoginSchema = (t: (key: string) => string) => {
+export const createLoginSchema = (t: (key: string) => string) =>
   z.object({
-    username: z.string().min(1, t('auth.usernameRequired')),
-    password: z.string().min(1, t('auth.passwordRequired'))
-  })};
-
+    username: z
+      .string()
+      .min(1, t("auth.usernameRequired")),
+    password: z
+      .string()
+      .min(1, t("auth.passwordRequired")),
+  });
 
 export const registerSchema = (t: (key: string) => string) => {
   const {
@@ -60,17 +63,16 @@ export const registerSchema = (t: (key: string) => string) => {
       message: passwordsDontMatch,
       path: ["confirmPassword"],
     });
-};
+  };
 
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslations();
 
-   const regSchema = useMemo(
+  const regSchema = useMemo(
     () => registerSchema((key: string) => t(key as any)),
     [t],
-  ); // Type casting added here
-  const { toast } = useToast();
+  );
   const [, setLocation] = useLocation();
 
   const { data: user, isLoading, error: authError } = useQuery<
@@ -82,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginCredentials): Promise<unknown> => {
+    mutationFn: async (credentials: LoginCredentials): Promise<UserWithoutPassword> => {
       const res = await fetch("/api/login", {
         method: "POST",
         headers: {
@@ -90,44 +92,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
          body: JSON.stringify(credentials),
       });
-
-      return res.json();
+      const user = await res.json();
+      return user;
     },
   });
+
   const logoutMutation = useMutation({
     mutationFn: async () => {
       await fetch("/api/logout", { method: "POST" });
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
+      
       setLocation("/auth");
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
-      });
     },
   });
   const registerMutation = useMutation({
-    mutationFn: async (userData: z.infer<typeof regSchema>): Promise<unknown> => {
+    mutationFn: async (userData: z.infer<typeof regSchema>): Promise<void> => {
        const { confirmPassword, ...data } = userData;
       const apiClient = createApiClient();
        const res = await apiClient.request("/api/register", {method: "POST", body: JSON.stringify(data) });
        const user = await res.json();
-      return res.json();
+      
     },
   });
-  return (
+
+ return (
     <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        error: authError,
-        sendIPC: null,
-        login: (credentials) => loginMutation.mutateAsync(credentials),
-        logout: () => logoutMutation.mutateAsync(),
-        register: (data) => registerMutation.mutateAsync(data),
-      }}
+    value={{
+      user: user || null,
+      isLoading,
+      error: authError,
+      sendIPC: null,
+      login: async (credentials) => await loginMutation.mutateAsync(credentials) as any,
+      logout: () => logoutMutation.mutateAsync(),
+      register: (data) => registerMutation.mutateAsync(data),
+    }}
     >
-      {children}</AuthContext.Provider>);
-}
+      {children}
+    </AuthContext.Provider>
+  );
 }
