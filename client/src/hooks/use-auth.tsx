@@ -1,8 +1,8 @@
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import { createContext, ReactNode, useContext, useMemo, useCallback } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { useLocation } from "wouter";
-import { getQueryFn, createApiClient, queryClient, isElectron } from "../lib/queryClient";
+import { getQueryFn, createApiClient, queryClient } from "../lib/queryClient";
 import { useTranslations } from "./use-translations";
 
 
@@ -28,7 +28,7 @@ export interface AuthContextType {
   error: Error | null | undefined;
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
-  register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<void>;
+  register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<UserWithoutPassword>;
   sendIPC: null;
   }
 
@@ -106,18 +106,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
   const registerMutation = useMutation({
-    mutationFn: async (userData: z.infer<typeof regSchema>): Promise<UserWithoutPassword> => {
-       const { confirmPassword, ...data } = userData;
-      const apiClient = createApiClient(isElectron());
-       const res = await apiClient.request("/api/register", { method: "POST", body: JSON.stringify(data) });
-       const user = await res.json();
-      
+    mutationFn: async (userData: z.infer<typeof regSchema>): Promise<UserWithoutPassword>  => {
+      const { confirmPassword, ...data } = userData;
+      const apiClient = createApiClient(false); // Assuming isElectron is always false here
+      const res = await apiClient.request("/api/register", { method: "POST", body: JSON.stringify(data) });
+      const user = await res.json();
+      return user;
     },
   });
 
+  const login = useCallback(async (credentials) => await loginMutation.mutateAsync(credentials), [loginMutation])
  return (
     <AuthContext.Provider
     value={{
+      apiRequest: null,
       user: user || null,
       isLoading,
       error: authError,

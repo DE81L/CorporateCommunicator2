@@ -44,7 +44,7 @@ type CreateGroupFormValues = z.infer<typeof createGroupSchema>;
 
 export default function GroupsSection() {
   const apiClient = createApiClient(false); // Assuming not running in electron by default
-  const { apiRequest } = useAuth();
+  const { request } = useAuth();
   const { toast } = useToast();
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
 
@@ -67,7 +67,7 @@ export default function GroupsSection() {
   // Create group mutation
   const createGroupMutation = useMutation({
     mutationFn: async (data: CreateGroupFormValues) => {
-      const res = await apiRequest("POST", "/api/groups", data);
+      const res = await request("POST", "/api/groups", data);
       return await res.json();
     },
     onSuccess: () => {
