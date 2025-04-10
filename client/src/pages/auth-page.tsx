@@ -43,9 +43,13 @@ const registerSchema = insertUserSchema
 export default function AuthPage() {
   const { t } = useTranslation();
   const { user, login: loginFn, register } = useAuth();
+  
   const login = async (data: z.infer<typeof loginSchema>) => {
-    const { username, password } = data;
-    await loginFn(username, password);
+    await loginFn({username: data.username, password: data.password});
+  };
+
+  const registerFn = async (data: z.infer<typeof registerSchema>) => {
+    await register(data);
   };
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
@@ -66,7 +70,7 @@ export default function AuthPage() {
         </TabsContent>
         
         <TabsContent value="register">
-          <RegisterForm onSubmit={register} />
+          <RegisterForm onSubmit={registerFn} />
         </TabsContent>
       </Tabs>
     </div>
