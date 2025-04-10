@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { z } from "zod";
+import { z, ZodType } from "zod";
 import { useToast } from "./use-toast";//relative path
 import { useLocation } from "wouter";
 import { getQueryFn, createApiClient, queryClient } from "../lib/queryClient";//relative path
@@ -29,7 +29,7 @@ export interface AuthContextType {
   error: Error | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<void>;
+  register: (data: z.infer<ZodType<any, any, any>>) => Promise<void>;
   sendIPC: any;
 }
 
@@ -46,17 +46,17 @@ export const useAuth = () => {
 export const createLoginSchema = (t: (key: string) => string) =>
   z.object({
     username: z.string().min(1, t('auth.usernameRequired')),
-    password: z.string().min(1, t('auth.passwordRequired')),
+    password: z.string().min(1, t('auth.passwordRequired'))
   });
 
 
 export const registerSchema = (t: (key: string) => string) => {
   const { shape: { username, password } } = createLoginSchema(t);
-  const passwordsDontMatch = t('auth.passwordsDontMatch')
+  const passwordsDontMatch = t('auth.passwordsDontMatch');
   return z.object({ username, password, confirmPassword: z.string() })
     .refine(data => data.password === data.confirmPassword, {
       message: passwordsDontMatch,
-      path: ["confirmPassword"]
+      path: ["confirmPassword"],
     });
 };
 
@@ -71,16 +71,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const { data: user } = useQuery<UserWithoutPassword | null>({
     queryKey: ["/api/user"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
+    queryFn: getQueryFn({ on401: "returnNull" })
   });
   const loginMutation = useMutation({
     mutationFn: async (credentials: z.infer<typeof loginSchema>) => {
       const res = await apiRequest("POST", "/api/login", credentials);
       return res.json();
-      
     }
   });
-
+  
+  const regSchema = useMemo(() => registerSchema(t), [t])
   const logoutMutation = useMutation({
     mutationFn: async () => {
       await apiRequest("POST", "/api/logout");
@@ -96,9 +96,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (userData: z.infer<typeof registerSchema>) => {
-      const { confirmPassword, ...data } = userData;
+    mutationFn: async (userData: z.infer<typeof regSchema>) => {
+      const { confirmPassword, ...data }: { confirmPassword: string, username: string, password: string } = userData;
 
+      const { isElectron } = useElectron();
+      const apiClient = createApiClient(isElectron);
       const res = await apiClient.request("POST", "/api/register", data);
 
       return res.json();
@@ -134,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (data: z.infer<typeof registerSchema>) => {
+  const register = async (data: z.infer<typeof regSchema>) => {
     try {
       await registerMutation.mutateAsync(data);
       setLocation("/");
@@ -148,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { sendIPC } = useElectron();
   
   const value: AuthContextType = {
-    user: user || null,
+    user: user ?? null,
     isLoading,
     error: authError,
     login,
@@ -186,5 +188,4 @@ async function apiRequest(method: string, path: string, body?: unknown) {
 
 
   return response;
-
 }
