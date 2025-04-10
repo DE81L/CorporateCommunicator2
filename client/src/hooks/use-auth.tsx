@@ -124,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout: () => {
             return logoutMutation.mutateAsync();
         },
-        register: async (data) => {
+       register: async (data) => {
             return registerMutation.mutateAsync(data);
-        },user: user ?? null }} >{children}</AuthContext.Provider>
+       }, user: user ?? null }} >{children}</AuthContext.Provider>
   );
