@@ -185,10 +185,10 @@ function createMockElectronAPI(): ElectronAPI {
     },
     storage: {
       getUserData: () => Promise.resolve({}),
-      setUserData: (data: any) => Promise.resolve({ success: true, message: 'Saved to localStorage' }),
+      setUserData: (data: any) => {localStorage.setItem("user-data", JSON.stringify(data)); return Promise.resolve();},
       getMessages: () => Promise.resolve([]),
-      saveMessage: (message: any) => Promise.resolve({ success: true, message: 'Saved to localStorage' }),
-      deleteMessage: (id: number) => Promise.resolve({ success: true, message: 'Deleted from localStorage' }),
+      saveMessage: (message: any) => { localStorage.setItem(`message-${message.id}`, JSON.stringify(message)); return Promise.resolve()},
+      deleteMessage: (id: number) => { localStorage.removeItem(`message-${id}`); return Promise.resolve();},
     },
     encryption: {
       generateKeyPair: () => Promise.resolve({ success: false, message: 'Not available in web mode' }),

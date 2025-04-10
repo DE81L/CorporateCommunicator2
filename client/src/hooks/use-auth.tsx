@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { z, ZodType, ZodObject } from "zod";
+import { z } from "zod";
 import { useToast } from "./use-toast";//relative path
 import { useLocation } from "wouter";
 import { getQueryFn, createApiClient, queryClient } from "../lib/queryClient";//relative path
@@ -29,7 +29,7 @@ export interface AuthContextType {
   error: Error | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<void>;
+  register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<void>; 
   sendIPC: any;
 }
 
@@ -53,7 +53,7 @@ export const createLoginSchema = (t: (key: string) => string) =>
 export const registerSchema = (t: (key: string) => string) => {
   const { shape: { username, password } } = createLoginSchema(t);
   const passwordsDontMatch = t('auth.passwordsDontMatch');
-  return z.object({ username, password, confirmPassword: z.string() })
+  return z.object({ username, password, confirmPassword: z.string() }) 
     .refine(data => data.password === data.confirmPassword, {
       message: passwordsDontMatch,
       path: ["confirmPassword"],
@@ -63,12 +63,12 @@ export const registerSchema = (t: (key: string) => string) => {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslations();
-  const loginSchema = useMemo(() => createLoginSchema((key: string) => t(key)), [t]);
-  const regSchema = useMemo(() => registerSchema((key: string) => t(key)), [t]);
+  const loginSchema = useMemo(() => createLoginSchema((key) => t(key as any)), [t]);
+  const regSchema = useMemo(() => registerSchema((key:string) => t(key as any)), [t]);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [isLoading] = useState(true);
-  const [authError, setAuthError] = useState<Error | null>(null);
+  const [authError, setAuthError] = useState<Error | null>(null); 
   const { data: user } = useQuery<UserWithoutPassword | null>({
     queryKey: ['/api/user'], queryFn: getQueryFn({ on401: 'returnNull' })
   });
@@ -149,8 +149,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { api } = useElectron();
   
   const value: AuthContextType = {
-    user: user ?? null,
-    isLoading,
+    user: user ?? null, 
+    isLoading, 
     error: authError,
     login,
     logout,
