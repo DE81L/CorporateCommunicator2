@@ -8,11 +8,11 @@ const electron_1 = require("electron");
 electron_1.contextBridge.exposeInMainWorld("electron", {
     app: {
         getVersion: () => electron_1.ipcRenderer.invoke("app-get-version"),
-    },
-    window: {
         minimize: () => electron_1.ipcRenderer.invoke("window-minimize"),
         maximize: () => electron_1.ipcRenderer.invoke("window-maximize"),
-        close: () => electron_1.ipcRenderer.invoke("window-close"),
+        quit: () => electron_1.ipcRenderer.invoke("app-quit"),
+    },
+    window: { close: () => electron_1.ipcRenderer.invoke("window-close"),
     },
     storage: {
         getUserData: () => electron_1.ipcRenderer.invoke("get-user-data"),

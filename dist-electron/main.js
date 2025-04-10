@@ -5,17 +5,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
 const path_1 = __importDefault(require("path"));
+const url_1 = __importDefault(require("url"));
 const encryption_1 = require("./encryption");
 const storage_1 = require("./storage");
-// Handle creating/removing shortcuts on Windows when installing/uninstalling
-if (require('electron-squirrel-startup')) {
-    electron_1.app.quit();
-}
+// Environment and configuration
+const isDev = process.env.NODE_ENV === "development";
+const i18n = require("./i18n.cjs");
 let mainWindow = null;
 let tray = null;
 let isQuitting = false;
-// Create the main application window
-function createWindow() {
+async function createWindow() {
+    console.log('Creating Electron window...');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('isDev:', isDev);
     mainWindow = new electron_1.BrowserWindow({
         width: 1200,
         height: 800,
@@ -24,47 +26,26 @@ function createWindow() {
         webPreferences: {
             preload: path_1.default.join(__dirname, 'preload.js'),
             contextIsolation: true,
-            nodeIntegration: true,
+            nodeIntegration: false,
         },
-        frame: false, // Frameless window for custom title bar
+        frame: false,
         icon: path_1.default.join(__dirname, 'icons', 'icon.png'),
     });
-    // Determine if we're in development
-    const isDev = process.env.NODE_ENV !== 'production';
-    // Use test.html instead of Vite dev server
-    const testUrl = `file://${path_1.default.join(__dirname, '..', 'test.html')}`;
-    console.log('Loading test URL:', testUrl);
-    // Add debugging logs
-    mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
-        console.error('Failed to load URL:', {
-            url: testUrl,
-            errorCode,
-            errorDescription,
-            isDev
+    // Load the app
+    const startUrl = isDev
+        ? 'http://localhost:5173' // Vite dev server
+        : url_1.default.format({
+            pathname: path_1.default.join(__dirname, '../client/dist/index.html'),
+            protocol: 'file:',
+            slashes: true,
         });
-    });
-    mainWindow.webContents.on('did-finish-load', () => {
-        console.log('Test page loaded successfully');
-    });
-    // Load the test file
-    mainWindow.loadURL(testUrl);
-    // Open DevTools in development
+    console.log('Loading URL:', startUrl);
+    await mainWindow.loadURL(startUrl);
     if (isDev) {
         mainWindow.webContents.openDevTools();
     }
-    // Handle window closing
-    mainWindow.on('close', (event) => {
-        if (!isQuitting) {
-            event.preventDefault();
-            mainWindow?.hide();
-            return false;
-        }
-        return true;
-    });
-    // IPC handlers for window controls
-    electron_1.ipcMain.handle('window-minimize', () => {
-        mainWindow?.minimize();
-    });
+    // Window management handlers
+    electron_1.ipcMain.handle('window-minimize', () => mainWindow?.minimize());
     electron_1.ipcMain.handle('window-maximize', () => {
         if (mainWindow?.isMaximized()) {
             mainWindow.unmaximize();
@@ -73,16 +54,10 @@ function createWindow() {
             mainWindow?.maximize();
         }
     });
-    electron_1.ipcMain.handle('window-close', () => {
-        mainWindow?.hide();
-    });
-    // Handle version info
+    electron_1.ipcMain.handle('app-quit', () => { electron_1.app.quit(); });
+    electron_1.ipcMain.handle('window-close', () => mainWindow?.hide());
+    // System information handlers
     electron_1.ipcMain.handle('app-get-version', () => electron_1.app.getVersion());
-    // Correct: handler name matches preload call
-    electron_1.ipcMain.handle('get-app-version', () => {
-        return electron_1.app.getVersion();
-    });
-    // Handle system info
     electron_1.ipcMain.handle('get-system-info', () => {
         const os = require('os');
         return {
@@ -95,80 +70,73 @@ function createWindow() {
             }
         };
     });
-    // Handle connectivity check
-    electron_1.ipcMain.handle('is-online', async () => {
-        const dns = require('dns').promises;
-        try {
-            await dns.lookup('google.com');
-            return true;
-        }
-        catch {
-            return false;
-        }
+    // Online status check
+    electron_1.ipcMain.handle('is-online', () => {
+        return require('dns').promises.lookup('google.com')
+            .then(() => true)
+            .catch(() => false);
     });
-    // Handle notifications
+    // Notification handler
     electron_1.ipcMain.handle('show-notification', (_event, title, body) => {
-        const notification = new electron_1.Notification({
+        new electron_1.Notification({
             title,
             body,
-            icon: path_1.default.join(__dirname, 'icons', 'icon.png'),
-        });
-        notification.show();
+            icon: path_1.default.join(__dirname, 'icons', 'icon.png')
+        }).show();
         return true;
     });
-    // Initialize the application tray
-    createTray();
-    // Initialize modules
-    (0, storage_1.initStorage)();
-    (0, encryption_1.initEncryption)();
+    // Window close handler
+    mainWindow.on('close', (event) => {
+        if (!isQuitting) {
+            event.preventDefault();
+            mainWindow?.hide();
+        }
+    });
+    console.log('Electron window created successfully');
 }
-// Create the application tray icon and menu
 function createTray() {
+    console.log('Creating system tray icon...');
     const icon = electron_1.nativeImage.createFromPath(path_1.default.join(__dirname, 'icons', 'icon.png'));
     tray = new electron_1.Tray(icon.resize({ width: 16, height: 16 }));
     const contextMenu = electron_1.Menu.buildFromTemplate([
         {
-            label: 'Open Nexus Messaging',
-            click: () => {
-                mainWindow?.show();
-            }
+            label: i18n.t('tray.open'),
+            click: () => mainWindow?.show()
         },
         { type: 'separator' },
         {
-            label: 'Quit',
+            label: i18n.t('tray.quit'),
             click: () => {
                 isQuitting = true;
                 electron_1.app.quit();
             }
         },
     ]);
-    tray.setToolTip('Nexus Corporate Messaging');
+    tray.setToolTip(i18n.t('app.name'));
     tray.setContextMenu(contextMenu);
-    tray.on('click', () => {
-        mainWindow?.show();
-    });
+    tray.on('click', () => mainWindow?.show());
+    console.log('System tray icon created successfully');
 }
-// App is ready to start
-electron_1.app.whenReady().then(() => {
-    // Create the main window
-    createWindow();
-    // On macOS, it's common to re-create a window when the dock icon is clicked
+// App initialization
+electron_1.app.whenReady().then(async () => {
+    console.log('Запуск приложения...');
+    // Initialize core modules
+    (0, encryption_1.initEncryption)();
+    (0, storage_1.initStorage)();
+    // Create window and tray
+    await createWindow();
+    createTray();
     electron_1.app.on('activate', () => {
         if (electron_1.BrowserWindow.getAllWindows().length === 0) {
             createWindow();
         }
-        else {
-            mainWindow?.show();
-        }
     });
 });
-// Quit when all windows are closed, except on macOS
 electron_1.app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         electron_1.app.quit();
     }
 });
-// Handle app quitting (for tray icon)
 electron_1.app.on('before-quit', () => {
     isQuitting = true;
 });
