@@ -1,41 +1,34 @@
 import { useState, useEffect } from 'react';
 import type { ElectronAPI } from '../lib/electron-types';
 
-const defaultElectronData = {
-  isElectron: false,
-  version: null,
-  isOnline: navigator.onLine,
-  api: null,
-};
-
 export function useElectron() {
-  const [data, setData] = useState<{ isElectron: boolean; version: string | null; isOnline: boolean; api: ElectronAPI | null }>(defaultElectronData);
-  const { isElectron, version, isOnline, api } = data
+  const [isElectron, setIsElectron] = useState(false);
+  const [version, setVersion] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [api, setApi] = useState<ElectronAPI | null>(null);
   
   useEffect(() => {
     console.log("useElectron: useEffect - api changed", api);
     
     // Safely check and set Electron environment
     const electronApi = (window.electron ?? null) as unknown as ElectronAPI;
-        setData(prev => ({ ...prev, isElectron: !!electronApi, api: electronApi }));
+    setIsElectron(!!electronApi);
+    setApi(electronApi);
 
-
-        if (electronApi) {
+    if (electronApi) {
       // Get app version
       electronApi.app.getVersion()
-        .then(ver => setData(prev => ({...prev, version: ver})))
+        .then(ver => setVersion(ver))
         .catch(err => console.error('Error getting app version:', err));
 
       // Set up online/offline status
       electronApi.system.isOnline()
-        .then(status => setData(prev => ({
-          ...prev, isOnline: status,
-        })))
+        .then(status => setIsOnline(status))
         .catch(err => console.error('Error getting online status:', err));
 
       // Listen for online/offline events
-      const handleOnline = () => setData(prev => ({ ...prev, isOnline: true }));;
-      const handleOffline = () => setData(prev => ({ ...prev, isOnline: false }));;
+      const handleOnline = () => setIsOnline(true);
+      const handleOffline = () => setIsOnline(false);
 
       window.addEventListener('online', handleOnline);
       window.addEventListener('offline', handleOffline);
@@ -46,6 +39,7 @@ export function useElectron() {
       };
     }
   }, []);
+
 
   return {
     isElectron,
