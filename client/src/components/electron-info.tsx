@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useWebSocket } from "@/lib/useWebSocket";
-import { LanguageContext } from "@/lib/i18n/LanguageContext";
 import {
   Cpu, 
   Database,
@@ -16,12 +15,12 @@ import {
 import { useLanguage } from "@/lib/i18n/LanguageContext.tsx";
 
 
-type TranslationKey =
-  | "system_info.connection_status"
-  | "nav.home"|"common.appName"
-  | "profile.status"| "profile.title"
+export type TranslationKey =
+  | "system_info.connection_status" | "nav.home"
+  | "common.appName"
+  | "profile.status"
   | "system_info.architecture"
-  | "system_info.local_storage"
+  | "system_info.local_storage" | "profile.title"
   | "common.refresh"
   | "profile.title";
 
@@ -112,7 +111,7 @@ export default function ElectronInfo() {
     <Card>
       <CardHeader className="bg-gray-50 border-b border-gray-200 px-4 py-3">
           <CardTitle className="text-base font-medium">
-          {t("profile.title")}
+          {t("profile.title" as TranslationKey)}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 py-4">
@@ -124,7 +123,7 @@ export default function ElectronInfo() {
               <WifiOff className="h-4 w-4 text-yellow-500" />
             )}
             <span className="font-medium">
-              {t("profile.status")}:
+              {t("profile.status" as TranslationKey)}:
             </span>
           </div>
           <Badge
@@ -137,14 +136,14 @@ export default function ElectronInfo() {
             }
           >
             {connectionStatus === "offline"
-              ? t("profile.offline")
+              ? t("profile.status" as TranslationKey)
               : connectionStatus === "open"
-                ? t("profile.online")
+                ? t("profile.status" as TranslationKey)
                 : connectionStatus === "connecting"
-                  ? t("nav.home")
+                  ? t("nav.home" as TranslationKey)
                   : connectionStatus === "closing" ||
                     connectionStatus === "closed"
-                    ? t("common.loading") : t("common.loading")}
+                    ? t("common.refresh" as TranslationKey) : t("common.refresh" as TranslationKey)}
           </Badge>
         </div>
 
@@ -160,7 +159,7 @@ export default function ElectronInfo() {
             <div className="flex items-center space-x-2">
               <Cpu className="h-4 w-4 text-gray-500" />
               <span className="font-medium">
-                {t("common.appName")}
+                {t("common.appName" as TranslationKey)}
               </span>
             </div>
 
@@ -168,21 +167,21 @@ export default function ElectronInfo() {
               <div className="flex items-center justify-between">
                 <span>{t("profile.title")}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-                  {systemInfo.platform}
+                  {systemInfo.platform} as TranslationKey
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span>{t("profile.title")}:</span>
+                <span>{t("system_info.architecture" as TranslationKey)}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-                  {systemInfo.arch}
+                  {systemInfo.arch} as TranslationKey
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span>{t("profile.title")}:</span>
+                <span>{t("common.appName" as TranslationKey)}:</span>
                 <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-                  {systemInfo.version}
+                  {systemInfo.version} as TranslationKey
                 </span>
               </div>
             </div>
@@ -190,7 +189,7 @@ export default function ElectronInfo() {
             <div className="flex items-center space-x-2">
               <HardDrive className="h-4 w-4 text-gray-500" />
               <span className="font-medium">{t("profile.title")}</span>
-            </div>
+            </div> as TranslationKey
 
             <div className="pl-6 space-y-2 text-sm">
               <div className="flex items-center justify-between">
@@ -220,12 +219,12 @@ export default function ElectronInfo() {
             <div className="flex items-center space-x-2">
               <Database className="h-4 w-4 text-gray-500" />
               <span className="font-medium">
-                {t("profile.title")}
+                {t("system_info.local_storage" as TranslationKey)}
               </span>
             </div>
 
             <div className="pl-6 space-y-2 text-sm">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between" as TranslationKey>
                 <span>{t("profile.status")}:</span>
                 <Badge variant="outline">Active</Badge>
               </div>
@@ -243,7 +242,7 @@ export default function ElectronInfo() {
           <RefreshCw
             className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
           />
-          {t("common.refresh")}
+          {t("common.refresh" as TranslationKey)}
         </Button>
       </CardContent>
     </Card>
