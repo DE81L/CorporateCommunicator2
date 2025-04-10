@@ -5,14 +5,13 @@ export function useElectron() {
   const [isElectron, setIsElectron] = useState(false);
   const [version, setVersion] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [api, setApi] = useState<ElectronAPI>({} as ElectronAPI);
+  const [api, setApi] = useState<ElectronAPI>({} as ElectronAPI);// Initialize with an empty object
   
   useEffect(() => {
     console.log("useElectron: useEffect - api changed", api);
     
     // Safely check and set Electron environment
     const electronApi = (window.electron ?? null) as unknown as ElectronAPI;
-    setIsElectron(!!electronApi);
     setApi(electronApi);
 
     if (electronApi) {
@@ -21,6 +20,7 @@ export function useElectron() {
         .then(ver => setVersion(ver))
         .catch(err => console.error('Error getting app version:', err));
 
+      setIsElectron(true); // Set isElectron to true when electronApi is present
       // Set up online/offline status
       electronApi.system.isOnline()
         .then(status => setIsOnline(status))

@@ -1,7 +1,6 @@
 import { X, Minimize, Maximize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useElectron } from '@/hooks/use-electron';
-import { useEffect } from 'react';
 
 export const WindowFrame = () => {
   const api = useElectron();
@@ -50,8 +49,7 @@ export const WindowFrame = () => {
   );
 };
 
-export const WindowFrameHeader = ({ title = 'Nexus Corporate Messaging' }: { title?: string }) => {
-  const { api } = useElectron();
+export const WindowFrameHeader = ({ title = 'Nexus Corporate Messaging' }: { title?: string }) => {const { api } = useElectron();
   if (!api?.isElectron) return null;
   return (
     <div className="bg-primary/5 h-9 flex items-center justify-between px-4 select-none draggable">
