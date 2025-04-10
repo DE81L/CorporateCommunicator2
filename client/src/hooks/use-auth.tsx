@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { z, ZodType } from "zod";
+import { z, ZodType, ZodObject } from "zod";
 import { useToast } from "./use-toast";//relative path
 import { useLocation } from "wouter";
 import { getQueryFn, createApiClient, queryClient } from "../lib/queryClient";//relative path
@@ -29,7 +29,7 @@ export interface AuthContextType {
   error: Error | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (data: z.infer<ZodType<any, any, any>>) => Promise<void>;
+  register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<void>;
   sendIPC: any;
 }
 
@@ -64,14 +64,13 @@ export const registerSchema = (t: (key: string) => string) => {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslations();
   const loginSchema = useMemo(() => createLoginSchema((key: string) => t(key)), [t]);
+  const regSchema = useMemo(() => registerSchema((key: string) => t(key)), [t]);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [isLoading] = useState(true);
   const [authError, setAuthError] = useState<Error | null>(null);
-
   const { data: user } = useQuery<UserWithoutPassword | null>({
-    queryKey: ["/api/user"],
-    queryFn: getQueryFn({ on401: "returnNull" })
+    queryKey: ['/api/user'], queryFn: getQueryFn({ on401: 'returnNull' })
   });
   const loginMutation = useMutation({
     mutationFn: async (credentials: z.infer<typeof loginSchema>) => {
@@ -80,7 +79,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   });
   
-  const regSchema = useMemo(() => registerSchema(t), [t])
   const logoutMutation = useMutation({
     mutationFn: async () => {
       await apiRequest("POST", "/api/logout");
@@ -96,10 +94,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (userData: z.infer<typeof regSchema>) => {
-      const { confirmPassword, ...data }: { confirmPassword: string, username: string, password: string } = userData;
+    mutationFn: async (userData: z.infer<typeof regSchema> ) => {
+      const { confirmPassword, ...data } = userData;
 
       const { isElectron } = useElectron();
+      
       const apiClient = createApiClient(isElectron);
       const res = await apiClient.request("POST", "/api/register", data);
 
@@ -147,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     }
   };
-  const { sendIPC } = useElectron();
+  const { api } = useElectron();
   
   const value: AuthContextType = {
     user: user ?? null,
@@ -156,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     register,
-    sendIPC,
+    sendIPC:api?.ipcRenderer.send
   };
 
   return (

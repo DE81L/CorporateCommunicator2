@@ -67,16 +67,8 @@ declare global {
   }
 }
 
-interface ImportMetaEnv {
-  ELECTRON?: boolean | string;
-  VITE_WEB_ONLY?: string;
-  VITE_REPLIT?: string;
-  [key: string]: any;
-  readonly VITE_API_URL: string;
-  // ... other env variables
-}
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
+export interface ImportMetaEnv {
+    [key: string]: any;
 }
 
 export {};

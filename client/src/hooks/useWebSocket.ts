@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "./use-auth"; // Import from the correct file
 import { useElectron } from "./use-electron";
 
