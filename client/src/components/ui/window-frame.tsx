@@ -6,11 +6,11 @@ export function WindowFrame({ title = 'Nexus Corporate Messaging' }: { title?: s
   const { isElectron, version, api } = useElectron();
 
   const handleMinimize = () => {
-    api?.app.minimize();
+    api?.minimize();
   };
 
   const handleMaximize = () => {
-    api?.app.maximize();
+    api?.maximize();
   };
 
   const handleClose = () => {

@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest } from "../hooks/use-auth";
+import { apiRequest } from "../hooks/use-auth"; // Correctly import apiRequest
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "../hooks/use-toast";
 import { useForm } from "react-hook-form";
-import { useElectron } from "@/hooks/use-electron";
 
-import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus, User } from "lucide-react";
 
+import { z } from "zod";
 interface Announcement {
   id: number;
   name: string;

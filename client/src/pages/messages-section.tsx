@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
-import { useWebSocket } from "../hooks/useWebSocket";
+import { useWebSocket, WebSocketMessage } from "../hooks/useWebSocket";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -42,7 +42,7 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messageInput, setMessageInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { sendMessage, lastMessage } = useWebSocket();
+  const { sendMessage, lastMessage } = useWebSocket() || {};
   const { t } = useLanguage();
 
   // Получение списка пользователей
@@ -58,16 +58,18 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
 
   // Прослушивание новых сообщений из WebSocket
   useEffect(() => {
-    if (lastMessage && lastMessage.type === "chat") {
-      // Если сообщение от выбранного пользователя, обновляем список сообщений
-      if (
-        selectedUser &&
-        ((lastMessage.senderId === selectedUser.id &&
-          lastMessage.receiverId === user?.id) ||
-          (lastMessage.senderId === user?.id &&
-            lastMessage.receiverId === selectedUser.id))
-      ) {
-        queryClient.invalidateQueries({
+    if (lastMessage) {
+      if (lastMessage.type === "chat") {
+        // Если сообщение от выбранного пользователя, обновляем список сообщений
+        if (
+          selectedUser &&
+          ((lastMessage.senderId === selectedUser.id &&
+            lastMessage.receiverId === user?.id) ||
+            (lastMessage.senderId === user?.id &&
+              lastMessage.receiverId === selectedUser.id))
+        ) {
+          queryClient.invalidateQueries({
+        
           queryKey: ["/api/messages", selectedUser.id],
         });
       }
@@ -138,7 +140,7 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
                 }
                 variant="ghost"
                 size="icon"
-                title={t("profile.title")}
+                title={t("profile.call")}
               >
                 <Phone className="h-5 w-5" />
               </Button>
@@ -151,7 +153,7 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
                 }
                 variant="ghost"
                 size="icon"
-                title={t("profile.title")}
+                title={t("profile.videoCall")}
               >
                 <Video className="h-5 w-5" />
               </Button>
@@ -243,7 +245,7 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
               <Button
                 type="submit"
                 size="icon"
-                className="rounded-full"
+                className="rounded-full disabled:opacity-50"
                 title={t("messages.send")}
               >
                 <Send className="h-5 w-5" />
@@ -270,13 +272,9 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
             </svg>
           </div>
           <h2 className="text-xl font-medium mb-2">
-            {t("messages.title")}
+            {t("messages.noChat")}
           </h2>
-          <p className="text-gray-500 text-center mb-6">
-            {t("messages.newMessage")}
-          </p>
-
-          <div className="w-full max-w-md">
+            <div className="w-full max-w-md">
             <h3 className="font-medium mb-3">{t("nav.users")}</h3>
             {isLoadingUsers ? (
               <div className="flex justify-center py-4">
@@ -317,10 +315,10 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
                     </button>
                   ))}
               </div>
-            ) : (
+             ) : (
               <div className="text-center py-4 text-gray-500">
-                {t("messages.newMessage")}
-              </div>
+                {t("messages.noContacts")}
+            </div>
             )}
           </div>
         </div>
