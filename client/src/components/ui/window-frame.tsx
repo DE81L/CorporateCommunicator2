@@ -5,18 +5,18 @@ import { useEffect } from 'react';
 
 export const WindowFrame = () => {
   const api = useElectron();
-  if (!api?.isElectron) return null;
+  if (!api.isElectron || !api.api?.app) return null;
 
   const handleMinimize = () => {
-    api?.app?.minimize();
+    api.api.app?.minimize();
   };
 
   const handleMaximize = () => {
-    api?.app?.maximize();
+    api.api.app?.maximize();
   };
 
   const handleClose = () => {
-    api?.app?.quit();
+    api.api.app?.quit();
   };
 
 
@@ -52,7 +52,7 @@ export const WindowFrame = () => {
 
 export const WindowFrameHeader = ({ title = 'Nexus Corporate Messaging' }: { title?: string }) => {
   const { api } = useElectron();
-  if (!api?.isElectron) return null;
+  if (!api.isElectron || !api.api?.app) return null;
   return (
     <div className="bg-primary/5 h-9 flex items-center justify-between px-4 select-none draggable">
       <div className="flex items-center space-x-2">

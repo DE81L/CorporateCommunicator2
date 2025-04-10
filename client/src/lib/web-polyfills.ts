@@ -185,6 +185,8 @@ function createMockElectronAPI(): ElectronAPI {
       getVersion: () => Promise.resolve('1.0.0-web'),
       getPath: () => Promise.resolve(''),
       quit: () => Promise.resolve(),
+      minimize: () => Promise.resolve(),
+      maximize: () => Promise.resolve(),
     },
     system: {
       getSystemInfo: () => Promise.resolve({
