@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import { createContext, ReactNode, useContext, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { useToast } from "./use-toast"; 
@@ -25,7 +25,7 @@ export type UserWithoutPassword = Omit<User, "password"> & {
 
 export interface AuthContextType {
   user: UserWithoutPassword | null;
-  isLoading: boolean;
+  isLoading?: boolean;
   error: Error | null | undefined;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const regSchema = useMemo(() => registerSchema((key: string) => t(key as any)), [t]); // Type casting added here
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [isLoading] = useState(true);
+  const [isLoading] = useState<boolean>(true);
   const [authError] = useState<Error | null>(null);
   const { data: user } = useQuery<UserWithoutPassword | null>({
     queryKey: ["/api/user"], queryFn: getQueryFn("/api/user"),
@@ -128,7 +128,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register: async (data) => {
             return registerMutation.mutateAsync(data);
         },
-        user: user ?? null,
-    }}>{children}</AuthContext.Provider>
+        user: user ?? null, }} >{children}</AuthContext.Provider>
   );
-}
