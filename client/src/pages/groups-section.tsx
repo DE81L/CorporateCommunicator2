@@ -54,11 +54,13 @@ export default function GroupsSection() {
     error: groupsError,
   } = useQuery<Group[]>({
     queryKey: ["/api/groups"],
+    queryFn: () => apiRequest("GET", "/api/groups").then((res) => res.json()),
   });
 
   // Fetch all users for adding to groups
   const { data: users, isLoading: isLoadingUsers } = useQuery<User[]>({
     queryKey: ["/api/users"],
+    queryFn: () => apiRequest("GET", "/api/users").then((res) => res.json()),
   });
 
   // Create group mutation

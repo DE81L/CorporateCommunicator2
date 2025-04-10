@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLanguage } from '@/lib/i18n/translations.tsx';
+import { useLanguage } from '@/lib/i18n/translations.ts';
 import {
   Card,
   CardContent,

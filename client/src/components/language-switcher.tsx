@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslations } from '@/hooks/use-translations';
 import {
   Select,
   SelectContent,
@@ -8,23 +8,28 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
 
 export function LanguageSwitcher() {
-  const { i18n, t } = useTranslation();
+  const { t, currentLanguage, changeLanguage, isChangingLanguage } = useTranslations();
 
-  const changeLanguage = (value: string) => {
-    i18n.changeLanguage(value);
+  const handleLanguageChange = async (value: string) => {
+    await changeLanguage(value);
   };
 
   return (
     <div className="flex flex-col space-y-2">
       <Label htmlFor="language-select">{t('settings.language')}</Label>
       <Select
-        value={i18n.language}
-        onValueChange={changeLanguage}
+        value={currentLanguage}
+        onValueChange={handleLanguageChange}
+        disabled={isChangingLanguage}
       >
         <SelectTrigger id="language-select" className="w-[180px]">
           <SelectValue placeholder={t('settings.language')} />
+          {isChangingLanguage && (
+            <Loader2 className="h-4 w-4 animate-spin ml-2" />
+          )}
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="ru">Русский</SelectItem>

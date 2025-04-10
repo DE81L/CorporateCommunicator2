@@ -1,32 +1,28 @@
-import React, { createContext, useContext, useState } from "react";
-import { translations, Language, TranslationKey } from "./translations.tsx";
+import React, { createContext, useContext, useCallback } from "react";
+import { useTranslation } from 'react-i18next';
+import type { TranslationKey } from './translations';
 
 interface LanguageContextType {
-  language: Language;
-  setLanguage: (lang: Language) => void;
+  language: string;
+  setLanguage: (lang: string) => void;
   t: (key: TranslationKey) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>("ru");
+  const { t: translate, i18n } = useTranslation();
 
-  const t = (key: TranslationKey): string => {
-    const parts = key.toString().split(".");
-    let result: any = translations[language];
-    for (const part of parts) {
-      result = result[part];
-      if (result === undefined) {
-        console.warn(`Translation missing for key: ${key}`);
-        return key.toString();
-      }
-    }
-    return result as string;
+  const t = useCallback((key: TranslationKey): string => {
+    return translate(key);
+  }, [translate]);
+
+  const setLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language: i18n.language, setLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );

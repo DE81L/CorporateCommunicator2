@@ -38,7 +38,26 @@
     "invalidCredentials": "Неверная почта или пароль",
     "loginSuccess": "Вход выполнен успешно",
     "registerSuccess": "Регистрация выполнена успешно",
-    "logoutSuccess": "Выход выполнен успешно"
+    "logoutSuccess": "Выход выполнен успешно",
+    "welcome": "Добро пожаловать",
+    "loginTitle": "Вход в систему",
+    "loginDescription": "Введите данные для входа в аккаунт",
+    "usernameOrEmail": "Имя пользователя или Email",
+    "enterUsernameOrEmail": "Введите имя пользователя или email",
+    "enterPassword": "Введите пароль",
+    "pleaseWait": "Пожалуйста, подождите",
+    "registerTitle": "Регистрация",
+    "registerDescription": "Создание нового аккаунта",
+    "confirmPassword": "Подтвердите пароль",
+    "enterFirstName": "Введите ваше имя",
+    "enterLastName": "Введите вашу фамилию",
+    "enterEmail": "Введите ваш email",
+    "enterUsername": "Введите имя пользователя", 
+    "confirmYourPassword": "Подтвердите ваш пароль",
+    "passwordsDontMatch": "Пароли не совпадают",
+    "usernameRequired": "Требуется имя пользователя",
+    "passwordRequired": "Требуется пароль",
+    "invalidCredentials": "Неверные учетные данные"
   },
   "nav": {
     "home": "Главная",
@@ -85,7 +104,10 @@
     "pushNotifications": "Push-уведомления",
     "desktopNotifications": "Уведомления на рабочем столе",
     "saveChanges": "Сохранить изменения",
-    "changesApplied": "Изменения успешно применены"
+    "changesApplied": "Изменения успешно применены",
+    "languageChanged": "Язык изменен",
+    "languageChangeSuccess": "Язык приложения обновлён",
+    "languageChangeFailed": "Не удалось изменить язык"
   },
   "messages": {
     "title": "Сообщения",
@@ -220,6 +242,8 @@
     "connectionError": "Ошибка соединения",
     "invalidInput": "Неверный ввод",
     "duplicateEntry": "Дублирующаяся запись",
-    "forbidden": "Доступ запрещен"
+    "forbidden": "Доступ запрещен",
+    "languageChangeFailed": "Не удалось изменить язык",
+    "tryAgainLater": "Пожалуйста, попробуйте позже"
   }
 }

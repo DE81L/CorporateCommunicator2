@@ -1,21 +1,15 @@
 "use strict";
 // Placeholder for the Encryption module (Phase 2)
 // This will handle end-to-end encryption with client-side key management and daily key rotation
-var __importDefault =
-    (this && this.__importDefault) ||
-    function (mod) {
-        return mod && mod.__esModule ? mod : { default: mod };
-    };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.initEncryption = initEncryption;
 const electron_1 = require("electron");
 const path_1 = __importDefault(require("path"));
 // Placeholder for the key store path
-const KEY_STORE_PATH = path_1.default.join(
-    process.env.APPDATA || process.env.HOME || "./",
-    "NexusMessaging",
-    "keys",
-);
+const KEY_STORE_PATH = path_1.default.join(process.env.APPDATA || process.env.HOME || "./", "NexusMessaging", "keys");
 // Placeholder for initialization
 function initEncryption() {
     // To be implemented in Phase 2

@@ -1,17 +1,48 @@
-// Placeholder for the Storage module (Phase 2)
-// This will handle offline storage for messages, user data, and settings
-
 import { ipcMain } from 'electron';
-import fs from 'fs';
-import path from 'path';
+import Store from 'electron-store';
+import { z } from 'zod';
 
-// Placeholder for the data store path
-const DATA_STORE_PATH = path.join(process.env.APPDATA || process.env.HOME || './', 'NexusMessaging', 'data');
+// Define schemas for validation
+const userSchema = z.object({
+  id: z.number(),
+  username: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  email: z.string().email(),
+  settings: z.object({
+    theme: z.enum(['light', 'dark', 'system']),
+    language: z.enum(['en', 'ru']),
+    notifications: z.boolean(),
+    soundEnabled: z.boolean()
+  }).optional()
+});
 
-// Placeholder for initialization
+const messageSchema = z.object({
+  id: z.number(),
+  senderId: z.number(),
+  receiverId: z.number(),
+  content: z.string(),
+  timestamp: z.number(),
+  type: z.enum(['text', 'file', 'image']),
+  status: z.enum(['sent', 'delivered', 'read']),
+  metadata: z.record(z.unknown()).optional()
+});
+
+// Initialize electron-store
+const store = new Store<{
+  userData: unknown;
+  messages: unknown[];
+  lastMessageId: number;
+}>({
+  name: 'nexus-data',
+  defaults: {
+    userData: null,
+    messages: [],
+    lastMessageId: 0
+  }
+});
+
 export function initStorage() {
-  // To be implemented in Phase 2
-
   // Register IPC handlers
   ipcMain.handle('get-user-data', getUserData);
   ipcMain.handle('set-user-data', setUserData);
@@ -20,32 +51,112 @@ export function initStorage() {
   ipcMain.handle('delete-message', deleteMessage);
 }
 
-// Placeholder for getting user data
 async function getUserData() {
-  // To be implemented in Phase 2
-  return {};
+  try {
+    const userData = store.get('userData');
+    if (!userData) return null;
+    
+    // Validate stored data
+    const validatedData = userSchema.parse(userData);
+    return validatedData;
+  } catch (error) {
+    console.error('Error getting user data:', error);
+    return null;
+  }
 }
 
-// Placeholder for setting user data
-async function setUserData(_event: Electron.IpcMainInvokeEvent, data: any) {
-  // To be implemented in Phase 2
-  return { success: false, message: 'Not implemented yet' };
+async function setUserData(_event: Electron.IpcMainInvokeEvent, data: unknown) {
+  try {
+    // Validate input data
+    const validatedData = userSchema.parse(data);
+    
+    // Store data
+    store.set('userData', validatedData);
+    return { 
+      success: true, 
+      message: 'User data saved successfully' 
+    };
+  } catch (error) {
+    console.error('Error setting user data:', error);
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : 'Failed to save user data' 
+    };
+  }
 }
 
-// Placeholder for getting messages
 async function getMessages() {
-  // To be implemented in Phase 2
-  return [];
+  try {
+    const messages = store.get('messages', []);
+    interface Message {
+      id: number;
+      senderId: number;
+      receiverId: number;
+      content: string;
+      timestamp: number;
+      type: 'text' | 'file' | 'image';
+      status: 'sent' | 'delivered' | 'read';
+      metadata?: Record<string, unknown>;
+    }
+
+    return (messages as unknown[]).map((msg: unknown): Message => messageSchema.parse(msg));
+  } catch (error) {
+    console.error('Error getting messages:', error);
+    return [];
+  }
 }
 
-// Placeholder for saving a message
-async function saveMessage(_event: Electron.IpcMainInvokeEvent, message: any) {
-  // To be implemented in Phase 2
-  return { success: false, message: 'Not implemented yet' };
+async function saveMessage(_event: Electron.IpcMainInvokeEvent, message: unknown) {
+  try {
+    // Validate message data
+    const validatedMessage = messageSchema.parse({
+      ...(message as object),
+      id: store.get('lastMessageId', 0) + 1,
+      timestamp: Date.now()
+    });
+
+    // Get existing messages and append new one
+    const messages = store.get('messages', []);
+    messages.push(validatedMessage);
+
+    // Update store
+    store.set('messages', messages);
+    store.set('lastMessageId', validatedMessage.id);
+
+    return {
+      success: true,
+      message: 'Message saved successfully',
+      data: validatedMessage
+    };
+  } catch (error) {
+    console.error('Error saving message:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to save message'
+    };
+  }
 }
 
-// Placeholder for deleting a message
 async function deleteMessage(_event: Electron.IpcMainInvokeEvent, id: number) {
-  // To be implemented in Phase 2
-  return { success: false, message: 'Not implemented yet' };
+  try {
+    // Get current messages
+    const messages = store.get('messages', []);
+    
+    // Filter out the message to delete
+    const newMessages = messages.filter((msg: any) => msg.id !== id);
+    
+    // Update store
+    store.set('messages', newMessages);
+
+    return {
+      success: true,
+      message: 'Message deleted successfully'
+    };
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to delete message'
+    };
+  }
 }

@@ -23,6 +23,7 @@ const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage } = electron;
 const path = require('path');
 const url = require('url');
 const isDev = process.env.NODE_ENV === 'development';
+const i18n = require('./i18n.cjs');
 
 // Set environment variable to inform other parts this is Electron
 process.env.ELECTRON = 'true';
@@ -32,11 +33,16 @@ let tray;
 
 function createWindow() {
   console.log('Creating Electron window...');
-  
+  console.log('Environment variables:', {
+    NODE_ENV: process.env.NODE_ENV,
+    ELECTRON: process.env.ELECTRON,
+    isDev: isDev
+  });
+
   // Create the browser window
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1280,
+    height: 720,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -44,6 +50,8 @@ function createWindow() {
     },
     icon: path.join(__dirname, '../generated-icon.png'),
   });
+
+  console.log(i18n.t('startingApp'));
 
   // Load the app
   const startUrl = isDev
@@ -54,7 +62,27 @@ function createWindow() {
         slashes: true,
       });
 
+  console.log('Loading URL:', startUrl);
+
   mainWindow.loadURL(startUrl);
+
+  // Add debugging logs
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+    console.error('Failed to load URL:', {
+      url: startUrl,
+      errorCode,
+      errorDescription,
+      isDev
+    });
+  });
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('Page loaded successfully');
+  });
+
+  // Add these logs before the if statement that checks isDev
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('isDev:', isDev);
 
   // Open DevTools in development
   if (isDev) {
@@ -66,6 +94,10 @@ function createWindow() {
     mainWindow = null;
   });
   
+  mainWindow.once('ready-to-show', () => {
+    console.log(i18n.t('windowCreated'));
+  });
+
   console.log('Electron window created successfully');
 }
 
@@ -99,18 +131,24 @@ function createTray() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 app.whenReady().then(() => {
-  createWindow();
-  createTray();
-  
-  app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (mainWindow === null) createWindow();
-  });
+  try {
+    console.log(i18n.t('serverRunning', { port: process.env.PORT || 3000 }));
+    createWindow();
+    createTray();
+    
+    app.on('activate', function () {
+      // On macOS it's common to re-create a window in the app when the
+      // dock icon is clicked and there are no other windows open.
+      if (mainWindow === null) createWindow();
+    });
+  } catch (error) {
+    console.error(i18n.t('errorStarting'), error);
+  }
 });
 
 // Quit when all windows are closed, except on macOS.
 app.on('window-all-closed', function () {
+  console.log(i18n.t('shuttingDown'));
   if (process.platform !== 'darwin') app.quit();
 });
 
@@ -128,4 +166,14 @@ ipcMain.handle('get-platform-info', () => {
     electron: process.versions.electron,
     chrome: process.versions.chrome,
   };
+});
+
+// Add IPC handlers for i18n
+ipcMain.handle('change-language', async (event, lang) => {
+  await i18n.changeLanguage(lang);
+  return i18n.language;
+});
+
+ipcMain.handle('get-current-language', () => {
+  return i18n.language;
 });

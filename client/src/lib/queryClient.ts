@@ -1,57 +1,51 @@
-import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { useElectron } from "@/hooks/use-electron";
 
-async function throwIfResNotOk(res: Response) {
-  if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
-  }
-}
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
-export async function apiRequest(
-  method: string,
-  path: string,
-  body?: any,
-): Promise<Response> {
-  const response = await fetch(`${API_URL}${path}`, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
+export function createApiClient(isElectron: boolean) {
+  const getBaseUrl = () => (isElectron ? API_URL : "");
+
+  return {
+    request: async (method: string, path: string, body?: unknown): Promise<Response> => {
+      const base = getBaseUrl();
+      const url = `${base}${path}`;
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: body ? JSON.stringify(body) : undefined,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `HTTP error! Status: ${response.status}`);
+      }
+
+      return response;
     },
-    credentials: "include", // Important for session handling
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || `HTTP error! Status: ${response.status}`);
-  }
-
-  return response;
+  };
 }
 
-type UnauthorizedBehavior = "returnNull" | "throw";
-export const getQueryFn: <T>(options: {
-  on401: UnauthorizedBehavior;
-}) => QueryFunction<T> =
-  ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
-    });
-
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
-    }
-
-    await throwIfResNotOk(res);
-    return await res.json();
+export function getQueryFn<T = unknown>(path: string) {
+  return async (): Promise<T> => {
+    const { isElectron } = useElectron();
+    const apiClient = createApiClient(isElectron);
+    const response = await apiClient.request("GET", path);
+    return response.json();
   };
+}
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
-      refetchInterval: false,
+      queryFn: async ({ queryKey }) => {
+        const [path] = queryKey as [string];
+        return getQueryFn(path)();
+      },
       refetchOnWindowFocus: false,
       staleTime: Infinity,
       retry: false,

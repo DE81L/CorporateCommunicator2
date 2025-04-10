@@ -1,6 +1,9 @@
 import pkg from 'pg';
 const { Pool } = pkg;
 import dotenv from 'dotenv';
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import * as schema from "../shared/schema";
 
 // Load environment variables
 dotenv.config();
@@ -14,8 +17,10 @@ const isReplit = process.env.REPLIT_DB_URL !== undefined;
  */
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: isReplit ? { rejectUnauthorized: false } : undefined,
 });
+
+const connection = postgres(process.env.DATABASE_URL!, { max: 1 });
+export const db = drizzle(connection, { schema });
 
 /**
  * Execute a SQL query against the database

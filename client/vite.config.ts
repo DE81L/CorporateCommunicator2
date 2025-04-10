@@ -1,26 +1,30 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      "@shared": path.resolve(__dirname, "../shared"),
-      "@": path.resolve(__dirname, "./src"),
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  
+  return {
+    plugins: [react()],
+    base: './',
+    define: {
+      'process.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL),
     },
-  },
-  server: {
-    port: 5173,
-    host: true,
-    hmr: {
-      clientPort: 443,
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
     },
-    // Allow connections from any host (including Replit domains)
-    cors: true,
-    // Allow all hosts to connect to dev server
-    strictPort: false,
-    // Allow any hostname to access the dev server
-    allowedHosts: true,
-  },
+    server: {
+      port: 5173,
+      host: true,
+      proxy: {
+        '/api': {
+          target: env.VITE_API_URL || 'http://localhost:3000',
+          changeOrigin: true,
+        }
+      }
+    },
+  };
 });

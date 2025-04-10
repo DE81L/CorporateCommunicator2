@@ -1,0 +1,5 @@
+
+> rest-express@1.0.0 check
+> tsc -p client/tsconfig.json *
+
+error TS5042: Option 'project' cannot be mixed with source files on a command line.

@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/hooks/use-auth"; // Import useAuth from hooks
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { Redirect } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -24,17 +24,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
-import { createContext, ReactNode, useContext } from "react";
-import {
-  useQuery,
-  useMutation,
-  UseMutationResult,
-} from "@tanstack/react-query";
-import { insertUserSchema, User } from "../../../shared/schema";
-import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-
-type UserWithoutPassword = Omit<User, "password">;
+import { insertUserSchema } from "../../../shared/schema";
+import { useTranslation } from 'react-i18next';
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -51,60 +42,40 @@ const registerSchema = insertUserSchema
   });
 
 export default function AuthPage() {
-  const { user, isLoading, loginMutation, registerMutation } = useAuth();
+  const { t } = useTranslation();
+  const { user, login, register } = useAuth();
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
-  // Show loading state while checking auth
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  // Redirect if already logged in
   if (user) {
     return <Redirect to="/" />;
   }
 
   return (
     <div className="min-h-screen flex">
-      <div className="flex-1 flex items-center justify-center p-6">
-        <Tabs
-          defaultValue={activeTab}
-          className="w-full max-w-md space-y-6"
-          onValueChange={(value) => setActiveTab(value as "login" | "register")}
-        >
-          <TabsList className="grid grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="register">Register</TabsTrigger>
-          </TabsList>
-          <TabsContent value="login">
-            <LoginForm
-              onSubmit={loginMutation.mutate}
-              isPending={loginMutation.isPending}
-            />
-          </TabsContent>
-          <TabsContent value="register">
-            <RegisterForm
-              onSubmit={registerMutation.mutate}
-              isPending={registerMutation.isPending}
-            />
-          </TabsContent>
-        </Tabs>
-      </div>
+      <Tabs defaultValue={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")}>
+        <TabsList>
+          <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
+          <TabsTrigger value="register">{t('auth.register')}</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="login">
+          <LoginForm onSubmit={login} />
+        </TabsContent>
+        
+        <TabsContent value="register">
+          <RegisterForm onSubmit={register} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
 
 function LoginForm({
-  isPending,
   onSubmit,
 }: {
-  isPending: boolean;
   onSubmit: (data: z.infer<typeof loginSchema>) => void;
 }) {
+  const { t } = useTranslation();
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -116,10 +87,8 @@ function LoginForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Login</CardTitle>
-        <CardDescription>
-          Enter your credentials to access your account
-        </CardDescription>
+        <CardTitle>{t('auth.loginTitle')}</CardTitle>
+        <CardDescription>{t('auth.loginDescription')}</CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -129,10 +98,10 @@ function LoginForm({
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username or Email</FormLabel>
+                  <FormLabel>{t('auth.usernameOrEmail')}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter your username or email"
+                      placeholder={t('auth.enterUsernameOrEmail')}
                       {...field}
                     />
                   </FormControl>
@@ -145,11 +114,11 @@ function LoginForm({
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t('auth.password')}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Enter your password"
+                      placeholder={t('auth.enterPassword')}
                       {...field}
                     />
                   </FormControl>
@@ -165,27 +134,17 @@ function LoginForm({
                   className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                 />
                 <label htmlFor="remember-me" className="text-sm text-gray-600">
-                  Remember me
+                  {t('auth.rememberMe')}
                 </label>
               </div>
-              <a
-                href="#"
-                className="text-sm text-primary hover:text-primary-700"
-              >
-                Forgot password?
-              </a>
+              <Button variant="link" className="px-0">
+                {t('auth.forgotPassword')}
+              </Button>
             </div>
           </CardContent>
           <CardFooter className="flex justify-end">
-            <Button disabled={isPending} type="submit">
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Please wait
-                </>
-              ) : (
-                "Login"
-              )}
+            <Button type="submit">
+              {t('auth.login')}
             </Button>
           </CardFooter>
         </form>
@@ -195,12 +154,11 @@ function LoginForm({
 }
 
 function RegisterForm({
-  isPending,
   onSubmit,
 }: {
-  isPending: boolean;
   onSubmit: (data: z.infer<typeof registerSchema>) => void;
 }) {
+  const { t } = useTranslation();
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -216,8 +174,8 @@ function RegisterForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Register</CardTitle>
-        <CardDescription>Create a new account</CardDescription>
+        <CardTitle>{t('auth.registerTitle')}</CardTitle>
+        <CardDescription>{t('auth.registerDescription')}</CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -227,7 +185,7 @@ function RegisterForm({
               name="firstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>First Name</FormLabel>
+                  <FormLabel>{t('auth.firstName')}</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter your first name" {...field} />
                   </FormControl>
@@ -240,7 +198,7 @@ function RegisterForm({
               name="lastName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Last Name</FormLabel>
+                  <FormLabel>{t('auth.lastName')}</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter your last name" {...field} />
                   </FormControl>
@@ -253,7 +211,7 @@ function RegisterForm({
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>{t('auth.username')}</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter your username" {...field} />
                   </FormControl>
@@ -266,7 +224,7 @@ function RegisterForm({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t('auth.email')}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
@@ -283,7 +241,7 @@ function RegisterForm({
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t('auth.password')}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
@@ -300,7 +258,7 @@ function RegisterForm({
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
+                  <FormLabel>{t('auth.confirmPassword')}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
@@ -315,15 +273,8 @@ function RegisterForm({
 
           </CardContent>
           <CardFooter className="flex justify-end">
-            <Button disabled={isPending} type="submit">
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Please wait
-                </>
-              ) : (
-                "Register"
-              )}
+            <Button type="submit">
+              {t('auth.register')}
             </Button>
           </CardFooter>
         </form>

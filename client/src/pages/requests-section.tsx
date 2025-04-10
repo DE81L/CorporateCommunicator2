@@ -1,33 +1,37 @@
-// C:\Users\DE81L\Downloads\CorporateCommunicator\client\src\pages\requests.tsx
-
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { apiRequest } from "@/lib/queryClient";
+import { useQuery } from "react-query";
 
-// Пример простых запросов к API
+// API calls using configured API_URL
 async function createRequest(data: any) {
-  const res = await fetch("/requests", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Не удалось создать заявку");
-  return await res.json();
+  try {
+    const response = await apiRequest("POST", "/api/requests", data);
+    return await response.json();
+  } catch (error) {
+    throw new Error("Failed to create request");
+  }
 }
 
 async function fetchAllRequests() {
-  const res = await fetch("/requests");
-  if (!res.ok) throw new Error("Не удалось загрузить заявки");
-  return await res.json();
+  try {
+    const response = await apiRequest("GET", "/api/requests");
+    return await response.json();
+  } catch (error) {
+    throw new Error("Failed to load requests");
+  }
 }
 
 async function completeRequest(id: number, grade: number, reviewText?: string) {
-  const res = await fetch(`/requests/${id}/complete`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ grade, reviewText }),
-  });
-  if (!res.ok) throw new Error("Не удалось завершить заявку");
-  return await res.json();
+  try {
+    const response = await apiRequest("PATCH", `/api/requests/${id}/complete`, {
+      grade,
+      reviewText
+    });
+    return await response.json();
+  } catch (error) {
+    throw new Error("Failed to complete request");
+  }
 }
 
 type FormInputs = {
@@ -277,4 +281,35 @@ export default function RequestsPage() {
       </div>
     </div>
   );
+}
+
+export function RequestsSection() {
+  // Fetch user's own requests
+  const { 
+    data: myRequests,
+    isLoading: isLoadingMyRequests,
+    error: myRequestsError
+  } = useQuery<Request[]>({
+    queryKey: ['/api/requests'],
+    queryFn: () => apiRequest("GET", "/api/requests").then(res => res.json()),
+  });
+  
+  // Fetch requests assigned to the user
+  const { 
+    data: assignedRequests,
+    isLoading: isLoadingAssigned,
+    error: assignedError
+  } = useQuery<Request[]>({
+    queryKey: ['/api/requests/assigned'],
+    queryFn: () => apiRequest("GET", "/api/requests/assigned").then(res => res.json()),
+  });
+  
+  // Fetch all users for the assignee dropdown
+  const { 
+    data: users,
+    isLoading: isLoadingUsers
+  } = useQuery<User[]>({
+    queryKey: ['/api/users'],
+    queryFn: () => apiRequest("GET", "/api/users").then(res => res.json()),
+  });
 }

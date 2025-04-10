@@ -14,6 +14,11 @@ contextBridge.exposeInMainWorld(
     },
     app: {
       getVersion: () => ipcRenderer.invoke('get-app-version'),
+    },
+    i18n: {
+      changeLanguage: (lang) => ipcRenderer.invoke('change-language', lang),
+      getCurrentLanguage: () => ipcRenderer.invoke('get-current-language')
     }
+
   }
 );

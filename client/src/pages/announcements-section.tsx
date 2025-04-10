@@ -58,6 +58,7 @@ export default function AnnouncementsSection() {
     error
   } = useQuery<Announcement[]>({
     queryKey: ['/api/announcements'],
+    queryFn: () => apiRequest("GET", "/api/announcements").then(res => res.json()),
   });
 
   // Create announcement mutation (creates a group with isAnnouncement=true)

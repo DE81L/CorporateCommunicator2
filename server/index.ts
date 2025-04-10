@@ -1,5 +1,7 @@
 import { createApp } from './app';
 import http from 'http';
+import { db } from './db';
+import * as schema from '../shared/schema';
 
 // Function to start a quick server on port 5000 for Replit environment
 function startQuickServer() {
@@ -27,12 +29,27 @@ async function startServer() {
   const quickServer = startQuickServer();
   const { app, server } = await createApp();
   
+  // Add health check endpoint
+  app.get("/api/health", async (req, res) => {
+    try {
+      // Check database connection by attempting a simple query
+      await db.select({ id: 1 }).from(schema.users).limit(1);
+      res.json({ 
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development'
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        status: "unhealthy", 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // Determine the port based on environment
-  const PORT = process.env.ELECTRON === 'true' 
-    ? 3000 
-    : (process.env.PORT 
-        ? parseInt(process.env.PORT, 10) 
-        : 3000);
+  const PORT = 3000;
   
   server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
@@ -44,7 +61,7 @@ async function startServer() {
     
     // Cleanup all servers
     server.close(() => {
-      console.log('Main server closed');
+      console.log('Server stopped');
       
       // Close the quick server if it exists
       if (quickServer) {
@@ -69,7 +86,7 @@ async function startServer() {
 const isMainModule = import.meta.url.endsWith(process.argv[1].replace(/^file:\/\//, ''));
 if (isMainModule) {
   startServer().catch((err) => {
-    console.error('Failed to start server:', err);
+    console.error('Server startup error:', err);
     process.exit(1);
   });
 }

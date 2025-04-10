@@ -14,6 +14,21 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext.tsx";
 
+type TranslationKey =
+  | "system_info.title"
+  | "system_info.connection_status"
+  | "system_info.system_info"
+  | "system_info.platform"
+  | "system_info.architecture"
+  | "system_info.node_version"
+  | "system_info.memory"
+  | "system_info.total_memory"
+  | "system_info.free_memory"
+  | "system_info.used_memory"
+  | "system_info.local_storage"
+  | "system_info.status"
+  | "system_info.refresh";
+
 interface SystemInfo {
   platform: string;
   arch: string;

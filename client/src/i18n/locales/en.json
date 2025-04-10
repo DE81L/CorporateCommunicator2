@@ -38,7 +38,26 @@
     "invalidCredentials": "Invalid email or password",
     "loginSuccess": "Login successful",
     "registerSuccess": "Registration successful",
-    "logoutSuccess": "Logout successful"
+    "logoutSuccess": "Logout successful",
+    "welcome": "Welcome",
+    "loginTitle": "Login",
+    "loginDescription": "Enter your credentials to access your account",
+    "usernameOrEmail": "Username or Email",
+    "enterUsernameOrEmail": "Enter your username or email",
+    "enterPassword": "Enter your password",
+    "pleaseWait": "Please wait",
+    "registerTitle": "Register",
+    "registerDescription": "Create a new account",
+    "confirmPassword": "Confirm Password",
+    "enterFirstName": "Enter your first name",
+    "enterLastName": "Enter your last name",
+    "enterEmail": "Enter your email",
+    "enterUsername": "Enter your username",
+    "confirmYourPassword": "Confirm your password",
+    "passwordsDontMatch": "Passwords don't match",
+    "usernameRequired": "Username is required",
+    "passwordRequired": "Password is required",
+    "invalidCredentials": "Invalid credentials"
   },
   "nav": {
     "home": "Home",
@@ -85,7 +104,10 @@
     "pushNotifications": "Push Notifications",
     "desktopNotifications": "Desktop Notifications",
     "saveChanges": "Save Changes",
-    "changesApplied": "Changes applied successfully"
+    "changesApplied": "Changes applied successfully",
+    "languageChanged": "Language Changed",
+    "languageChangeSuccess": "Application language has been updated",
+    "languageChangeFailed": "Failed to change language"
   },
   "messages": {
     "title": "Messages",
@@ -220,6 +242,8 @@
     "connectionError": "Connection error",
     "invalidInput": "Invalid input",
     "duplicateEntry": "Duplicate entry",
-    "forbidden": "Access forbidden"
+    "forbidden": "Access forbidden",
+    "languageChangeFailed": "Language Change Failed",
+    "tryAgainLater": "Please try again later"
   }
 }

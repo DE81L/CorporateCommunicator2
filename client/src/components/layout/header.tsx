@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -15,7 +15,6 @@ import {
   BellIcon,
   ChevronDownIcon,
   MenuIcon,
-  UserIcon,
   SettingsIcon,
   LogOutIcon,
 } from "lucide-react";
@@ -27,24 +26,24 @@ interface HeaderProps {
 }
 
 export default function Header({ toggleSidebar }: HeaderProps) {
-  const { user, logoutMutation } = useAuth();
+  const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
   const { t } = useLanguage();
   const [notificationCount] = useState(3); // In real app, this would come from API/state
 
   if (!user) return null;
 
+  const handleLogout = useCallback(async () => {
+    try {
+      await logout();
+      setLocation("/auth");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  }, [logout, setLocation]);
+
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  };
-
-  const handleLogout = () => {
-    logoutMutation.mutate();
-  };
-
-  const handleNavigateToSettings = () => {
-    // This would be handled via your app's routing mechanism
-    setLocation("/settings");
   };
 
   return (
@@ -109,15 +108,13 @@ export default function Header({ toggleSidebar }: HeaderProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                {user?.firstName} {user?.lastName}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer" onClick={() => {}}>
-                <UserIcon className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
-                onClick={handleNavigateToSettings}
+                onClick={() => setLocation("/settings")}
               >
                 <SettingsIcon className="mr-2 h-4 w-4" />
                 <span>Settings</span>
@@ -126,12 +123,9 @@ export default function Header({ toggleSidebar }: HeaderProps) {
               <DropdownMenuItem
                 className="cursor-pointer text-red-600 focus:text-red-600"
                 onClick={handleLogout}
-                disabled={logoutMutation.isPending}
               >
                 <LogOutIcon className="mr-2 h-4 w-4" />
-                <span>
-                  {logoutMutation.isPending ? "Signing out..." : "Sign out"}
-                </span>
+                <span>Sign Out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

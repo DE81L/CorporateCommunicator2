@@ -11,6 +11,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MicOffIcon, VideoOffIcon, PhoneOffIcon, UserIcon } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
+export type TranslationKey = "call.in_progress" | "call.end" | `call.${"video" | "audio"}`;
+
 interface CallModalProps {
   isOpen: boolean;
   onClose: () => void;

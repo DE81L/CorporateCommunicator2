@@ -5,6 +5,8 @@
  * Used when the application is running in a browser environment (e.g., Replit).
  */
 
+import type { ElectronAPI } from './electron-types';
+
 // File system operations
 export const fileSystem = {
   // Read file - uses IndexedDB in web environment
@@ -156,40 +158,59 @@ export const clipboard = {
 };
 
 // Create a complete mock Electron API
-export const createMockElectronAPI = () => {
+function createMockElectronAPI(): ElectronAPI {
   return {
     app: {
-      getVersion: system.getVersion,
-      getPath: (name: string) => `/mock-path/${name}`,
-      quit: () => console.log('App quit requested (mock)')
+      getVersion: () => Promise.resolve('1.0.0-web'),
     },
-    dialog: dialog,
-    fs: fileSystem,
-    system: system,
-    clipboard: clipboard,
-    ipcRenderer: {
-      invoke: async (channel: string, ...args: any[]) => {
-        console.log(`IPC invoke called: ${channel}`, args);
-        return null;
+    window: {
+      minimize: () => Promise.resolve(),
+      maximize: () => Promise.resolve(),
+      close: () => Promise.resolve(),
+      isMaximized: () => Promise.resolve(false),
+    },
+    system: {
+      getSystemInfo: () => Promise.resolve({
+        platform: 'web',
+        arch: 'web',
+        version: 'web',
+        memory: {
+          total: 0,
+          free: 0,
+        },
+      }),
+      isOnline: () => Promise.resolve(navigator.onLine),
+    },
+    storage: {
+      getUserData: () => Promise.resolve({}),
+      setUserData: (data: any) => Promise.resolve({ success: true, message: 'Saved to localStorage' }),
+      getMessages: () => Promise.resolve([]),
+      saveMessage: (message: any) => Promise.resolve({ success: true, message: 'Saved to localStorage' }),
+      deleteMessage: (id: number) => Promise.resolve({ success: true, message: 'Deleted from localStorage' }),
+    },
+    encryption: {
+      generateKeyPair: () => Promise.resolve({ success: false, message: 'Not available in web mode' }),
+      encryptMessage: (message: string) => Promise.resolve(message),
+      decryptMessage: (message: string) => Promise.resolve(message),
+      getPublicKey: () => Promise.resolve('web-mock-key'),
+      rotateKeys: () => Promise.resolve({ success: false, message: 'Not available in web mode' }),
+    },
+    notification: {
+      showNotification: (title: string, body: string) => {
+        if ('Notification' in window) {
+          new Notification(title, { body });
+        }
+        return Promise.resolve(true);
       },
-      send: (channel: string, ...args: any[]) => {
-        console.log(`IPC send called: ${channel}`, args);
-      },
-      on: (channel: string, listener: Function) => {
-        console.log(`IPC listener registered: ${channel}`);
-        // No-op in web environment
-      },
-      removeListener: (channel: string, listener: Function) => {
-        // No-op in web environment
-      }
-    }
+    },
   };
-};
+}
 
 // Install mock Electron API if needed
-export const installMockElectronAPI = () => {
+export function installMockElectronAPI(): void {
   if (typeof window !== 'undefined' && !window.electron && import.meta.env.VITE_WEB_ONLY === 'true') {
-    console.log('Installing mock Electron API for web environment');
-    window.electron = createMockElectronAPI() as any;
+    const mockAPI = createMockElectronAPI();
+    window.electron = mockAPI as unknown as ElectronAPI;
+    console.log('Installed mock Electron API for web environment');
   }
-};
+}

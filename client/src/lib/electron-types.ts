@@ -1,7 +1,3 @@
-/**
- * TypeScript definitions for Electron API
- */
-
 export interface ElectronAPI {
   // IPC Renderer
   ipcRenderer: {
@@ -10,14 +6,12 @@ export interface ElectronAPI {
     on: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
     removeListener: (channel: string, listener: Function) => void;
   };
-  
   // App info and control
   app: {
     getVersion: () => Promise<string>;
     getPath: (name: string) => Promise<string>;
     quit: () => Promise<void>;
   };
-  
   // System utilities
   system: {
     isOnline: () => Promise<boolean>;
@@ -31,14 +25,12 @@ export interface ElectronAPI {
       };
     }>;
   };
-  
   // File system operations
   fs: {
     readFile: (path: string) => Promise<string>;
     writeFile: (path: string, data: string) => Promise<void>;
     fileExists: (path: string) => Promise<boolean>;
   };
-  
   // Dialog operations
   dialog: {
     showOpenDialog: (options: any) => Promise<{
@@ -54,13 +46,11 @@ export interface ElectronAPI {
       checkboxChecked?: boolean;
     }>;
   };
-  
   // Clipboard operations
   clipboard: {
     writeText: (text: string) => Promise<void>;
     readText: () => Promise<string>;
   };
-  
   // Storage operations
   storage: {
     getUserData: () => Promise<any>;
@@ -71,21 +61,22 @@ export interface ElectronAPI {
   };
 }
 
-// Extend the Window interface
 declare global {
   interface Window {
     electron?: ElectronAPI;
   }
 }
 
-// Add custom environment variables to Vite's ImportMetaEnv
-declare module "vite/client" {
-  interface ImportMetaEnv {
-    ELECTRON?: boolean | string;
-    VITE_WEB_ONLY?: string;
-    VITE_REPLIT?: string;
-    [key: string]: any;
-  }
+interface ImportMetaEnv {
+  ELECTRON?: boolean | string;
+  VITE_WEB_ONLY?: string;
+  VITE_REPLIT?: string;
+  [key: string]: any;
+  readonly VITE_API_URL: string;
+  // ... other env variables
+}
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
 }
 
 export {};

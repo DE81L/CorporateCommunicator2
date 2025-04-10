@@ -15,6 +15,7 @@ import {
   Video,
   Mail,
 } from "lucide-react";
+import { apiRequest } from "@/utils/api";
 
 interface ContactsProps {
   onStartCall: (
@@ -34,6 +35,7 @@ export default function ContactsSection({ onStartCall }: ContactsProps) {
     error,
   } = useQuery<User[]>({
     queryKey: ["/api/users"],
+    queryFn: () => apiRequest("GET", "/api/users").then((res) => res.json()),
   });
 
   // Filter users based on search query

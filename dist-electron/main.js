@@ -29,12 +29,25 @@ function createWindow() {
         frame: false, // Frameless window for custom title bar
         icon: path_1.default.join(__dirname, 'icons', 'icon.png'),
     });
-    // Determine if we’re in development
+    // Determine if we're in development
     const isDev = process.env.NODE_ENV !== 'production';
-    const url = isDev
-        ? 'http://localhost:5173'
-        : `file://${path_1.default.join(__dirname, '..', 'dist', 'index.html')}`;
-    mainWindow.loadURL(url);
+    // Use test.html instead of Vite dev server
+    const testUrl = `file://${path_1.default.join(__dirname, '..', 'test.html')}`;
+    console.log('Loading test URL:', testUrl);
+    // Add debugging logs
+    mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+        console.error('Failed to load URL:', {
+            url: testUrl,
+            errorCode,
+            errorDescription,
+            isDev
+        });
+    });
+    mainWindow.webContents.on('did-finish-load', () => {
+        console.log('Test page loaded successfully');
+    });
+    // Load the test file
+    mainWindow.loadURL(testUrl);
     // Open DevTools in development
     if (isDev) {
         mainWindow.webContents.openDevTools();
@@ -64,7 +77,9 @@ function createWindow() {
         mainWindow?.hide();
     });
     // Handle version info
-    electron_1.ipcMain.handle('app-get-version', () => {
+    electron_1.ipcMain.handle('app-get-version', () => electron_1.app.getVersion());
+    // Correct: handler name matches preload call
+    electron_1.ipcMain.handle('get-app-version', () => {
         return electron_1.app.getVersion();
     });
     // Handle system info
