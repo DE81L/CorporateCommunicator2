@@ -33,30 +33,26 @@ export function useWebSocket(): WebSocketHook {
     }
 
     const base = api?.isElectron ? `ws://localhost:3000` : `${window.location.origin.replace(/^http/, "ws")}`;
-    
-    socket.current = new WebSocket(`${base}?userId=${user.id}`);
-
-    socket.current.addEventListener("open", () => {
-      if(socket.current){
-          setConnectionStatus("open");
-          setReadyState(socket.current.readyState);
-          console.log("WebSocket connected. readyState:", socket.current.readyState);
-        }
-    });
-    : `${window.location.origin.replace(/^http/, "ws")}`;
 
     socket.current = new WebSocket(`${base}?userId=${user.id}`);
 
-    socket.current.addEventListener("open", () => {
-        if(socket.current){
-            setConnectionStatus("open");
-            setReadyState(socket.current.readyState)
-            console.log("WebSocket connected");
-        }
+    socket.current.addEventListener("open", () => {        
+        setConnectionStatus("open");
+        setReadyState(socket.current?.readyState ?? -1);
+        console.log("WebSocket connected",socket.current?.readyState);
     });
 
 
     socket.current.addEventListener("message", (event: MessageEvent) => {
+      if(socket.current){
+        try {
+            const data: WebSocketMessageData = JSON.parse(event.data);
+            setReadyState(socket.current.readyState)
+            setLastMessage(data);
+            console.log("Received WebSocket message:", data,"readyState:",socket.current.readyState);
+        } catch (error) {
+            console.error("Error parsing WebSocket message", error);
+        }
         if(socket.current){
             try {
                 const data: WebSocketMessageData = JSON.parse(event.data);
@@ -67,6 +63,7 @@ export function useWebSocket(): WebSocketHook {
                 console.error("Error parsing WebSocket message", error);
             }
         }
+      }
     });
 
     socket.current.addEventListener("error", (error) => {
