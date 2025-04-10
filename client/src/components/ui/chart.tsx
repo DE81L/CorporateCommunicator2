@@ -245,9 +245,7 @@ const ChartTooltipContent = React.forwardRef<
           })}
         </div>
       </div>      
-    )
-  };
-)
+)});
 ChartTooltipContent.displayName = "ChartTooltip"
 
 const ChartLegend = RechartsPrimitive.Legend
@@ -320,9 +318,10 @@ function getPayloadConfigFromPayload(
 
   const payloadPayload =
     "payload" in payload &&
-    typeof payload.payload === "object" &&
-    payload.payload !== null;
-    ? payload.payload : undefined
+    typeof (payload as any).payload === "object" &&
+    (payload as any).payload !== null
+      ? (payload as any).payload
+      : undefined;
 
 
   let configLabelKey: string = key
