@@ -1,9 +1,8 @@
-import { createContext, ReactNode, useContext, useMemo, useState } from "react";
+import { createContext, ReactNode, useContext, useMemo } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { useToast } from "./use-toast";
 import { useLocation } from "wouter";
-import { getQueryFn, createApiClient, queryClient } from "../lib/queryClient";
+import { getQueryFn, createApiClient, queryClient, isElectron } from "../lib/queryClient";
 import { useTranslations } from "./use-translations";
 
 
@@ -45,8 +44,7 @@ export const useAuth = () => {
 
 export const createLoginSchema = (t: (key: string) => string) =>
   z.object({
-    username: z
-      .string()
+    username: z.string()
       .min(1, t("auth.usernameRequired")),
     password: z
       .string()
@@ -108,10 +106,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
   const registerMutation = useMutation({
-    mutationFn: async (userData: z.infer<typeof regSchema>): Promise<void> => {
+    mutationFn: async (userData: z.infer<typeof regSchema>): Promise<UserWithoutPassword> => {
        const { confirmPassword, ...data } = userData;
-      const apiClient = createApiClient();
-       const res = await apiClient.request("/api/register", {method: "POST", body: JSON.stringify(data) });
+      const apiClient = createApiClient(isElectron());
+       const res = await apiClient.request("/api/register", { method: "POST", body: JSON.stringify(data) });
        const user = await res.json();
       
     },

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest } from "../hooks/use-auth";
+import { useAuth } from "../hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "../hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -47,6 +47,7 @@ type CreateAnnouncementFormValues = z.infer<typeof createAnnouncementSchema>;
 
 export default function AnnouncementsSection() {
   const { toast } = useToast();
+  const { apiRequest } = useAuth();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Fetch announcements
