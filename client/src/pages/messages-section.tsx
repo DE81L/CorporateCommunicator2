@@ -69,7 +69,7 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
               lastMessage.receiverId === selectedUser.id))
         ) {
           queryClient.invalidateQueries({
-        
+
           queryKey: ["/api/messages", selectedUser.id],
         });
       }
@@ -274,7 +274,7 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
           <h2 className="text-xl font-medium mb-2">
             {t("messages.noChat")}
           </h2>
-            <div className="w-full max-w-md">
+          <div className="w-full max-w-md">
             <h3 className="font-medium mb-3">{t("nav.users")}</h3>
             {isLoadingUsers ? (
               <div className="flex justify-center py-4">
@@ -315,10 +315,10 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
                     </button>
                   ))}
               </div>
-             ) : (
+            ) : (
               <div className="text-center py-4 text-gray-500">
                 {t("messages.noContacts")}
-            </div>
+              </div>
             )}
           </div>
         </div>
