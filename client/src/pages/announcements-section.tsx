@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
@@ -38,10 +38,10 @@ export default function AnnouncementsSection() {
     // Fetch announcements
   const {
     isLoading: isAnnouncementsLoading, 
-    error: announcementsError,
-  } = useQuery({queryKey: ['/api/announcements'], queryFn: async () => {
+    error: announcementsError,data,
+  } = useQuery({queryKey: ['/api/announcements'], queryFn: async () => {   
     const response = await fetch("/api/groups?isAnnouncement=true"); 
-       if (!response.ok) {
+      if (!response.ok) {
       throw new Error("Failed to fetch announcements");
     }    
     const data = await response.json();
@@ -55,7 +55,7 @@ export default function AnnouncementsSection() {
         
           await fetch("/api/groups", {
             method: "POST",
-            headers: {
+            headers: { 
               "Content-Type": "application/json",
             },
             body: JSON.stringify(data),
@@ -72,7 +72,7 @@ export default function AnnouncementsSection() {
         });
       },
       onError: (error: Error): void => {
-        toast({ 
+        toast({
           title: "Failed to create announcement",
           description: error.message,
           variant: "destructive",
@@ -82,9 +82,6 @@ export default function AnnouncementsSection() {
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
       }
-
-      
-
     });
 
   const form = useForm<CreateAnnouncementFormValues>({
@@ -100,11 +97,14 @@ export default function AnnouncementsSection() {
     createAnnouncementMutation.mutate(data);
   };
 
-  useEffect(() => {
-    if (announcements && announcements.length > 0) {
-      setAnnouncements(announcements);
+  useEffect(()=> {
+    if(data){
+      setAnnouncements(data);
     }
-  }, [announcements]);
+  },[data])
+  if (announcementsError) {
+      console.error("Error fetching announcements:", announcementsError);
+  }
   };
 
   // Mock function to get department name for demo
