@@ -619,10 +619,12 @@ export default function WikiSection() {
         </div>
       </Tabs>
 
+          </div>
+        )}
       {/* Wiki Entry Dialog */}
       <Dialog open={showEntryDialog} onOpenChange={setShowEntryDialog}>
         <DialogContent className="max-w-3xl">
-          <DialogHeader>
+            <DialogHeader>
             <DialogTitle>{editingEntry ? "Edit Wiki Entry" : "New Wiki Entry"}</DialogTitle>
             <DialogDescription>
               {editingEntry
@@ -803,5 +805,5 @@ export default function WikiSection() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+);
 }
