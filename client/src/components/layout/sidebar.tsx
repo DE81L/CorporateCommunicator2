@@ -15,8 +15,8 @@ import {
   BookOpenIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { type SectionType } from "@/types/sections";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 interface SidebarProps {
   activeSection: SectionType;
@@ -33,7 +33,7 @@ export default function Sidebar({
   setIsOpen,
   connectionStatus,
 }: SidebarProps) {
-  const { user, sendIPC } = useAuth();
+  const { user } = useAuth();
   const { t } = useTranslation();
 
   if (!user) return null;
@@ -54,23 +54,23 @@ export default function Sidebar({
     {
       id: "messages",
       icon: MessageSquareIcon,
-      label: t("sidebar.nav.messages"), 
+      label: t("sidebar.nav.messages"),
     },
-    { id: "groups", icon: UsersIcon, label: t("sidebar.nav.groups") }, 
+    { id: "groups", icon: UsersIcon, label: t("sidebar.nav.groups") },
     {
       id: "announcements",
       icon: MegaphoneIcon,
-      label: t("sidebar.nav.announcements"), 
+      label: t("sidebar.nav.announcements"),
     },
     {
       id: "requests",
       icon: ClipboardCheckIcon,
-      label: t("sidebar.nav.requests"), 
+      label: t("sidebar.nav.requests"),
       badge: 2,
     },
-    { id: "contacts", icon: ContactIcon, label: t("sidebar.nav.users") }, 
+    { id: "contacts", icon: ContactIcon, label: t("sidebar.nav.users") },
     { id: "wiki", icon: BookOpenIcon, label: t("sidebar.nav.wiki") || "Wiki" },
-    { id: "settings", icon: SettingsIcon, label: t("sidebar.nav.settings") }, 
+    { id: "settings", icon: SettingsIcon, label: t("sidebar.nav.settings") },
   ];
 
   return (
@@ -119,7 +119,7 @@ export default function Sidebar({
             </div>
           ) : (
             <div className="flex items-center text-red-600">
-              
+
               <WifiOffIcon className="h-3 w-3 mr-1" />
               <span>Disconnected</span>
             </div>
@@ -140,9 +140,9 @@ export default function Sidebar({
               onClick={() => handleNavItemClick(item.id)}
             >
               <item.icon className="mr-3 h-5 w-5" />
-              
+
               <span>{item.label}</span>
-              {item.badge && (
+              {item.badge ?(
                 <Badge className="ml-auto" variant="destructive"> // i dont have this type imported
                   {item.badge}
                 </Badge>
@@ -154,7 +154,7 @@ export default function Sidebar({
         {/* User profile section - Could be added at the bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
           <div className="flex items-center">
-            
+
             <div className="flex-shrink-0">
               <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
                 {user.firstName.charAt(0)}

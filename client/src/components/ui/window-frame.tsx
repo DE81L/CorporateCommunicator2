@@ -1,4 +1,3 @@
-import React from 'react';
 import { X, Minus, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useElectron } from '@/hooks/use-electron';
@@ -7,15 +6,15 @@ export function WindowFrame({ title = 'Nexus Corporate Messaging' }: { title?: s
   const { isElectron, version, api } = useElectron();
 
   const handleMinimize = () => {
-    api?.window.minimize();
+    api?.minimize();
   };
 
   const handleMaximize = () => {
-    api?.window.maximize();
+    api?.maximize();
   };
 
   const handleClose = () => {
-    api?.window.close();
+    api?.close();
   };
 
   if (!isElectron) return null;
