@@ -5,7 +5,7 @@ export function useElectron() {
   const [isElectron, setIsElectron] = useState(false);
   const [version, setVersion] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [api, setApi] = useState<ElectronAPI | null>(null);
+  const [api, setApi] = useState<ElectronAPI>({} as ElectronAPI);
   
   useEffect(() => {
     console.log("useElectron: useEffect - api changed", api);

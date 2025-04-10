@@ -1,5 +1,5 @@
-import { createContext, ReactNode, useContext, useState, useMemo } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { createContext, ReactNode, useContext, useMemo, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { useToast } from "./use-toast"; 
 import { useLocation } from "wouter"; 
@@ -25,7 +25,6 @@ export type UserWithoutPassword = Omit<User, "password"> & {
 
 export interface AuthContextType {
   user: UserWithoutPassword | null;
-  isLoading: boolean;
   error: Error | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -82,39 +81,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const regSchema = useMemo(() => registerSchema((key: string) => t(key as any)), [t]); // Type casting added here
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [isLoading] = useState(true);
-  const [authError, setAuthError] = useState<Error | null>(null);
-  const { data: user } = useQuery<UserWithoutPassword | null>({
-    queryKey: ['/api/user'], queryFn: getQueryFn('returnNull') 
-  });
-  const loginMutation = useMutation({
-    mutationFn: async (credentials: z.infer<typeof loginSchema>) => {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    const { data: user } = useQuery<UserWithoutPassword | null>({
+        queryKey: ['/api/user'], queryFn: getQueryFn('returnNull')
+    });
+    const [error, setError] = useState<Error | null>(null)
+    const loginMutation = useMutation({
+        mutationFn: async (credentials: z.infer<typeof loginSchema>) => {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(credentials),
+            });
+            return res.json();
         },
-        body: JSON.stringify(credentials)
-      });
-      return res.json();
-    }
-  });
-  const logoutMutation = useMutation({
-    mutationFn: async () => { await fetch('/api/logout', { method: 'POST' }); },
-    onSuccess: () => {
-      queryClient.setQueryData(["/api/user"], null);
-      setLocation("/auth");
-      toast({ title: "Logged out", description: "You have been successfully logged out." });
-    }
-  });
+    });
+    const logoutMutation = useMutation({
+        mutationFn: async () => { await fetch('/api/logout', { method: 'POST' }); },
+        onSuccess: () => {
+            queryClient.setQueryData(["/api/user"], null);
+            setLocation("/auth");
+            toast({ title: "Logged out", description: "You have been successfully logged out." });
+        }
+    });
 
-  const registerMutation = useMutation({
-    mutationFn: async (userData: z.infer<typeof regSchema>) => {
-      const { confirmPassword, ...data } = userData;
-      const { isElectron } = useElectron();
-      const apiClient = createApiClient(isElectron); 
-      const res = await apiClient.request({ method:"POST", url:"/api/register", body:data });
-      return res.data
-    }
-  });
+    const registerMutation = useMutation({
+        mutationFn: async (userData: z.infer<typeof regSchema>) => {
+            const { confirmPassword, ...data } = userData;
+            const { isElectron } = useElectron();
+            const apiClient = createApiClient(isElectron);
+            const res = await apiClient.request({ method: "POST", url: "/api/register", body: data });
+            return res.data;
+        },
+    });
+  return <AuthContext.Provider value={{
+        sendIPC: null,
+        login: loginMutation.mutate,
+        logout: logoutMutation.mutate,
+        register: registerMutation.mutate,
+        user, error
+      }}>{children}</AuthContext.Provider>;
 }
