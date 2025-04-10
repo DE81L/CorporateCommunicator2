@@ -67,7 +67,7 @@ export default function GroupsSection() {
   // Create group mutation
   const createGroupMutation = useMutation({
       mutationFn: async (data: CreateGroupFormValues) => {
-      const res = await request("POST", "/api/groups", data);
+      const res = await apiRequest("POST", "/api/groups", data);
       return await res.json();
     },
     onSuccess: () => {

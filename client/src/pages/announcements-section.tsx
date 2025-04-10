@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
@@ -14,7 +14,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, Textarea } from "@/components/ui/ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus, User } from "lucide-react";
 
 import { z } from "zod";
@@ -32,7 +34,7 @@ export default function AnnouncementsSection() {
   const { } = useAuth();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
 
-  // Fetch announcements
+    // Fetch announcements
   const { 
     data: announcements, 
     isLoading: isAnnouncementsLoading, 
@@ -40,14 +42,12 @@ export default function AnnouncementsSection() {
   } = useQuery({
     queryKey: ['/api/announcements'],
     queryFn: async () => {
-      const { apiRequest } = useAuth(); // get the request function from useAuth
-      const request = apiRequest;
-      if(!apiRequest) throw new Error("apiRequest is not available");
-      if(request) {
-        const response = await request("GET", "/api/announcements");
+      const { apiRequest } = useAuth();
+      if(!apiRequest) throw new Error("apiRequest not available");
+        const response = await apiRequest("GET", "/api/announcements");
         const data = await response.json()
         return data
-      }
+      
         return []
     },
   });
@@ -56,13 +56,12 @@ export default function AnnouncementsSection() {
     const createAnnouncementMutation = useMutation({
       
       mutationFn: async (data: CreateAnnouncementFormValues) => {
-        const { apiRequest } = useAuth();
-        const request = apiRequest;
-        if(!apiRequest) throw new Error("apiRequest is not available");
-        if(request){
-          const res = await request("POST", "/api/groups", data); // call the apiRequest function from useAuth
+        const { apiRequest } = useAuth(); // get the request function from useAuth
+        if (!apiRequest) throw new Error("apiRequest is not available");
+        
+          const res = await apiRequest("POST", "/api/groups", data); // call the apiRequest function from useAuth
           return res;
-        }
+        
           return null
       },
       onSuccess: () => { 
