@@ -149,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { api } = useElectron();
   
   const value: AuthContextType = {
-    user: user, 
+    user: user ?? null, 
     isLoading, 
     error: authError,
     login,

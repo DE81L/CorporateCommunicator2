@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth, apiRequest } from "../hooks/use-auth";
-import { queryClient } from "@/lib/queryClient";
+import { apiRequest } from "../hooks/use-auth";
+import { createApiClient, queryClient } from "@/lib/queryClient";
 import { useToast } from "../hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { useElectron } from "@/hooks/use-electron";
@@ -59,8 +59,8 @@ export default function AnnouncementsSection() {
   } = useQuery<Announcement[]>({
     queryKey: ['/api/announcements'],
     queryFn: async () => {
-      const apiClient = createApiClient(isElectron);
-      const response = await apiClient.request("GET", "/api/announcements");
+      const response = await apiRequest("GET", "/api/announcements");
+      return response.json()
     },
   });
 
@@ -69,7 +69,6 @@ export default function AnnouncementsSection() {
     mutationFn: async (data: CreateAnnouncementFormValues) => {
       const res = await apiRequest("POST", "/api/groups", data); // call the apiRequest function from useAuth
 
-    },
     onSuccess: () => { 
       queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
       setIsCreateDialogOpen(false);

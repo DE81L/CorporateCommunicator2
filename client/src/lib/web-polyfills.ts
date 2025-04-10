@@ -184,13 +184,6 @@ function createMockElectronAPI(): ElectronAPI {
       saveMessage: (message: any) => { localStorage.setItem(`message-${message.id}`, JSON.stringify(message)); return Promise.resolve()},
       deleteMessage: (id: number) => { localStorage.removeItem(`message-${id}`); return Promise.resolve();},
     },
-    encryption: {
-      generateKeyPair: () => Promise.resolve({ success: false, message: 'Not available in web mode' }),
-      encryptMessage: (message: string) => Promise.resolve(message),
-      decryptMessage: (message: string) => Promise.resolve(message),
-      getPublicKey: () => Promise.resolve('web-mock-key'),
-      rotateKeys: () => Promise.resolve({ success: false, message: 'Not available in web mode' }),
-    },
     notification: {
       showNotification: (title: string, body: string) => {
         if ('Notification' in window) {
