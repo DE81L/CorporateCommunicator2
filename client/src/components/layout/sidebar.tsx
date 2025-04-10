@@ -146,7 +146,7 @@ export default function Sidebar({
                 <Badge className="ml-auto" variant="destructive"> // i dont have this type imported
                   {item.badge}
                 </Badge>
-              )}
+              )})}
             </Button>
           ))}
         </nav>
