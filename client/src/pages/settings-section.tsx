@@ -6,7 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 import ElectronInfo from "@/components/electron-info";
 import { useElectron } from "@/hooks/use-electron";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent,
   DialogDescription,
   DialogFooter,
