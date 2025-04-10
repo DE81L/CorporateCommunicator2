@@ -1,86 +1,98 @@
-import { useEffect, useRef, useState } from "react";
-import { useAuth, User } from "./use-auth";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useAuth } from "./use-auth";
 import { useElectron } from "./use-electron";
 
-export type WebSocketMessage = {
+export type WebSocketMessageData = {
   senderId: number;
   content: string;
   groupId?: number;
   chatId?: number;
   createdAt: string;
   updatedAt: string;
-   sender: { username: string; id: number };
+  sender: { username: string; id: number };
   id: number;
 };
 export type WebSocketHook = {
   sendMessage: (message: string, chatId: number) => void;
-  lastMessage: WebSocketMessage | null;
-  readyState: number;
+  lastMessage: WebSocketMessageData | null;
+  readyState?: number;
   connectionStatus: string;
 };
-
-
-export type WebSocketMessage = Message;
+export type WebSocketMessage = WebSocketMessageData;
+  
 export function useWebSocket(): WebSocketHook {
   const { user } = useAuth();
-
+  const api = useElectron();
+  const socket = useRef<WebSocket | null>(null);
+  const [lastMessage, setLastMessage] = useState<WebSocketMessageData | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<string>("connecting")
+  const [readyState, setReadyState] = useState<number>(-1);
   useEffect(() => {
-    if (!user) return; // Return early if user is not available
+    if (!user) {
+      return;
+    }
 
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const base = isElectron
-      ? new URL(import.meta.env.VITE_API_URL).host
-      : window.location.host;
-    const wsUrl = `${protocol}//${base}/ws`;
-
-    const socket = useRef<WebSocket | null>(null);
-
-    socket.current = new WebSocket(wsUrl);
-    setReadyState(socket.current.readyState);
+    const base = api?.isElectron ? `ws://localhost:3000` : `${window.location.origin.replace(/^http/, "ws")}`;
     
+    socket.current = new WebSocket(`${base}?userId=${user.id}`);
 
     socket.current.addEventListener("open", () => {
-      setReadyState(socket.current?.readyState ?? -1);
-      setConnectionStatus("open");
-      console.log("WebSocket connected");
+      if(socket.current){
+          setConnectionStatus("open");
+          setReadyState(socket.current.readyState);
+          console.log("WebSocket connected. readyState:", socket.current.readyState);
+        }
     });
-    setReadyState(socket.readyState);
-    socket.current = new WebSocket(wsUrl);
-    socketRef.current = socket.current;
-    socket.addEventListener("message", (event) => {
-      setReadyState(socket.readyState);
-      try {
-        const data: WebSocketMessage = JSON.parse(event.data);
-        setLastMessage(data);
-        console.log("Received WebSocket message:", data, socket.readyState);
-      } catch (error) {
-        console.error("Error parsing WebSocket message", error);
-      }
-    });
+    : `${window.location.origin.replace(/^http/, "ws")}`;
 
-    socket.addEventListener("error", (error) => {
-      setConnectionStatus("Error");
-      console.error("WebSocket error:", error);
+    socket.current = new WebSocket(`${base}?userId=${user.id}`);
+
+    socket.current.addEventListener("open", () => {
+        if(socket.current){
+            setConnectionStatus("open");
+            setReadyState(socket.current.readyState)
+            console.log("WebSocket connected");
+        }
     });
 
-    socket.addEventListener("close", (event) => {
-      setConnectionStatus("Closed");
-      console.log("WebSocket connection closed:", event);
+
+    socket.current.addEventListener("message", (event: MessageEvent) => {
+        if(socket.current){
+            try {
+                const data: WebSocketMessageData = JSON.parse(event.data);
+                setReadyState(socket.current.readyState)
+                setLastMessage(data);
+                console.log("Received WebSocket message:", data,"readyState:",socket.current.readyState);
+            } catch (error) {
+                console.error("Error parsing WebSocket message", error);
+            }
+        }
     });
 
-    return () => socket.close();
-  }, [user, isElectron]);
+    socket.current.addEventListener("error", (error) => {
+        setConnectionStatus("Error");
+        setReadyState(socket.current?.readyState ?? -1);
+        console.error("WebSocket error:", error);
+    });
 
+    socket.current.addEventListener("close", (event: CloseEvent) => {
+        setConnectionStatus("Closed");
+        setReadyState(socket.current?.readyState ?? -1);
 
-  const sendMessage = (message: string, chatId: number) => {
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(
-        JSON.stringify({ type: "chat", content: message, chatId: chatId })
-      );
+        console.log("WebSocket connection closed:", event);
+    });
+
+    return () => socket.current?.close();
+  }, [user]);
+
+  const sendMessage = useCallback((message: string, chatId: number) => {
+    console.log("Sending WebSocket message:", message,"readyState:",socket.current?.readyState);
+    if (socket.current && socket.current.readyState === WebSocket.OPEN) {
+      socket.current.send(JSON.stringify({ type: "chat", content: message, chatId: chatId }));
     } else {
       console.error("WebSocket is not open.");
     }
-  };
+  },[]);
 
-  return { sendMessage, lastMessage, readyState, connectionStatus };
+  return { sendMessage, lastMessage, connectionStatus, readyState};
 }

@@ -139,7 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (data: z.infer<typeof regSchema>) => {
-    console.log("Auth: Начинаем регистрацию для", data.username, data.email);
+    console.log("Auth: Начинаем регистрацию для", data.username, data.email); // optional chaining added here
     try {
       await registerMutation.mutateAsync(data);
       setLocation("/");
