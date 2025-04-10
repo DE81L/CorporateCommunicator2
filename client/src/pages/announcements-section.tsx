@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "../hooks/use-auth";
-import { createApiClient, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { useToast } from "../hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { useElectron } from "@/hooks/use-electron";
@@ -49,7 +49,6 @@ type CreateAnnouncementFormValues = z.infer<typeof createAnnouncementSchema>;
 export default function AnnouncementsSection() {
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const { isElectron } = useElectron();
 
   // Fetch announcements
   const { 
@@ -79,7 +78,7 @@ export default function AnnouncementsSection() {
         });
       },
       onError: (error: Error) => {
-        toast({
+        toast({ 
           title: "Failed to create announcement",
           description: error.message,
           variant: "destructive",

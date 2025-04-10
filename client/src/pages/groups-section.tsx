@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "../hooks/use-auth";
 import { queryClient, createApiClient } from "../lib/queryClient";
 import { useToast } from "../hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -98,14 +97,6 @@ export default function GroupsSection() {
 
   const onSubmit = (data: CreateGroupFormValues) => {
     createGroupMutation.mutate(data);
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
   };
 
   return (

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
-import { useWebSocket } from "@/lib/useWebSocket";
+import { useWebSocket } from "../hooks/useWebSocket";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -10,7 +10,6 @@ import {
   Loader2,
   Phone,
   Video,
-  MoreVertical,
   Paperclip,
   Send,
 } from "lucide-react";
@@ -47,7 +46,6 @@ interface MessagesProps {
 
 export default function MessagesSection({ onStartCall }: MessagesProps) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messageInput, setMessageInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);

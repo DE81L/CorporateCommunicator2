@@ -184,14 +184,7 @@ function createMockElectronAPI(): ElectronAPI {
       saveMessage: (message: any) => { localStorage.setItem(`message-${message.id}`, JSON.stringify(message)); return Promise.resolve()},
       deleteMessage: (id: number) => { localStorage.removeItem(`message-${id}`); return Promise.resolve();},
     },
-    notification: {
-      showNotification: (title: string, body: string) => {
-        if ('Notification' in window) {
-          new Notification(title, { body });
-        }
-        return Promise.resolve(true);
-      },
-    },
+
   };
 }
 
