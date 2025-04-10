@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, createApiClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -32,6 +32,7 @@ import { Loader2, Plus, Users } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/use-auth";
+import { useElectron } from "@/hooks/use-electron";
 
 const createGroupSchema = z.object({
   
@@ -43,8 +44,8 @@ const createGroupSchema = z.object({
 type CreateGroupFormValues = z.infer<typeof createGroupSchema>;
 
 export default function GroupsSection() {
-  const apiClient = createApiClient(false); // Assuming not running in electron by default
-  const { request } = useAuth();
+  const { isElectron } = useElectron();
+  const { request } = useAuth();  
   const { toast } = useToast();
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
 
@@ -53,15 +54,15 @@ export default function GroupsSection() {
     data: groups,
     isLoading: isLoadingGroups,
     error: groupsError,
-  } = useQuery<Group[]>({
-    queryKey: ["/api/groups"],
-    queryFn: () => apiClient.request("GET", "/api/groups").then((res) => res.json()),
+  } = useQuery<Group[], Error>({
+    queryKey: ["/api/groups",isElectron],
+    queryFn: () => request("GET", "/api/groups"),
   });
 
   // Fetch all users for adding to groups
-  useQuery<User[]>({
-    queryKey: ["/api/users"],
-    queryFn: () => apiClient.request("GET", "/api/users").then((res) => res.json()),
+  useQuery<User[], Error>({
+    queryKey: ["/api/users",isElectron],
+    queryFn: () => request("GET", "/api/users"),
   });
 
   // Create group mutation
@@ -72,7 +73,7 @@ export default function GroupsSection() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
-      setIsCreateGroupDialogOpen(false);
+      setIsCreateGroupDialogOpen(false);  
       toast({
         title: "Group created",
         description: "Your new group has been created successfully.",

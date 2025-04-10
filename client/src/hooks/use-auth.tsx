@@ -1,7 +1,7 @@
-import { createContext, ReactNode, useContext, useMemo, useCallback } from "react";
+import { createContext, ReactNode, useContext, useMemo, useCallback, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { useLocation } from "wouter";
+import { useLocation, NavigateOptions } from "wouter";
 import { getQueryFn, createApiClient, queryClient } from "../lib/queryClient";
 import { useTranslations } from "./use-translations";
 
@@ -28,7 +28,7 @@ export interface AuthContextType {
   error: Error | null | undefined;
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
-  register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<UserWithoutPassword>;
+  register: (data: z.infer<ReturnType<typeof registerSchema>>) => Promise<void>;
   sendIPC: null;
   }
 
@@ -93,9 +93,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const user = await res.json();
       return user;
     },
+    
   });
-
-  const logoutMutation = useMutation({
+    const logoutMutation = useMutation({
     mutationFn: async () => {
       await fetch("/api/logout", { method: "POST" });
     },
@@ -105,26 +105,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLocation("/auth");
     },
   });
-  const registerMutation = useMutation({
-    mutationFn: async (userData: z.infer<typeof regSchema>): Promise<UserWithoutPassword>  => {
+    const registerMutation = useMutation({
+    mutationFn: async (userData: z.infer<typeof regSchema>) => {
       const { confirmPassword, ...data } = userData;
-      const apiClient = createApiClient(false); // Assuming isElectron is always false here
+      const apiClient = createApiClient(false);
       const res = await apiClient.request("/api/register", { method: "POST", body: JSON.stringify(data) });
-      const user = await res.json();
-      return user;
+      if (res.ok) {
+        return res.json();
+      }
+        const errorText = await res.text();
+        throw new Error(errorText || 'register failed');
     },
   });
 
-  const login = useCallback(async (credentials) => await loginMutation.mutateAsync(credentials), [loginMutation])
+  const login = useCallback(
+    async (credentials) => { await loginMutation.mutateAsync(credentials)},
+    [loginMutation]
+  )
  return (
     <AuthContext.Provider
     value={{
-      apiRequest: null,
       user: user || null,
       isLoading,
       error: authError,
       sendIPC: null,
-      login: async (credentials) => await loginMutation.mutateAsync(credentials) as any,
+      login: async (credentials) => await loginMutation.mutateAsync(credentials),
       logout: () => logoutMutation.mutateAsync(),
       register: (data) => registerMutation.mutateAsync(data),
     }}

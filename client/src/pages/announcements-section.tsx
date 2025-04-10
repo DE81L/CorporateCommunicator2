@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth, apiRequest } from "../hooks/use-auth";
+import { useAuth } from "../hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "../hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -48,7 +48,7 @@ type CreateAnnouncementFormValues = z.infer<typeof createAnnouncementSchema>;
 export default function AnnouncementsSection() {
   const { toast } = useToast();
   const { } = useAuth();
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
 
   // Fetch announcements
   const { 
@@ -57,7 +57,8 @@ export default function AnnouncementsSection() {
     error 
   } = useQuery<Announcement[]>({
     queryKey: ['/api/announcements'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Announcement[]> => {
+      const { apiRequest } = useAuth();
       const response = await apiRequest("GET", "/api/announcements");
       return response.json()
     },
@@ -65,6 +66,7 @@ export default function AnnouncementsSection() {
 
   // Create announcement mutation (creates a group with isAnnouncement=true)
     const createAnnouncementMutation = useMutation({
+      
       mutationFn: async (data: CreateAnnouncementFormValues) => {
         const res = await apiRequest("POST", "/api/groups", data); // call the apiRequest function from useAuth
         return res;
@@ -77,7 +79,7 @@ export default function AnnouncementsSection() {
           description: "Your announcement has been posted successfully.",
         });
       },
-      onError: (error: Error) => {
+      onError: (error: Error): void => {
         toast({ 
           title: "Failed to create announcement",
           description: error.message,
