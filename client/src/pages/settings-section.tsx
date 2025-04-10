@@ -7,9 +7,7 @@ import ElectronInfo from "@/components/electron-info";
 import { useElectron } from "@/hooks/use-electron";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  Dialog,
-  DialogContent,
+import { Dialog, DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -17,14 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
+import { Form, FormControl, FormField, FormItem, FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
@@ -45,7 +36,7 @@ const passwordChangeSchema = z
 type PasswordChangeFormValues = z.infer<typeof passwordChangeSchema>;
 
 export default function SettingsSection() {
-  const { user, logoutMutation } = useAuth();
+  const { user, logout } = useAuth();
   const { toast } = useToast();
   const { isElectron } = useElectron();
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
@@ -62,7 +53,7 @@ export default function SettingsSection() {
     },
   });
 
-  const onSubmit = (data: PasswordChangeFormValues) => {
+  const onSubmit = () => {
     // In real implementation, this would call an API endpoint
     toast({
       title: "Password updated",
@@ -290,9 +281,9 @@ export default function SettingsSection() {
             </div>
             <Button
               variant="destructive"
-              onClick={() => logoutMutation.mutate()}
-              disabled={logoutMutation.isPending}
-            >
+              onClick={logout}
+             >
+
               Sign Out
             </Button>
           </div>

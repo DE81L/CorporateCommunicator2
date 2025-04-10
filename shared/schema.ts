@@ -1,5 +1,4 @@
 import { pgTable, serial, text, integer, date, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Define special null-like values
