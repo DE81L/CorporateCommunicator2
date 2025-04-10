@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
-import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "../hooks/use-auth";
+import { queryClient, createApiClient } from "../lib/queryClient";
+import { useToast } from "../hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -44,6 +43,7 @@ type CreateGroupFormValues = z.infer<typeof createGroupSchema>;
 
 export default function GroupsSection() {
   const { user } = useAuth();
+  const apiClient = createApiClient(false); // Assuming not running in electron by default
   const { toast } = useToast();
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
 
@@ -54,7 +54,7 @@ export default function GroupsSection() {
     error: groupsError,
   } = useQuery<Group[]>({
     queryKey: ["/api/groups"],
-    queryFn: () => apiRequest("GET", "/api/groups").then((res) => res.json()),
+    queryFn: () => apiClient.request("GET", "/api/groups").then((res) => res.json()),
   });
 
   // Fetch all users for adding to groups

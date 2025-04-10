@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth"; // Import useAuth from hooks
-import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/queryClient"; // Import apiRequest from queryClient
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "../hooks/use-auth"; // Import useAuth from hooks
+import { queryClient, createApiClient } from "@/lib/queryClient";
+import { useToast } from "../hooks/use-toast";
 import { useForm } from "react-hook-form";
+import { useElectron } from "@/hooks/use-electron";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { formatDistance } from "date-fns";
@@ -50,6 +51,7 @@ export default function AnnouncementsSection() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const { isElectron } = useElectron();
 
   // Fetch announcements
   const { 
@@ -58,13 +60,17 @@ export default function AnnouncementsSection() {
     error 
   } = useQuery<Announcement[]>({
     queryKey: ['/api/announcements'],
-
-    queryFn: () => apiRequest("GET", "/api/announcements").then(res => res.json()),
+    queryFn: async () => {
+      const apiClient = createApiClient(isElectron);
+      const response = await apiClient.request("GET", "/api/announcements");
+      return response.json();
+    },
   });
 
   // Create announcement mutation (creates a group with isAnnouncement=true)
   const createAnnouncementMutation = useMutation({
     mutationFn: async (data: CreateAnnouncementFormValues) => {
+      const apiClient = createApiClient(isElectron);
       const res = await apiRequest("POST", "/api/groups", data);
       return await res.json();
     },

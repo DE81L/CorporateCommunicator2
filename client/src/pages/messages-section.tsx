@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "../hooks/use-auth";
 import { useWebSocket } from "@/lib/useWebSocket";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

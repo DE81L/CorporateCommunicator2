@@ -1,4 +1,4 @@
-import { useAuth } from "@/hooks/use-auth";import { LanguageContext } from "@/lib/i18n/LanguageContext";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import {
   MessageSquareIcon,
@@ -14,8 +14,7 @@ import {
   BookOpenIcon,
   sendIPC
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";import { sections, type SectionType } from "@/types/sections";
+import { Button,Badge } from "@/components/ui";
 import { type SectionType } from "@/types/sections";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 

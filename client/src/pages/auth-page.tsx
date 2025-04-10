@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@/hooks/use-auth"; // Import useAuth from hooks
+import { useAuth } from "../hooks/use-auth"; // Import useAuth from hooks
 import { useState } from "react";
 import { z } from "zod";
 import { Redirect } from "wouter";

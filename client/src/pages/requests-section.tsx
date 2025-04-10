@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { apiRequest } from "@/lib/queryClient";
-import { useQuery } from "react-query";
+import { createApiClient } from "@/lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
 
-// API calls using configured API_URL
-async function createRequest(data: any) {
+
+async function createRequest(data: any, isElectron:boolean) {
+  const apiClient = createApiClient(isElectron);
+
   try {
-    const response = await apiRequest("POST", "/api/requests", data);
+    const response = await apiClient.request("POST", "/api/requests", data);
     return await response.json();
   } catch (error) {
     throw new Error("Failed to create request");
@@ -14,8 +16,10 @@ async function createRequest(data: any) {
 }
 
 async function fetchAllRequests() {
+  const apiClient = createApiClient(false);
+
   try {
-    const response = await apiRequest("GET", "/api/requests");
+    const response = await apiClient.request("GET", "/api/requests");
     return await response.json();
   } catch (error) {
     throw new Error("Failed to load requests");
@@ -23,8 +27,10 @@ async function fetchAllRequests() {
 }
 
 async function completeRequest(id: number, grade: number, reviewText?: string) {
+  const apiClient = createApiClient(false);
+
   try {
-    const response = await apiRequest("PATCH", `/api/requests/${id}/complete`, {
+    const response = await apiClient.request("PATCH", `/api/requests/${id}/complete`, {
       grade,
       reviewText
     });
@@ -106,7 +112,7 @@ export default function RequestsPage() {
         formData.subdivision = null;
       }
 
-      await createRequest(formData);
+      await createRequest(formData, false);
       reset();
       alert("Заявка успешно создана!");
       loadRequests();
@@ -283,33 +289,32 @@ export default function RequestsPage() {
   );
 }
 
-export function RequestsSection() {
-  // Fetch user's own requests
-  const { 
-    data: myRequests,
-    isLoading: isLoadingMyRequests,
-    error: myRequestsError
-  } = useQuery<Request[]>({
-    queryKey: ['/api/requests'],
-    queryFn: () => apiRequest("GET", "/api/requests").then(res => res.json()),
-  });
-  
-  // Fetch requests assigned to the user
-  const { 
-    data: assignedRequests,
-    isLoading: isLoadingAssigned,
-    error: assignedError
-  } = useQuery<Request[]>({
-    queryKey: ['/api/requests/assigned'],
-    queryFn: () => apiRequest("GET", "/api/requests/assigned").then(res => res.json()),
-  });
-  
-  // Fetch all users for the assignee dropdown
-  const { 
-    data: users,
-    isLoading: isLoadingUsers
-  } = useQuery<User[]>({
-    queryKey: ['/api/users'],
-    queryFn: () => apiRequest("GET", "/api/users").then(res => res.json()),
-  });
-}
+export function RequestsSection() {}
+//   // Fetch user's own requests
+//   const {
+//     data: myRequests,
+//     isLoading: isLoadingMyRequests,
+//     error: myRequestsError,
+//   } = useQuery<Request[]>({
+//     queryKey: ["/api/requests"],
+//     queryFn: () =>
+//       apiRequest("GET", "/api/requests").then((res) => res.json()),
+//   });
+
+//   // Fetch requests assigned to the user
+//   const {
+//     data: assignedRequests,
+//     isLoading: isLoadingAssigned,
+//     error: assignedError,
+//   } = useQuery<Request[]>({
+//     queryKey: ["/api/requests/assigned"],
+//     queryFn: () =>
+//       apiRequest("GET", "/api/requests/assigned").then((res) => res.json()),
+//   });
+
+//   // Fetch all users for the assignee dropdown
+//   const { data: users, isLoading: isLoadingUsers } = useQuery<User[]>({
+//     queryKey: ["/api/users"],
+//     queryFn: () => apiRequest("GET", "/api/users").then((res) => res.json()),
+//   });
+// }

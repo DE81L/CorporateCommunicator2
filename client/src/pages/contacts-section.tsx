@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "../hooks/use-auth";
 import { User } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,7 @@ import {
   Video,
   Mail,
 } from "lucide-react";
-import { apiRequest } from "@/utils/api";
+import { createApiClient } from "../lib/queryClient";
 
 interface ContactsProps {
   onStartCall: (
@@ -26,6 +26,8 @@ interface ContactsProps {
 
 export default function ContactsSection({ onStartCall }: ContactsProps) {
   const { user } = useAuth();
+  const apiClient = createApiClient(true)
+
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch all users
@@ -35,7 +37,7 @@ export default function ContactsSection({ onStartCall }: ContactsProps) {
     error,
   } = useQuery<User[]>({
     queryKey: ["/api/users"],
-    queryFn: () => apiRequest("GET", "/api/users").then((res) => res.json()),
+    queryFn: () => apiClient.request("GET", "/api/users").then((res) => res.json()),
   });
 
   // Filter users based on search query

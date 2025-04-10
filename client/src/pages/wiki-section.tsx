@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
-import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "../hooks/use-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { createApiClient } from "../lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -58,6 +58,7 @@ type WikiEntryFormValues = z.infer<typeof wikiEntryFormSchema>;
 type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
 export default function WikiSection() {
+  const { request } = createApiClient(true);
   const { user } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("entries");
@@ -99,7 +100,7 @@ export default function WikiSection() {
     queryFn: () => {
       if (!activeCategoryId) return Promise.resolve([] as WikiEntry[]);
       return apiRequest<WikiEntry[]>(`/api/wiki/categories/${activeCategoryId}/entries`);
-    },
+    }, 
     enabled: !!activeCategoryId,
   });
 
@@ -113,7 +114,7 @@ export default function WikiSection() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      return apiRequest('/api/wiki', 'POST', payload);
+      return request('POST', '/api/wiki', payload);
     },
     onSuccess: () => {
       toast({
@@ -150,7 +151,7 @@ export default function WikiSection() {
         lastEditorId: user?.id,
         updatedAt: new Date().toISOString(),
       };
-      return apiRequest(`/api/wiki/${id}`, 'PUT', payload);
+      return request('PUT', `/api/wiki/${id}`, payload);
     },
     onSuccess: () => {
       toast({
@@ -177,7 +178,7 @@ export default function WikiSection() {
   // Delete wiki entry mutation
   const deleteEntryMutation = useMutation({
     mutationFn: (id: number) => {
-      return apiRequest(`/api/wiki/${id}`, 'DELETE');
+      return request('DELETE', `/api/wiki/${id}`);
     },
     onSuccess: () => {
       toast({
@@ -207,7 +208,7 @@ export default function WikiSection() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      return apiRequest('/api/wiki/categories', 'POST', payload);
+      return request('POST', '/api/wiki/categories', payload);
     },
     onSuccess: () => {
       toast({
@@ -240,7 +241,7 @@ export default function WikiSection() {
         ...rest,
         updatedAt: new Date().toISOString(),
       };
-      return apiRequest(`/api/wiki/categories/${id}`, 'PUT', payload);
+      return request('PUT', `/api/wiki/categories/${id}`, payload);
     },
     onSuccess: () => {
       toast({
@@ -264,7 +265,7 @@ export default function WikiSection() {
   // Delete category mutation
   const deleteCategoryMutation = useMutation({
     mutationFn: (id: number) => {
-      return apiRequest(`/api/wiki/categories/${id}`, 'DELETE');
+      return request('DELETE', `/api/wiki/categories/${id}`);
     },
     onSuccess: () => {
       toast({
