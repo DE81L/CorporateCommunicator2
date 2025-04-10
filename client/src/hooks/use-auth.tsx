@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [, setLocation] = useLocation();
   const [isLoading] = useState<boolean>(true);
   const [authError] = useState<Error | null>(null);
-  const { data: user } = useQuery<UserWithoutPassword | null>({
+  const { data: user } = useQuery<UserWithoutPassword | null | undefined>({
     queryKey: ["/api/user"], queryFn: getQueryFn("/api/user"),
   });
   const loginMutation = useMutation({
@@ -110,7 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async (userData: z.infer<typeof regSchema>): Promise<any> => {
       const { confirmPassword, ...data } = userData;
       const { isElectron } = useElectron();
-      const apiClient = createApiClient(isElectron);      const res = await apiClient.request({ method: "POST", path: "/api/register", body: data });
+      const apiClient = createApiClient(isElectron);      
+      const res = await apiClient.request({method: "POST", path: "/api/register", body: data });
       return res.json();
     },
   });

@@ -1,7 +1,6 @@
 import { X, Minimize, Maximize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useElectron } from '@/hooks/use-electron';
-import { ElectronAPI } from '@/lib/electron-types';
 export const WindowFrame = () => {
   const { isElectron, api } = useElectron();
     if (!isElectron) return null;
