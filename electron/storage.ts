@@ -3,6 +3,34 @@ import Store from 'electron-store';
 import { z } from 'zod';
 
 // Define schemas for validation
+interface StoreData {
+  userData: {
+    id: number;
+    username: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    settings?: {
+      theme: 'light' | 'dark' | 'system';
+      language: 'en' | 'ru';
+      notifications: boolean;
+      soundEnabled: boolean;
+    };
+  } | null;
+  messages: Array<{
+    id: number;
+    senderId: number;
+    receiverId: number;
+    content: string;
+    timestamp: number;
+    type: 'text' | 'file' | 'image';
+    status: 'sent' | 'delivered' | 'read';
+    metadata?: Record<string, unknown>;
+  }>;
+  lastMessageId: number;
+}
+
+
 const userSchema = z.object({
   id: z.number(),
   username: z.string(),
@@ -29,11 +57,7 @@ const messageSchema = z.object({
 });
 
 // Initialize electron-store
-const store = new Store<{
-  userData: unknown;
-  messages: unknown[];
-  lastMessageId: number;
-}>({
+const store = new Store<StoreData>({
   name: 'nexus-data',
   defaults: {
     userData: null,
