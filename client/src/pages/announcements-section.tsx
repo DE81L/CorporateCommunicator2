@@ -39,7 +39,7 @@ export default function AnnouncementsSection() {
   const {
     isLoading: isAnnouncementsLoading, 
     error: announcementsError,data,
-  } = useQuery({queryKey: ['/api/announcements'], queryFn: async () => {   
+  } = useQuery({queryKey: ['/api/announcements'], queryFn: async () => {
     const response = await fetch("/api/groups?isAnnouncement=true"); 
       if (!response.ok) {
       throw new Error("Failed to fetch announcements");
