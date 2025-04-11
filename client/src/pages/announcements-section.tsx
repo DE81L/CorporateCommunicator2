@@ -46,7 +46,7 @@ export default function AnnouncementsSection() {
     }    
     const data = await response.json();
     return data;
-  });
+  }});
   
   // Create announcement mutation (creates a group with isAnnouncement=true)
     const createAnnouncementMutation = useMutation({
@@ -105,7 +105,7 @@ export default function AnnouncementsSection() {
   if (announcementsError) {
       console.error("Error fetching announcements:", announcementsError);
   }
-  };
+  
 
   // Mock function to get department name for demo
   const getDepartmentName = (id: number) => {
