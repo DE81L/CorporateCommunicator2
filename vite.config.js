@@ -32,7 +32,7 @@ const path_1 = __importStar(require("path"));
 const url_1 = require("url");
 const __filename = (0, url_1.fileURLToPath)(import.meta.url);
 const __dirname = (0, path_1.dirname)(__filename);
-exports.default = (0, vite_1.defineConfig)(({ mode }) => {
+module.exports = (0, vite_1.defineConfig)(({ mode }) => {
     const env = (0, vite_1.loadEnv)(mode, process.cwd(), '');
     return {
         plugins: [(0, plugin_react_1.default)()],
