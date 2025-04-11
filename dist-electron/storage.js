@@ -7,7 +7,6 @@ exports.initStorage = initStorage;
 const electron_1 = require("electron");
 const electron_store_1 = __importDefault(require("electron-store"));
 const zod_1 = require("zod");
-// Define schemas for validation
 const userSchema = zod_1.z.object({
     id: zod_1.z.number(),
     username: zod_1.z.string(),
