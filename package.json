@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "concurrently \"tsx server/index.ts\" \"cd client && cross-env ELECTRON=true NODE_ENV=development vite\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron electron/main.cjs --no-sandbox\"",
     "build": "cross-env ELECTRON=true NODE_ENV=production vite build && npm run build:electron",
-      "build:electron": "tsc -p electron/tsconfig.json",
+    "build:electron": "tsc -p electron/tsconfig.json",
     "start": "cross-env NODE_ENV=production ELECTRON=true electron .",
     "check": "tsc -p client/tsconfig.json"
   },
@@ -77,6 +77,7 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.1",
+    "react-hot-toast": "^2.5.2",
     "react-i18next": "^15.4.1",
     "react-icons": "^5.4.0",
     "react-resizable-panels": "^2.1.4",
