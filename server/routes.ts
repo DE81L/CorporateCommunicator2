@@ -11,7 +11,7 @@ import {
   insertWikiEntrySchema,
   insertWikiCategorySchema,
   convertHelpers
-} from "../shared/schema";
+} from "../shared/electron-shared/schema";
 import { z } from "zod";
 import { pool } from "./db"; // Updated import
 

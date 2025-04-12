@@ -3,10 +3,7 @@ import path from "path";
 import url from "url";
 import { initEncryption } from './encryption';
 import { initStorage } from './storage';
-import { connectToDb } from '../server/db';
-import { setupAuth } from '../server/auth';
-import { registerRoutes } from '../server/routes';
-import { setupVite, serveStatic } from '../server/vite';
+import * as schema from '../shared/electron-shared/schema';
 
 // Environment and configuration
 const isDev = process.env.NODE_ENV === "development";
@@ -141,11 +138,31 @@ app.whenReady().then(async () => {
   // Initialize core modules
   initEncryption();
   initStorage();
-  
+
+  // Initialize server via client
+  const electronServerClient = (await import('./electron-server-client')).default; // Dynamic import
+  await electronServerClient.connectToDb();
+  await electronServerClient.setupAuth();
+  await electronServerClient.registerRoutes();
+  await electronServerClient.setupVite();
+
   // Create window and tray
   await createWindow();
   createTray();
-  
+
+  // IPC handlers for server requests
+  ipcMain.handle('server:connectToDb', async () => {
+    // The server function has already been called during initialization
+  });
+  ipcMain.handle('server:setupAuth', async () => {
+    // The server function has already been called during initialization
+  });
+  ipcMain.handle('server:registerRoutes', async () => {
+    // The server function has already been called during initialization
+  });
+  ipcMain.handle('server:setupVite', async () => {
+    // The server function has already been called during initialization
+  });
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
@@ -162,3 +179,10 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   isQuitting = true;
 });
+
+ipcMain.handle('server:serveStatic', async (_event, path) => {
+  // Assuming you have a way to access the server implementation here
+  const electronServer = (await import('../server/electron-server-implementation')).default; // Dynamic import
+  return electronServer.serveStatic(path);
+});
+

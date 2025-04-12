@@ -2,7 +2,7 @@ import { eq, and, desc, asc } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { Store } from "express-session";
-import * as schema from "../shared/schema";
+import * as schema from "../shared/electron-shared/schema";
 import { db } from "./db";
 
 const MemoryStore = createMemoryStore(session);

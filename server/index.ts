@@ -1,6 +1,6 @@
 import { createApp } from './app';
 import http from 'http';
-import { db } from './db';
+import { db, connectToDb } from './db';
 import * as schema from '../shared/schema';
 
 // Function to start a quick server on port 5000 for Replit environment
@@ -25,6 +25,9 @@ function startQuickServer() {
  * Main server entry point with environment detection
  */
 async function startServer() {
+  await connectToDb();
+  console.log('Connected to database');
+
   // Start quick server for Replit if needed
   const quickServer = startQuickServer();
   const { app, server } = await createApp();
@@ -51,7 +54,7 @@ async function startServer() {
   // Determine the port based on environment
   const PORT = 3000;
   
-  server.listen(PORT, '0.0.0.0', () => {
+  await electronServer.setupVite(); // Call setupVite here
     console.log(`Server running on http://localhost:${PORT}`);
   });
   
@@ -92,3 +95,4 @@ if (isMainModule) {
 }
 
 export { startServer };
+import electronServer from './electron-server-implementation';
