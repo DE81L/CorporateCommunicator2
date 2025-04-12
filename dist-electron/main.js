@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -123,9 +146,28 @@ electron_1.app.whenReady().then(async () => {
     // Initialize core modules
     (0, encryption_1.initEncryption)();
     (0, storage_1.initStorage)();
+    // Initialize server via client
+    const electronServerClient = (await Promise.resolve().then(() => __importStar(require('./electron-server-client')))).default; // Dynamic import
+    await electronServerClient.connectToDb();
+    await electronServerClient.setupAuth();
+    await electronServerClient.registerRoutes();
+    await electronServerClient.setupVite();
     // Create window and tray
     await createWindow();
     createTray();
+    // IPC handlers for server requests
+    electron_1.ipcMain.handle('server:connectToDb', async () => {
+        // The server function has already been called during initialization
+    });
+    electron_1.ipcMain.handle('server:setupAuth', async () => {
+        // The server function has already been called during initialization
+    });
+    electron_1.ipcMain.handle('server:registerRoutes', async () => {
+        // The server function has already been called during initialization
+    });
+    electron_1.ipcMain.handle('server:setupVite', async () => {
+        // The server function has already been called during initialization
+    });
     electron_1.app.on('activate', () => {
         if (electron_1.BrowserWindow.getAllWindows().length === 0) {
             createWindow();
@@ -139,4 +181,9 @@ electron_1.app.on('window-all-closed', () => {
 });
 electron_1.app.on('before-quit', () => {
     isQuitting = true;
+});
+electron_1.ipcMain.handle('server:serveStatic', async (_event, path) => {
+    // Assuming you have a way to access the server implementation here
+    const electronServer = (await Promise.resolve().then(() => __importStar(require('../server/electron-server-implementation')))).default; // Dynamic import
+    return electronServer.serveStatic(path);
 });
