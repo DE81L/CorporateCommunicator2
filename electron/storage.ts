@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import Store from 'electron-store';
+import ElectronStore from 'electron-store';
 import { z } from 'zod';
   
 // Define schemas for validation
@@ -57,7 +57,7 @@ const messageSchema = z.object({
 });
 
 // Initialize electron-store
-const store = new Store<StoreData>({
+const store = new ElectronStore<StoreData>({
   name: 'nexus-data',
   defaults: {
     userData: null,
@@ -77,7 +77,7 @@ export function initStorage() {
 
 async function getUserData() {
   try {
-    const userData = store.get('userData');
+    const userData = store['get']('userData');
     if (!userData) return null;
     
     // Validate stored data
@@ -95,7 +95,7 @@ async function setUserData(_event: Electron.IpcMainInvokeEvent, data: unknown) {
     const validatedData = userSchema.parse(data);
     
     // Store data
-    store.set('userData', validatedData);
+    store['set']('userData', validatedData);
     return { 
       success: true, 
       message: 'User data saved successfully' 
@@ -111,7 +111,7 @@ async function setUserData(_event: Electron.IpcMainInvokeEvent, data: unknown) {
 
 async function getMessages() {
   try {
-    const messages = store.get('messages', []);
+    const messages = store['get']('messages', []);
     interface Message {
       id: number;
       senderId: number;
@@ -135,17 +135,17 @@ async function saveMessage(_event: Electron.IpcMainInvokeEvent, message: unknown
     // Validate message data
     const validatedMessage = messageSchema.parse({
       ...(message as object),
-      id: store.get('lastMessageId', 0) + 1,
+      id: store['get']('lastMessageId', 0) + 1,
       timestamp: Date.now()
     });
 
     // Get existing messages and append new one
-    const messages = store.get('messages', []);
+    const messages = store['get']('messages', []);
     messages.push(validatedMessage);
 
     // Update store
-    store.set('messages', messages);
-    store.set('lastMessageId', validatedMessage.id);
+    store['set']('messages', messages);
+    store['set']('lastMessageId', validatedMessage.id);
 
     return {
       success: true,
@@ -164,13 +164,13 @@ async function saveMessage(_event: Electron.IpcMainInvokeEvent, message: unknown
 async function deleteMessage(_event: Electron.IpcMainInvokeEvent, id: number) {
   try {
     // Get current messages
-    const messages = store.get('messages', []);
+    const messages = store['get']('messages', []);
     
     // Filter out the message to delete
     const newMessages = messages.filter((msg: any) => msg.id !== id);
     
     // Update store
-    store.set('messages', newMessages);
+    store['set']('messages', newMessages);
 
     return {
       success: true,
