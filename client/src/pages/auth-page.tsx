@@ -30,23 +30,11 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-const registerSchema = z.object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
+const registerSchema = z.object({ 
     username: z.string().min(1, "Username is required"),
-    email: z.string().email("Invalid email"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-  })
+});
 
-  .extend({
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
-
-export default function AuthPage() {
+export default function AuthPage() { 
   const { t } = useTranslation();
   const { user, login: loginFn, register } = useAuth();
   
@@ -55,7 +43,7 @@ export default function AuthPage() {
   };
 
   const registerFn = async (data: z.infer<typeof registerSchema>) => {
-    await register(data);
+    await register({username: data.username});
   };
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
@@ -175,17 +163,11 @@ function RegisterForm({
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
       username: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
     },
   });
 
-  return (
-    <Card>
+  return (<Card>
       <CardHeader>
         <CardTitle>{t('auth.registerTitle')}</CardTitle>
         <CardDescription>{t('auth.registerDescription')}</CardDescription>
@@ -193,35 +175,9 @@ function RegisterForm({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="firstName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('auth.firstName')}</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your first name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('auth.lastName')}</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your last name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="username"
+             <FormField
+            control={form.control}
+            name="username"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('auth.username')}</FormLabel>
@@ -233,58 +189,11 @@ function RegisterForm({
               )}
             />
             <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('auth.email')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="Enter your email"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('auth.password')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Enter your password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('auth.confirmPassword')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Confirm your password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
           </CardContent>
+          
+          
+          
+          
           <CardFooter className="flex justify-end">
             <Button type="submit">
               {t('auth.register')}
