@@ -80,7 +80,8 @@ export function setupAuth(app: Express) {
     } catch (error) {
       done(error);
     }
-  });
+    });
+  }
 
   app.post("/api/register", async (req, res, next) => {
     try {
@@ -146,7 +147,8 @@ export function setupAuth(app: Express) {
   app.get("/api/random-user", async (req, res) => {
     try {
       // const users = Array.from(storage.users.values());
-      const users = []; //Commented to remove db interaction if (users.length === 0) {
+      const users = []; //Commented to remove db interaction
+      if (users.length === 0) {
         return res.status(404).json({ message: "No users found" });
       }
 
@@ -154,8 +156,8 @@ export function setupAuth(app: Express) {
       const randomUser = users[randomIndex];
 
       // Remove password from response
-      const { password , ...userWithoutPassword } = randomUser;
-
+      const userObj = randomUser as { [key: string]: any };
+      const { password , ...userWithoutPassword } = userObj;
       res.json(userWithoutPassword);
     } catch (error) {
       res.status(500).json({ message: "Failed to get random user", error });
