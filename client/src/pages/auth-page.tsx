@@ -43,7 +43,11 @@ export default function AuthPage() {
   };
 
   const registerFn = async (data: z.infer<typeof registerSchema>) => {
-    await register({username: data.username});
+    await register({
+      username: data.username,
+      password: "",
+      confirmPassword: ""
+    });
   };
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
@@ -188,10 +192,7 @@ function RegisterForm({
                 </FormItem>
               )}
             />
-            <FormField
           </CardContent>
-          
-          
           
           
           <CardFooter className="flex justify-end">
