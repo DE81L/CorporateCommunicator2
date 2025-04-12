@@ -56,13 +56,22 @@ const messageSchema = z.object({
   metadata: z.record(z.unknown()).optional()
 });
 
-// Initialize electron-store
-const store = new ElectronStore<StoreData>({
-  name: 'nexus-data',
+// Explicitly define the type of the store instance
+const store: ElectronStore<StoreData> & {
+  get: <Key extends keyof StoreData>(
+    key: Key,
+    defaultValue?: StoreData[Key]
+  ) => StoreData[Key];
+  set: <Key extends keyof StoreData>(
+    key: Key,
+    value: StoreData[Key]
+  ) => void;
+} = new ElectronStore<StoreData>({
+  name: "nexus-data",
   defaults: {
     userData: null,
     messages: [],
-    lastMessageId: 0
+    lastMessageId: 0,
   }
 });
 
