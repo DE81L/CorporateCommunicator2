@@ -54,8 +54,10 @@ async function startServer() {
   // Determine the port based on environment
   const PORT = 3000;
   
-  await electronServer.setupVite();
-    server.listen(PORT, () => {
+  // Commented out as requested
+  // await electronServer.setupVite();
+
+  server.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   }); 
 
