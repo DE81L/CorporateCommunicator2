@@ -2,11 +2,6 @@ import { ipcMain } from 'electron';
 import Store from 'electron-store';
 import { z } from 'zod';
   
-interface ElectronStore<T> {
-  get<K extends keyof T>(key: K): T[K];
-  set<K extends keyof T>(key: K, value: T[K]): void;
-}
-  
 // Define schemas for validation
 interface StoreData {
   userData: {
