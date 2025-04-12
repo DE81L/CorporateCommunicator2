@@ -168,10 +168,9 @@ electron_1.app.whenReady().then(async () => {
     electron_1.ipcMain.handle('server:setupVite', async () => {
         // The server function has already been called during initialization
     });
-    electron_1.app.on('activate', () => {
-        if (electron_1.BrowserWindow.getAllWindows().length === 0) {
-            createWindow();
-        }
+    electron_1.ipcMain.handle('server:serveStatic', async (_event, path) => {
+        // The server-side implementation will handle this request
+        return null;
     });
 });
 electron_1.app.on('window-all-closed', () => {
@@ -181,9 +180,4 @@ electron_1.app.on('window-all-closed', () => {
 });
 electron_1.app.on('before-quit', () => {
     isQuitting = true;
-});
-electron_1.ipcMain.handle('server:serveStatic', async (_event, path) => {
-    // Assuming you have a way to access the server implementation here
-    const electronServer = (await Promise.resolve().then(() => __importStar(require('../server/electron-server-implementation')))).default; // Dynamic import
-    return electronServer.serveStatic(path);
 });
