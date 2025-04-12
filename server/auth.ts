@@ -97,20 +97,18 @@ export function setupAuth(app: Express) {
         id: Math.floor(Math.random() * 100000), // Generate a temporary ID
         username: req.body.username,
         // Add any other necessary properties here...
-      };
-      req.login(user, (err) => {
-        if (err) return next(err);
-        // Respond with the temporary user object
-        res.status(201).json(user);
       });
-      //
+        req.login(user, (err) => {
+          if (err) return next(err);
+          // Respond with the temporary user object
+          res.status(201).json(user);
+        });
     
     } catch (error) {
       res.status(400).json({ message: "Registration failed", error });
     }
   });
 
-  app.post("/api/login", (req, res, next) => {
     passport.authenticate("local", (err, user, info) => {
       if (err) return next(err);
       if (!user)
