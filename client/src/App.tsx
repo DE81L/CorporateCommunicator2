@@ -7,7 +7,7 @@ import { AuthProvider } from "./contexts/auth-provider";
 import { WindowFrame } from "./components/ui/window-frame";
 import EnvironmentIndicator from "./components/electron-info";
 import { useElectron } from "./hooks/use-electron";
-import { RouterComponent } from "./lib/protected-route";
+import { ProtectedRoute } from "./lib/protected-route";
 
 export default function App() {
   const isElectron = useElectron();
@@ -24,7 +24,7 @@ export default function App() {
             {isElectron && <WindowFrame />}
             {/* Main content area with conditional padding */}
             <div className={`flex-1 overflow-auto ${isElectron ? "pt-0" : ""}`}>
-              <RouterComponent />
+              <ProtectedRoute />
             </div>
           </div>
         </LanguageProvider>
