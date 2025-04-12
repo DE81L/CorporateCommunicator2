@@ -30,7 +30,6 @@ const messageSchema = zod_1.z.object({
     status: zod_1.z.enum(['sent', 'delivered', 'read']),
     metadata: zod_1.z.record(zod_1.z.unknown()).optional()
 });
-// Explicitly define the type of the store instance
 const store = new electron_store_1.default({
     name: "nexus-data",
     defaults: {
