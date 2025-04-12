@@ -56,7 +56,6 @@ const messageSchema = z.object({
   metadata: z.record(z.unknown()).optional()
 });
 
-// Explicitly define the type of the store instance
 const store: ElectronStore<StoreData> & {
   get: <Key extends keyof StoreData>(
     key: Key,
