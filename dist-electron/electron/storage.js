@@ -49,7 +49,7 @@ function initStorage() {
 }
 async function getUserData() {
     try {
-        const userData = store.get('userData');
+        const userData = store['get']('userData');
         if (!userData)
             return null;
         // Validate stored data
@@ -66,7 +66,7 @@ async function setUserData(_event, data) {
         // Validate input data
         const validatedData = userSchema.parse(data);
         // Store data
-        store.set('userData', validatedData);
+        store['set']('userData', validatedData);
         return {
             success: true,
             message: 'User data saved successfully'
@@ -82,7 +82,7 @@ async function setUserData(_event, data) {
 }
 async function getMessages() {
     try {
-        const messages = store.get('messages', []);
+        const messages = store['get']('messages', []);
         return messages.map((msg) => messageSchema.parse(msg));
     }
     catch (error) {
@@ -95,15 +95,15 @@ async function saveMessage(_event, message) {
         // Validate message data
         const validatedMessage = messageSchema.parse({
             ...message,
-            id: store.get('lastMessageId', 0) + 1,
+            id: store['get']('lastMessageId', 0) + 1,
             timestamp: Date.now()
         });
         // Get existing messages and append new one
-        const messages = store.get('messages', []);
+        const messages = store['get']('messages', []);
         messages.push(validatedMessage);
         // Update store
-        store.set('messages', messages);
-        store.set('lastMessageId', validatedMessage.id);
+        store['set']('messages', messages);
+        store['set']('lastMessageId', validatedMessage.id);
         return {
             success: true,
             message: 'Message saved successfully',
@@ -121,11 +121,11 @@ async function saveMessage(_event, message) {
 async function deleteMessage(_event, id) {
     try {
         // Get current messages
-        const messages = store.get('messages', []);
+        const messages = store['get']('messages', []);
         // Filter out the message to delete
         const newMessages = messages.filter((msg) => msg.id !== id);
         // Update store
-        store.set('messages', newMessages);
+        store['set']('messages', newMessages);
         return {
             success: true,
             message: 'Message deleted successfully'
