@@ -23,7 +23,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { insertUserSchema } from "../../../shared/schema.ts";
 import { useTranslation } from 'react-i18next';
 
 const loginSchema = z.object({
@@ -31,7 +30,14 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-const registerSchema = insertUserSchema
+const registerSchema = z.object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    username: z.string().min(1, "Username is required"),
+    email: z.string().email("Invalid email"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+  })
+
   .extend({
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
