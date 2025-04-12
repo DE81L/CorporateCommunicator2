@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import { ElectronServerInterface } from '../shared/electron-shared/electron-server-interface';
+import { ElectronServerInterface } from '@shared/electron-server-interface';
 
 const electronServerClient: ElectronServerInterface = {
   connectToDb: async () => {

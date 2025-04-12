@@ -3,7 +3,7 @@ import path from "path";
 import url from "url";
 import { initEncryption } from './encryption';
 import { initStorage } from './storage';
-import * as schema from '../shared/electron-shared/schema';
+import * as schema from '@shared/schema';
 
 // Environment and configuration
 const isDev = process.env.NODE_ENV === "development";
