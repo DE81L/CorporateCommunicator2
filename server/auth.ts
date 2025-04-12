@@ -117,7 +117,7 @@ export function setupAuth(app: Express) {
         return res.status(401).json({ message: "Invalid credentials" });
       req.login(user, (err) => {
         if (err) return next(err);
-        const { password, ...userWithoutPassword } = user;
+        const { password , ...userWithoutPassword } = user;
         return res.status(200).json(userWithoutPassword);
       });
     })(req, res, next);
@@ -156,7 +156,7 @@ export function setupAuth(app: Express) {
       const randomUser = users[randomIndex];
 
       // Remove password from response
-      const { password, ...userWithoutPassword } = randomUser;
+      const { password , ...userWithoutPassword } = randomUser;
 
       res.json(userWithoutPassword);
     } catch (error) {

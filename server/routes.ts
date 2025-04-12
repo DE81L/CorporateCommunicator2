@@ -107,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Don't send password hash
       const safeUsers = users.map((user) => {
-        const { password, ...safeUser } = user;
+        const { password, ...safeUser} = user;
         return safeUser;
       });
       res.json(safeUsers);
@@ -125,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const randomIndex = Math.floor(Math.random() * users.length);
       const randomUser = users[randomIndex];
-      const { password, ...safeUser } = randomUser;
+      const { password, ...safeUser} = randomUser;
 
       // Fix: Add proper error handling for login
       req.login(randomUser, (err) => {

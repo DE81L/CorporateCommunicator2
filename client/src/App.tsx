@@ -4,7 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import HomePage from './pages/home-page';
 import { LanguageProvider } from './lib/i18n/LanguageContext';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "./contexts/auth-provider";
+import { AuthProvider } from "./hooks/use-auth";
 import { WindowFrame } from "./components/ui/window-frame";
 import EnvironmentIndicator from "./components/electron-info";
 import { useElectron } from "./hooks/use-electron";
