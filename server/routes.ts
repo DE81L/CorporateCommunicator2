@@ -117,6 +117,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User API - Get current user
+  app.get("/api/user", (req, res) => {
+    if (req.isAuthenticated()) {
+      // Exclude password from the user data
+      const { password, ...userWithoutPassword } = req.user as User;
+      return res.json(userWithoutPassword);
+    } else {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+  });
+
   app.get("/api/random-user", async (req, res) => {
     try {
       const users = await storage.listUsers();
