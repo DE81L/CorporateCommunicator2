@@ -56,7 +56,14 @@ const messageSchema = z.object({
   metadata: z.record(z.unknown()).optional()
 });
 
-const store: ElectronStore<StoreData> & {
+const store = new ElectronStore<StoreData>({
+  name: "nexus-data",
+  defaults: {
+    userData: null,
+    messages: [],
+    lastMessageId: 0,
+  }
+}) as ElectronStore<StoreData> & {
   get: <Key extends keyof StoreData>(
     key: Key,
     defaultValue?: StoreData[Key]
@@ -65,14 +72,7 @@ const store: ElectronStore<StoreData> & {
     key: Key,
     value: StoreData[Key]
   ) => void;
-} = new ElectronStore<StoreData>({
-  name: "nexus-data",
-  defaults: {
-    userData: null,
-    messages: [],
-    lastMessageId: 0,
-  }
-});
+};
 
 export function initStorage() {
   // Register IPC handlers
