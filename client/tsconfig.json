@@ -16,7 +16,7 @@
     "moduleResolution": "bundler",
     "types": ["node", "vite/client"],
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["./src/*"],
       "@shared/*": ["../shared/electron-shared/*"]
     },
     "useDefineForClassFields": true,
