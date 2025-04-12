@@ -14,7 +14,7 @@ import { LanguageProvider } from "./lib/i18n/LanguageContext";
 import { useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from './components/language-switcher';
-import i18n from './i18n';
+import i18n from 'i18next';
 
 // Main router component
 function Router() {
@@ -54,12 +54,12 @@ function App() {
     const initApp = async () => {
       try {
         // Initialize i18n
-        await i18n.init({
+        await import('./i18n').then(module => module.default.init({
           fallbackLng: 'en',
           debug: import.meta.env.DEV,
-        });
+        }));
 
-        // Any additional initialization can go here
+        
         console.log(`Application running in ${isElectron ? 'Electron' : 'web'} mode`);
         
         setIsInitialized(true);
@@ -92,12 +92,6 @@ function App() {
               {/* Only show window frame in Electron */}
               {isElectron && <WindowFrame />}
               
-              {/* Header */}
-              <header className="flex justify-between items-center p-4">
-                <h1 className="text-2xl font-bold">{t('common.appName')}</h1>
-                <LanguageSwitcher />
-              </header>
-              
               {/* Main content area with conditional padding */}
               <div 
                 className={`flex-1 overflow-auto ${
@@ -115,3 +109,4 @@ function App() {
 }
 
 export default App;
+
