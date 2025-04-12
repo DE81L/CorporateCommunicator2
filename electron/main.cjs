@@ -47,6 +47,9 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
+      // Add Content Security Policy to enhance security
+      // This is added to address Electron Security Warning (Insecure Content-Security-Policy)
+      contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws://localhost:*;"
     },
     icon: path.join(__dirname, '../generated-icon.png'),
   });
