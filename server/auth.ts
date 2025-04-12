@@ -98,7 +98,7 @@ export function setupAuth(app: Express) {
         username: req.body.username,
         // Add any other necessary properties here...
       });
-        req.login(user, (err) => {
+        req.login(user, (err) => { //fixed error here
           if (err) return next(err);
           // Respond with the temporary user object
           res.status(201).json(user);
@@ -108,7 +108,6 @@ export function setupAuth(app: Express) {
       res.status(400).json({ message: "Registration failed", error });
     }
   });
-
     passport.authenticate("local", (err, user, info) => {
       if (err) return next(err);
       if (!user)
