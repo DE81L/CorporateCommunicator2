@@ -97,8 +97,8 @@ export function setupAuth(app: Express) {
         id: Math.floor(Math.random() * 100000), // Generate a temporary ID
         username: req.body.username,
         // Add any other necessary properties here...
-      });
-        req.login(user, (err) => { //fixed error here
+      };
+        req.login(user, (err) => {
           if (err) return next(err);
           // Respond with the temporary user object
           res.status(201).json(user);
