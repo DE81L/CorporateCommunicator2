@@ -92,7 +92,6 @@ export function setupAuth(app: Express) {
       //   return res.status(400).json({ message: "Username already exists" });
       // }
 
-      // Instead of creating a user in the database, create a temporary user object
       const user = {
         id: Math.floor(Math.random() * 100000), // Generate a temporary ID
         username: req.body.username,
@@ -108,6 +107,8 @@ export function setupAuth(app: Express) {
       res.status(400).json({ message: "Registration failed", error });
     }
   });
+
+  app.post("/api/login", (req, res, next) => {
     passport.authenticate("local", (err, user, info) => {
       if (err) return next(err);
       if (!user)
