@@ -86,15 +86,10 @@ async function startServer() {
   return server;
 }
 
-// Start the server if this is the main module
-// Using import.meta.url for ESM modules
-const isMainModule = import.meta.url.endsWith(process.argv[1].replace(/^file:\/\//, ''));
-if (isMainModule) {
-  startServer().catch((err) => {
-    console.error('Server startup error:', err);
-    process.exit(1);
-  });
-}
+startServer().catch(err => {
+  console.error('Server startup error:', err);
+  process.exit(1);
+});
 
 export { startServer };
 import electronServer from './electron-server-implementation';
