@@ -1,7 +1,7 @@
 
-import { Toaster } from "react-hot-toast";
+import { Toaster } from 'react-hot-toast';
 
-import { LanguageProvider } from "./lib/i18n/LanguageContext";
+import { LanguageProvider } from './lib/i18n/LanguageContext';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./contexts/auth-provider";
 import { WindowFrame } from "./components/ui/window-frame";
@@ -23,10 +23,9 @@ export default function App() {
             {/* Only show window frame in Electron */}
             {isElectron && <WindowFrame />}
             {/* Main content area with conditional padding */}
-            <div className={`flex-1 overflow-auto ${isElectron ? "pt-0" : ""}`}>
-              <ProtectedRoute />
+            <div className={`flex-1 overflow-auto ${isElectron ? 'pt-0' : ''}`}>
             </div>
-          </div>
+            </div>
         </LanguageProvider>
       </AuthProvider>
     </QueryClientProvider>
