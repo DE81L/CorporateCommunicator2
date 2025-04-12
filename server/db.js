@@ -35,7 +35,7 @@ const { Pool } = pg_1.default;
 const dotenv_1 = __importDefault(require("dotenv"));
 const postgres_js_1 = require("drizzle-orm/postgres-js");
 const postgres_1 = __importDefault(require("postgres"));
-const schema = __importStar(require("../shared/schema"));
+const schema = __importStar(require("../shared/electron-shared/schema"));
 // Load environment variables
 dotenv_1.default.config();
 // Environment detection

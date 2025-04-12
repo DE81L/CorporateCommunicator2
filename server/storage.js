@@ -30,7 +30,7 @@ exports.storage = exports.PgStorage = void 0;
 const drizzle_orm_1 = require("drizzle-orm");
 const express_session_1 = __importDefault(require("express-session"));
 const memorystore_1 = __importDefault(require("memorystore"));
-const schema = __importStar(require("../shared/schema"));
+const schema = __importStar(require("../shared/electron-shared/schema"));
 const db_1 = require("./db");
 const MemoryStore = (0, memorystore_1.default)(express_session_1.default);
 class PgStorage {

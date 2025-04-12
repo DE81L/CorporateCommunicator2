@@ -5,7 +5,7 @@ const http_1 = require("http");
 const storage_1 = require("./storage");
 const ws_1 = require("ws");
 const auth_1 = require("./auth");
-const schema_1 = require("../shared/schema");
+const schema_1 = require("../shared/electron-shared/schema");
 const zod_1 = require("zod");
 const db_1 = require("./db"); // Updated import
 async function registerRoutes(app) {
