@@ -1,6 +1,8 @@
 import { createApp } from './app';
 import http from 'http';
 import { db, connectToDb } from './db';
+import dotenv from 'dotenv';
+dotenv.config();
 import * as schema from '../shared/schema';
 
 // Function to start a quick server on port 5000 for Replit environment
@@ -26,6 +28,8 @@ function startQuickServer() {
  * Main server entry point with environment detection
  */
 async function startServer() {
+  
+  
   console.log('startServer function called');
   await connectToDb();
   console.log('Connected to database');
