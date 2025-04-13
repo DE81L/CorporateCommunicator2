@@ -443,7 +443,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 const getUsers = async () => {
   console.log(`getUsers`);
-  const result = await pool.query("SELECT * FROM users");
+  const result = await pool.query(`
+    SELECT 
+      id, 
+      username, 
+      email, 
+      password, 
+      firstname as "firstName", 
+      lastname as "lastName", 
+      isonline as "isOnline", 
+      avatarurl as "avatarUrl" FROM users`);
   return result.rows;
 };
 
