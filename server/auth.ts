@@ -17,7 +17,7 @@ import { promisify } from 'util';
 
 const scryptAsync = promisify(scrypt); //this is not used
 
-async function hashPassword(password: string) {
+export async function hashPassword(password: string) {
   console.log('hashPassword');
 
   const salt = randomBytes(16).toString('hex');
