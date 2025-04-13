@@ -30,9 +30,15 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-const registerSchema = z.object({ 
-    username: z.string().min(1, "Username is required"),
+const registerSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
+
 
 export default function AuthPage() { 
   const { t } = useTranslation();
@@ -167,11 +173,14 @@ function RegisterForm({
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      username: "",
+      username: "",      
+      password: "",
+      confirmPassword: "",
     },
   });
 
-  return (<Card>
+  return (
+    <Card>
       <CardHeader>
         <CardTitle>{t('auth.registerTitle')}</CardTitle>
         <CardDescription>{t('auth.registerDescription')}</CardDescription>
