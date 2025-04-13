@@ -50,24 +50,26 @@ export default function GroupsSection() {
   const [groupsError, setGroupsError] = useState<string | null>(null);
 
   const fetchGroups = useCallback(async () => {
-      setIsLoadingGroups(true);
-      setGroupsError(null);
-      try {
-        const res = await fetch("/api/groups");
-        if (!res.ok) {
-          throw new Error(`Failed to fetch groups: ${res.status}`);
-        }
-        const data = await res.json();
-        setGroups(data);
-      } catch (err: any) {
-        setGroupsError(err.message);
-      } finally {
-        setIsLoadingGroups(false);
-      }  }, []);
+    setIsLoadingGroups(true);
+    setGroupsError(null);
+    try {
+      // const res = await fetch("/api/groups");
+      // if (!res.ok) {
+      //   throw new Error(`Failed to fetch groups: ${res.status}`);
+      // }
+      // const data = await res.json();
+      // setGroups(data);
+      setGroups([{id:1,name:'fake',isAnnouncement:false,description:'fake'}])
+    } catch (err: any) {
+      setGroupsError(err.message);
+    } finally {
+      setIsLoadingGroups(false);
+    }
+  }, []);
 
-    useEffect(() => {
-      fetchGroups();
-    }, [fetchGroups]);
+  useEffect(() => {
+    fetchGroups();
+  }, [fetchGroups]);
 
   // Fetch groups
   
@@ -75,27 +77,29 @@ export default function GroupsSection() {
   // Fetch all users for adding to groups
   useQuery<User[], Error>({
     queryKey: ["/api/users",isElectron],
-    queryFn: async () => {
-      const res = await fetch("/api/users");
-      if (!res.ok) {
-        throw new Error(`Failed to fetch users: ${res.status}`);
-      }
-      return res.json();
-    },
+    // queryFn: async () => {
+    //   const res = await fetch("/api/users");
+    //   if (!res.ok) {
+    //     throw new Error(`Failed to fetch users: ${res.status}`);
+    //   }
+    //   return res.json();
+    // },
+    queryFn: () => Promise.resolve([])
   })
 
   // Create group mutation
   const createGroupMutation = useMutation({
-      mutationFn: async (data: CreateGroupFormValues) => {
-          const res = await fetch('/api/groups', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(data),
-          });
-          return await res.json();
-    },
+    //   mutationFn: async (data: CreateGroupFormValues) => {
+    //       const res = await fetch('/api/groups', {
+    //           method: 'POST',
+    //           headers: {
+    //               'Content-Type': 'application/json',
+    //           },
+    //           body: JSON.stringify(data),
+    //       });
+    //       return await res.json();
+    // },
+    mutationFn: () => Promise.resolve([]),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
       setIsCreateGroupDialogOpen(false);  
@@ -116,21 +120,22 @@ export default function GroupsSection() {
     createGroupMutation.mutate(data)
   };
   const updateGroup = async (id: number, data: Partial<Group>) => {
-    try {
-      const res = await fetch(`/api/groups/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        throw new Error(`Failed to update group: ${res.status}`);
-      }
-      const updatedGroup = await res.json();
-      setGroups((prevGroups) =>
-        prevGroups.map((group) => (group.id === id ? updatedGroup : group))
-      );
+    try {      
+    //   const res = await fetch(`/api/groups/${id}`, {
+    //     method: "PUT",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify(data),
+    //   });
+    //   if (!res.ok) {
+    //     throw new Error(`Failed to update group: ${res.status}`);
+    //   }
+    //   const updatedGroup = await res.json();
+    //   setGroups((prevGroups) =>
+    //     prevGroups.map((group) => (group.id === id ? updatedGroup : group))
+    //   );
+      console.log('fake update')
     } catch (err: any) {
       console.error("Failed to update group:", err);
       throw err;
@@ -138,13 +143,14 @@ export default function GroupsSection() {
   };
 
   const deleteGroup = async (id: number) => {
-    try {
-      const res = await fetch(`/api/groups/${id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        throw new Error(`Failed to delete group: ${res.status}`);
-      }
+    try {      
+      // const res = await fetch(`/api/groups/${id}`, {
+      //   method: "DELETE",
+      // });
+      // if (!res.ok) {
+      //   throw new Error(`Failed to delete group: ${res.status}`);
+      // }
+      console.log('fake delete')
       setGroups((prevGroups) => prevGroups.filter((group) => group.id !== id));
     } catch (err: any) {
       console.error("Failed to delete group:", err);

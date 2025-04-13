@@ -36,8 +36,10 @@ export default function ElectronInfo() {
   useEffect(() => {
     if (isElectron && api) {
       fetchSystemInfo();
-      fetchAppVersion();
-      checkOnlineStatus();
+      // commented out as its not implemented
+      //fetchAppVersion();
+      // commented out as its not implemented
+      //checkOnlineStatus();
 
       // Set up a timer to check online status periodically
       const interval = setInterval(checkOnlineStatus, 30000);
@@ -130,13 +132,14 @@ export default function ElectronInfo() {
             }
           >
             {connectionStatus === "offline"
-              ? t("profile.status")
-              : connectionStatus === "open"
-                ? t("profile.online")
-                : connectionStatus === "connecting"
-                  ? t("nav.home")
-                  : connectionStatus === "closing" ||
-                    connectionStatus === "closed"
+            ? t("profile.status")
+            : connectionStatus === "open"
+            ? t("profile.online")
+            : connectionStatus === "connecting"
+            ? t("nav.home")
+            : connectionStatus === "closing" ||
+              connectionStatus === "closed"
+
                     ? t("common.refresh") : t("common.refresh")}
           </Badge>
         </div>
@@ -220,7 +223,8 @@ export default function ElectronInfo() {
             <div className="pl-6 space-y-2 text-sm">
               <div className="flex items-center justify-between" >
                 {/* commented out because we dont want to talk to the database */}
-                <span>{t("system_info.connection_status")}:</span>
+
+               <span>{t("system_info.connection_status")}:</span>
                 <Badge variant="outline">Active</Badge>
               </div>
             </div>            

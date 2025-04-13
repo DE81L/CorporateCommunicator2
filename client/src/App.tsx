@@ -8,13 +8,13 @@ import "./index.css";
 const qc = new QueryClient();
 
 export default function App() {
-  // install the fake backend once
-  useEffect(() => {
-    window.chatAPI.onBootstrap((d) => {
-      localStorage.setItem("username", d.username);
-    });
-    import("./setupMocks");
-  }, []);
+//   // install the fake backend once
+//   useEffect(() => {
+//     window.chatAPI.onBootstrap((d) => {
+//       localStorage.setItem("username", d.username);
+//     });
+//     import("./setupMocks");
+//   }, []);
 
   return (
     <QueryClientProvider client={qc}>

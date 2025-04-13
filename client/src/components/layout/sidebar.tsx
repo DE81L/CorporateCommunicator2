@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { type SectionType } from "@/types/sections";
+import { useAuth } from '@/lib/useAuth';
 
 interface SidebarProps {
   activeSection: SectionType;
@@ -160,7 +161,7 @@ export default function Sidebar({
                 {user.firstName.charAt(0)}
                 {user.lastName.charAt(0)}
               </div>
-            </div>
+            </div> 
             <div className="ml-3">
               <p className="text-sm font-medium">
                 {user.firstName} {user.lastName}

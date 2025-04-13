@@ -100,7 +100,8 @@ export default function WikiSection() {
     queryFn: () => {
       if (!activeCategoryId) return Promise.resolve([] as WikiEntry[]);
       return request('GET', `/api/wiki/categories/${activeCategoryId}/entries`).then((res) => res.json());
-    },
+    }, // Commented out: API call to fetch entries by category
+    /*
     enabled: !!activeCategoryId,
   });
 
@@ -114,7 +115,8 @@ export default function WikiSection() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      return request('POST', '/api/wiki', payload);
+      return request('POST', '/api/wiki', payload); // Commented out: API call to create wiki entry
+    },*/
     },
     onSuccess: () => {
       toast({
@@ -151,7 +153,8 @@ export default function WikiSection() {
         lastEditorId: user?.id,
         updatedAt: new Date().toISOString(),
       };
-      return request('PUT', `/api/wiki/${id}`, payload);
+      return request('PUT', `/api/wiki/${id}`, payload); // Commented out: API call to update wiki entry
+    },*/
     },
     onSuccess: () => {
       toast({
@@ -178,7 +181,8 @@ export default function WikiSection() {
   // Delete wiki entry mutation
   const deleteEntryMutation = useMutation({
     mutationFn: (id: number) => {
-      return request('DELETE', `/api/wiki/${id}`);
+      return request('DELETE', `/api/wiki/${id}`); // Commented out: API call to delete wiki entry
+    },*/
     },
     onSuccess: () => {
       toast({
@@ -208,7 +212,8 @@ export default function WikiSection() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      return request('POST', '/api/wiki/categories', payload);
+      return request('POST', '/api/wiki/categories', payload); // Commented out: API call to create category
+    },*/
     },
     onSuccess: () => {
       toast({
@@ -241,7 +246,8 @@ export default function WikiSection() {
         ...rest,
         updatedAt: new Date().toISOString(),
       };
-      return request('PUT', `/api/wiki/categories/${id}`, payload);
+      return request('PUT', `/api/wiki/categories/${id}`, payload); // Commented out: API call to update category
+    },*/
     },
     onSuccess: () => {
       toast({
@@ -265,7 +271,8 @@ export default function WikiSection() {
   // Delete category mutation
   const deleteCategoryMutation = useMutation({
     mutationFn: (id: number) => {
-      return request('DELETE', `/api/wiki/categories/${id}`);
+      return request('DELETE', `/api/wiki/categories/${id}`); // Commented out: API call to delete category
+    },*/
     },
     onSuccess: () => {
       toast({

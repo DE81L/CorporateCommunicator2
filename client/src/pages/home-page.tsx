@@ -6,11 +6,10 @@ import AnnouncementsSection from "@/pages/announcements-section";
 import RequestsSection from "@/pages/requests-section";
 import ContactsSection from "@/pages/contacts-section";
 import SettingsSection from "@/pages/settings-section";
-import WikiSection from "@/pages/wiki-section";
+import WikiSection from "./wiki-section";
 import { SectionType } from "@/types/sections";
 import Header from "@/components/layout/header";
-import CallModal from "@/components/call-modal";
-import { useIpcChat } from "@/lib/useIpcChat";
+import CallModal from "../components/call-modal";
 
 export default function HomePage() {
   const params = new URLSearchParams(window.location.search);

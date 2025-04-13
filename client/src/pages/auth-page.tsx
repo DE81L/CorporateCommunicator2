@@ -36,19 +36,23 @@ const registerSchema = z.object({
 
 export default function AuthPage() { 
   const { t } = useTranslation();
-  const { user, login: loginFn, register } = useAuth();
+  const { user/*, login: loginFn, register */ } = useAuth();
   
-  const login = async (data: z.infer<typeof loginSchema>) => {
-    await loginFn({username: data.username, password: data.password});
-  };
+  // const login = async (data: z.infer<typeof loginSchema>) => {
+  //   await loginFn({username: data.username, password: data.password});
+  // };
 
-  const registerFn = async (data: z.infer<typeof registerSchema>) => {
-    await register({
-      username: data.username,
-      password: "",
-      confirmPassword: ""
-    });
-  };
+  // const registerFn = async (data: z.infer<typeof registerSchema>) => {
+  //   await register({
+  //     username: data.username,
+  //     password: "",
+  //     confirmPassword: ""
+  //   });
+  // };
+  const login = (_data: z.infer<typeof loginSchema>) => {};
+
+  const registerFn = (_data: z.infer<typeof registerSchema>) => {};
+
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
   if (user) {

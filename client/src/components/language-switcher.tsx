@@ -15,7 +15,7 @@ export function LanguageSwitcher() {
     const currentLanguage: string = i18n.language;
 
     const handleLanguageChange = async (value: string) => {
-        await i18n.changeLanguage(value);
+        i18n.changeLanguage(value);
     };
 
     return (

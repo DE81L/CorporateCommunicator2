@@ -53,7 +53,7 @@ export default function SettingsSection() {
   });
 
   const onSubmit = () => {
-    // In real implementation, this would call an API endpoint
+    // In real implementation, this would call an API endpoint, but it's stubbed for this demo
     toast({
       title: "Password updated",
       description: "Your password has been updated successfully.",
@@ -91,7 +91,7 @@ export default function SettingsSection() {
               <h4 className="font-medium">Email Address</h4>
               <p className="text-sm text-gray-500">{user.email}</p>
             </div>
-            <Button variant="ghost">Change</Button>
+            {/* <Button variant="ghost">Change</Button> */}
           </div>
 
           <div className="flex items-center justify-between py-4">
@@ -199,10 +199,10 @@ export default function SettingsSection() {
                 Receive email notifications for messages and announcements
               </p>
             </div>
-            <Switch
+           {/* <Switch
               checked={emailNotifications}
               onCheckedChange={setEmailNotifications}
-            />
+            /> */}
           </div>
 
           <div className="flex items-center justify-between py-4">
@@ -212,10 +212,10 @@ export default function SettingsSection() {
                 Receive desktop notifications for messages and calls
               </p>
             </div>
-            <Switch
+           {/* <Switch
               checked={desktopNotifications}
               onCheckedChange={setDesktopNotifications}
-            />
+            /> */}
           </div>
 
           <div className="flex items-center justify-between py-4">
@@ -225,10 +225,10 @@ export default function SettingsSection() {
                 Play sound for new messages and calls
               </p>
             </div>
-            <Switch
+            {/* <Switch
               checked={soundNotifications}
               onCheckedChange={setSoundNotifications}
-            />
+            /> */}
           </div>
         </CardContent>
       </Card>
@@ -248,7 +248,7 @@ export default function SettingsSection() {
                 Add an extra layer of security to your account
               </p>
             </div>
-            <Button variant="ghost">Enable</Button>
+           {/* <Button variant="ghost">Enable</Button> */}
           </div>
 
           <div className="flex items-center justify-between py-4">
@@ -258,7 +258,7 @@ export default function SettingsSection() {
                 View and manage your active sessions
               </p>
             </div>
-            <Button variant="ghost">View</Button>
+           {/* <Button variant="ghost">View</Button> */}
           </div>
 
           <div className="flex items-center justify-between py-4">
@@ -268,7 +268,7 @@ export default function SettingsSection() {
                 Manage your data and privacy settings
               </p>
             </div>
-            <Button variant="ghost">Manage</Button>
+            {/* <Button variant="ghost">Manage</Button> */}
           </div>
 
           <div className="flex items-center justify-between py-4">

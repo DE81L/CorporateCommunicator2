@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../../hooks/use-auth"; // Import useAuth from hooks
+import { useAuth } from "../../lib/use-auth"; // Import useAuth from hooks
 import { useLocation } from "wouter";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"; // Updated import
 import {

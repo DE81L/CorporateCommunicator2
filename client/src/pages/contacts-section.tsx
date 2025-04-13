@@ -28,17 +28,18 @@ export default function ContactsSection({ onStartCall }: ContactsProps) {
   const { user } = useAuth();
   const apiClient = createApiClient(true)
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");  
 
   // Fetch all users
   const {
     data: users,
     isLoading,
     error,
-  } = useQuery<User[]>({
-    queryKey: ["/api/users"],
-    queryFn: () => apiClient.request("GET", "/api/users").then((res) => res.json()),
-  });
+  } = {} as any;
+    //  useQuery<User[]>({
+    //   queryKey: ["/api/users"],
+    //   queryFn: () => apiClient.request("GET", "/api/users").then((res) => res.json()),
+    // });
 
   // Filter users based on search query
   const filteredUsers = users?.filter(
@@ -103,7 +104,7 @@ export default function ContactsSection({ onStartCall }: ContactsProps) {
           {filteredUsers.map((contact) => (
             <Card
               key={contact.id}
-              className="hover:shadow-md transition-shadow"
+              className="hover:shadow-md transition-shadow" 
             >
               <CardContent className="p-4">
                 <div className="flex items-center">

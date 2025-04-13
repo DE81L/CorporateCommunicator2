@@ -32,21 +32,23 @@ type CreateAnnouncementFormValues = z.infer<typeof createAnnouncementSchema>;
 export default function AnnouncementsSection() {
   const { toast } = useToast();
   const { } = useAuth();
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
-    const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
 
-    // Fetch announcements
+  // Fetch announcements
   const {
-    isLoading: isAnnouncementsLoading, 
-    error: announcementsError,data,
-  } = useQuery({queryKey: ['/api/announcements'], queryFn: async () => {
-    const response = await fetch("/api/groups?isAnnouncement=true"); 
-      if (!response.ok) {
-      throw new Error("Failed to fetch announcements");
-    }    
-    const data = await response.json();
-    return data;
-  }});
+    isLoading: isAnnouncementsLoading,
+    error: announcementsError, data,
+  } = useQuery({
+    queryKey: ['/api/announcements'], queryFn: async () => {
+      // const response = await fetch("/api/groups?isAnnouncement=true");
+      //   if (!response.ok) {
+      //   throw new Error("Failed to fetch announcements");
+      // }    
+      // return await response.json();
+      return [];
+    }
+  });
   
   // Create announcement mutation (creates a group with isAnnouncement=true)
     const createAnnouncementMutation = useMutation({
@@ -54,13 +56,14 @@ export default function AnnouncementsSection() {
       mutationFn: async (data: CreateAnnouncementFormValues) => {
         
           await fetch("/api/groups", {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
+           //  method: "POST",
+           //  headers: {
+           //    "Content-Type": "application/json",
+           //  },
+           //  body: JSON.stringify(data),
           });
-          return null
+           return null
+          
       },
       
       onSuccess: () => { 

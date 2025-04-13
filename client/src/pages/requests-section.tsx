@@ -1,29 +1,28 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { createApiClient } from "@/lib/queryClient";
-;
+// import { createApiClient } from "@/lib/queryClient";
 
-async function createRequest(data: any, isElectron:boolean) {
-  const apiClient = createApiClient(isElectron);
+// async function createRequest(data: any, isElectron:boolean) {
+//   const apiClient = createApiClient(isElectron);
 
-  try {
-    const response = await apiClient.request("POST", "/api/requests", data);
-    return await response.json();
-  } catch (error) {
-    throw new Error("Failed to create request");
-  }
-}
+//   try {
+//     const response = await apiClient.request("POST", "/api/requests", data);
+//     return await response.json();
+//   } catch (error) {
+//     throw new Error("Failed to create request");
+//   }
+// }
 
-async function fetchAllRequests() {
-  const apiClient = createApiClient(false);
+// async function fetchAllRequests() {
+//   const apiClient = createApiClient(false);
 
-  try {
-    const response = await apiClient.request("GET", "/api/requests");
-    return await response.json();
-  } catch (error) {
-    throw new Error("Failed to load requests");
-  }
-}
+//   try {
+//     const response = await apiClient.request("GET", "/api/requests");
+//     return await response.json();
+//   } catch (error) {
+//     throw new Error("Failed to load requests");
+//   }
+// }
 
 async function completeRequest(id: number, grade: number, reviewText?: string) {
   const apiClient = createApiClient(false);
@@ -79,14 +78,14 @@ export default function RequestsPage() {
   // Загрузка всех заявок
   async function loadRequests() {
     setLoading(true);
-    try {
-      const data = await fetchAllRequests();
-      setRequests(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+    // try {
+    //   const data = await fetchAllRequests();
+    //   setRequests(data);
+    // } catch (error) {
+    //   console.error(error);
+    // } finally {
+    //   setLoading(false);
+    // }
   }
 
   useEffect(() => {
@@ -111,13 +110,13 @@ export default function RequestsPage() {
         formData.subdivision = null;
       }
 
-      await createRequest(formData, false);
-      reset();
-      alert("Заявка успешно создана!");
-      loadRequests();
+      // await createRequest(formData, false);
+      // reset();
+      // alert("Заявка успешно создана!");
+      // loadRequests();
     } catch (err) {
       alert("Ошибка при создании заявки");
-    }
+    }finally{}
   };
 
   // Завершить заявку (установить оценку)
@@ -127,16 +126,16 @@ export default function RequestsPage() {
       return;
     }
     try {
-      await completeRequest(
-        selectedRequestId,
-        grade,
-        grade < 5 ? reviewText : undefined,
-      );
-      alert("Заявка завершена!");
-      setSelectedRequestId(null);
-      setGrade(5);
-      setReviewText("");
-      loadRequests();
+      // await completeRequest(
+      //   selectedRequestId,
+      //   grade,
+      //   grade < 5 ? reviewText : undefined,
+      // );
+      // alert("Заявка завершена!");
+      // setSelectedRequestId(null);
+      // setGrade(5);
+      // setReviewText("");
+      // loadRequests();
     } catch (err) {
       alert((err as Error).message);
     }
