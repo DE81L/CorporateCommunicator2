@@ -17,11 +17,11 @@ const isReplit = process.env.REPLIT_DB_URL !== undefined;
  * Configure database connection based on environment
  */
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.POSTGRES_URL,
 
 });
 
-const connection = postgres(process.env.DATABASE_URL!, { max: 1 });
+const connection = postgres(process.env.POSTGRES_URL!, { max: 1 });
 export const db = drizzle(connection, { schema });
 
 async function checkDatabaseAndUser(): Promise<boolean> {
