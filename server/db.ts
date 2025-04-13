@@ -16,14 +16,15 @@ const isReplit = process.env.REPLIT_DB_URL !== undefined;
 /**
  * Configure database connection based on environment
  */
-const url = process.env.DATABASE_URL;
+const url = process.env.POSTGRES_URL;
 if (!url) {
-  throw new Error('DATABASE_URL is not set');
+  throw new Error('POSTGRES_URL is not set');
 }
 export const pool = new Pool({
   connectionString: url,
 
 });
+
 
 const connection = postgres(url, { max: 1 });
 export const db = drizzle(connection, { schema });

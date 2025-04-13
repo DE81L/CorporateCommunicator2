@@ -1,8 +1,9 @@
 import { createApp } from './app';
 import http from 'http';
 import { db, connectToDb } from './db'; // Updated import here
-import dotenv from 'dotenv';
-dotenv.config();
+import 'dotenv-safe/config';
+
+
 import * as schema from '../shared/schema';
 
 // Function to start a quick server on port 5000 for Replit environment
