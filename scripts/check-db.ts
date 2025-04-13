@@ -10,7 +10,7 @@ async function checkDb() {
     console.log('Successfully connected to the database.');
 
     const hasLastNameColumn = await db.execute(sql`SELECT column_name FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'last_name';`);
-    if (hasLastNameColumn && hasLastNameColumn.rows.length > 0) {
+    if (hasLastNameColumn && hasLastNameColumn.columns) {
       console.log('Success: The "last_name" column exists in the "users" table.');
       process.exit(0);
     } else {
