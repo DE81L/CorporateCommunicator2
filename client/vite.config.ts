@@ -17,9 +17,7 @@ export default defineConfig(({ mode }) => {
           configure: (proxy, _options) => {
             proxy.on('error', (err, _req, res) => {
               console.error('proxy error', err);
-              if (!res.headersSent) {
-                res.writeHead(500, { 'content-type': 'application/json' });
-              }
+              
               res.end(JSON.stringify({ error: 'proxy_error', message: err.message }));
             });
             proxy.on('proxyReq', (proxyReq, req, _res) => {
