@@ -39,7 +39,8 @@ export function useWebSocket(): WebSocketHook {
     socket.current.addEventListener("open", () => {        
         setConnectionStatus("open");
         setReadyState(socket.current?.readyState ?? -1);
-        console.log("WebSocket connected",socket.current?.readyState);
+        const readyState = socket.current?.readyState ?? -1
+        console.log("WebSocket connected", readyState);
     });
 
 
