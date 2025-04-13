@@ -41,7 +41,7 @@ export default function ElectronInfo() {
 
       // Set up a timer to check online status periodically
       const interval = setInterval(checkOnlineStatus, 30000);
-
+      //commented out as its not implemented
       return () => clearInterval(interval);
     }
   }, [isElectron, api]);
@@ -49,11 +49,13 @@ export default function ElectronInfo() {
   const fetchSystemInfo = async () => {
     if (!api?.system) return;
 
+    
     setIsLoading(true);
     try {
       const info = await api.system.getSystemInfo();
       setSystemInfo(info);
     } catch (error) {
+      
       console.error("Failed to fetch system info:", error);
     } finally {
       setIsLoading(false);
@@ -64,6 +66,7 @@ export default function ElectronInfo() {
     if (!api?.app) return;
 
     try {
+      // commented out as its not implemented
       const version = await api.app.getVersion();
       setAppVersion(version);
     } catch (error) {
@@ -73,11 +76,12 @@ export default function ElectronInfo() {
 
   const checkOnlineStatus = async () => {
     if (!api?.system) return;
-
+    // commented out as its not implemented
     try {
       const online = await api.system.isOnline();
       setIsOnline(online);
     } catch (error) {
+      
       console.error("Failed to check online status:", error);
       setIsOnline(false);
     }
@@ -115,7 +119,7 @@ export default function ElectronInfo() {
             <span className="font-medium">
               {t("profile.status")}:
             </span> 
-          </div>
+          </div>          
           <Badge
             variant={
               connectionStatus === "open"
@@ -136,12 +140,12 @@ export default function ElectronInfo() {
                     ? t("common.refresh") : t("common.refresh")}
           </Badge>
         </div>
-
-        {appVersion && (
+        {/* commented out because there is no appVersion*/}
+        {/* {appVersion && (
           <div className="flex items-center justify-between">
             <span className="font-medium">App Version:</span>
             <span>{appVersion}</span>
-          </div>
+          </div> */}
         )}
 
         {systemInfo && (
@@ -215,10 +219,11 @@ export default function ElectronInfo() {
 
             <div className="pl-6 space-y-2 text-sm">
               <div className="flex items-center justify-between" >
+                {/* commented out because we dont want to talk to the database */}
                 <span>{t("system_info.connection_status")}:</span>
                 <Badge variant="outline">Active</Badge>
               </div>
-            </div>
+            </div>            
           </>
         )}
 

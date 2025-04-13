@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Header from "@/components/layout/header";
 import Sidebar from "@/components/layout/sidebar";
 import MessagesSection from "@/pages/messages-section";
 import GroupsSection from "@/pages/groups-section";
@@ -8,11 +7,14 @@ import RequestsSection from "@/pages/requests-section";
 import ContactsSection from "@/pages/contacts-section";
 import SettingsSection from "@/pages/settings-section";
 import WikiSection from "@/pages/wiki-section";
-import CallModal from "@/components/call-modal";
-import { useWebSocket } from "@/hooks/useWebSocket";
 import { SectionType } from "@/types/sections";
+import Header from "@/components/layout/header";
+import CallModal from "@/components/call-modal";
+import { useIpcChat } from "@/lib/useIpcChat";
 
 export default function HomePage() {
+  const params = new URLSearchParams(window.location.search);
+  const user = params.get('user') ?? 'anon';
   const [activeSection, setActiveSection] = useState<SectionType>("messages");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCallModalOpen, setIsCallModalOpen] = useState(false);
@@ -21,7 +23,6 @@ export default function HomePage() {
     id: number;
     name: string;
   } | null>(null);
-  const { connectionStatus } = useWebSocket();
 
   const handleStartCall = (
     type: "video" | "audio",
@@ -46,11 +47,7 @@ export default function HomePage() {
           setActiveSection={setActiveSection}
           isOpen={isSidebarOpen}
           setIsOpen={setIsSidebarOpen}
-          connectionStatus={
-            connectionStatus === "open" ? "online" :
-            connectionStatus === "closing" || connectionStatus === "closed" ? "disconnected" :
-            connectionStatus
-          }
+          connectionStatus={"online"}
         />
 
         <main className="flex-1 overflow-hidden flex flex-col">
