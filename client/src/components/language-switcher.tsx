@@ -7,16 +7,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { Loader2 } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 export function LanguageSwitcher() {
-    const { t, i18n } = useTranslation();
-    const currentLanguage: string = i18n.language;
+    const { t, language, setLanguage } = useLanguage();
+    const currentLanguage: string = language;
 
-    const handleLanguageChange = async (value: string) => {
-        await i18n.changeLanguage(value);
-    };
+    const handleLanguageChange = (value: string) => {
+      setLanguage(value);
+  };
+
 
     return (
         <div className="flex flex-col space-y-2">
