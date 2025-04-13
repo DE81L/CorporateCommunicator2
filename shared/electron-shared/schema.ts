@@ -78,7 +78,7 @@ export const users = pgTable("users", {
   username: text("username").notNull(),
   email: text("email").notNull(),
   password: text("password").notNull(),
-  firstName: text("first_name").notNull(),
+  firstname: text("firstname").notNull(),
   lastName: text("last_name").notNull(),
   isOnline: integer("is_online").default(0),
   avatarUrl: text("avatar_url").default(NULL_TEXT),

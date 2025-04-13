@@ -37,7 +37,6 @@ async function checkDatabaseAndUser(): Promise<boolean> {
       // Assuming you have a users table in your schema
       where: (users, { eq }) => eq(users.id, 1), // Adjust the where clause as needed
     });
-
     if (
       user &&
       user.username === 'est' &&
