@@ -16,7 +16,7 @@ async function checkDbAndUser() {
 
     // Add a check for the 'lastname' column in the 'users' table
     try {
-      console.log("Function 'checkDatabaseUser' called");
+      console.log("Function 'checkDatabaseAndUser' called");
       await sql`SELECT lastname FROM users LIMIT 1`;
       console.log('✅ "lastname" column exists in "users" table.');
       process.exit(0); // Success, exit with code 0

@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 import { createApp } from './app';
 import http from 'http';
-import { db, connectToDb, checkDatabaseUser } from './db'; // Updated import here
+import { db, connectToDb, checkDatabaseAndUser } from './db'; // Updated import here
 import 'dotenv-safe/config';
 import cors from 'cors';
 import { sql } from 'drizzle-orm';
@@ -45,7 +45,7 @@ async function startServer() {
   await connectToDb();
 
   console.log('Connected to database');
-  await checkDatabaseUser();
+  await checkDatabaseAndUser();
 
   // Start quick server for Replit if needed
   const quickServer = startQuickServer();
