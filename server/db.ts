@@ -3,7 +3,7 @@ import pg from 'pg';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { sql } from 'drizzle-orm';
 import postgres from 'postgres';
-import * as schema from '../shared/schema';
+import * as schema from '../shared/electron-shared/schema';
 
 // Load environment variables
 dotenv.config();
@@ -28,31 +28,11 @@ const connection = postgres(url, { max: 1 });
 export const db = drizzle(connection, { schema });
 
 async function checkDatabaseAndUser(): Promise<boolean> {
-    try {
+  try {
     // 1. Verify database connection (a simple query should suffice)
     await db.execute(sql`SELECT 1`); // Execute a trivial query
-
-    // 2. Check for the specific user (adapt the query to your schema)
-    const user = await db.query.users.findFirst({
-      // Assuming you have a users table in your schema
-      where: (users, { eq }) => eq(users.id, 1), // Adjust the where clause as needed
-    });
-    if (
-      user &&
-      user.username === 'est' &&
-      user.email === 'a.a@a.com' &&
-      // Add other attribute checks as needed (adjust column names!)
-      user.firstname === 'a' &&
-      user.lastname === 'a' &&
-      user.isOnline === 0 && // Assuming isOnline is 0/1
-      user.avatarurl === '__NULL_VALUE_7f9c2b3a4e'
-    ) {
-      console.log('Database connected and user exists!');
-      return true;
-    } else {
-      console.log('Database connected, but user not found or data mismatch.');
-      return false;
-    }
+    console.log('Database connected!');
+    return true; // Indicate success if the connection is established
   } catch (error) {
     console.error('Database connection or check failed:', error);
 

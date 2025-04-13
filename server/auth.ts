@@ -4,7 +4,9 @@ import { Express } from 'express';
 import session from 'express-session';
 import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
-// import { storage } from "./storage";
+import { storage } from "./storage";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 import { User as SelectUser } from '@shared/electron-shared/schema';
 
 declare global {
@@ -36,8 +38,7 @@ export function setupAuth(app: Express) {
     secret: process.env.SESSION_SECRET || 'nexus-corporate-messenger-secret',
     resave: false,
     saveUninitialized: false,
-    // store: storage.sessionStore, // Commenting out the session store interaction
-    store: undefined, // temporary fix, should be fully removed later
+    store: storage.sessionStore, // Commenting out the session store interaction
     cookie: {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week,
     },
@@ -52,18 +53,15 @@ export function setupAuth(app: Express) {
     new LocalStrategy(async (username, password, done) => {
       console.log('LocalStrategy');
       try {
-        // Commenting out database interaction for user lookup
-        // let user = await storage.getUserByUsername(username);
+        let user = await storage.getUserByUsername(username);
 
-        // // If not found, try by email
-        // if (!user) {d
-        //   user = await storage.getUserByEmail(username);d
-        // }
-        const user = { id: 1, username };
+        // If not found, try by email
+        if (!user) {
+          user = await storage.getUserByEmail(username);
+        }
 
         // Commenting out password comparison
-        // if (!user || !(await comparePasswords(password, user.password))) {
-        if (!user) {
+        if (!user || !(await comparePasswords(password, user.password))) {
           console.log('LocalStrategy: no user');
           return done(null, false);
         } else {
@@ -84,8 +82,8 @@ export function setupAuth(app: Express) {
     console.log('deserializeUser');
     try {
       // const user = await storage.getUser(id);
-      const user = { id, username: 'temporary-username' }; // temporary fix, remove this
-      done(null, user);
+      const user = await storage.getUser(id);
+      done(null, user!);
     } catch (error) {
       done(error);
     }
@@ -93,23 +91,22 @@ export function setupAuth(app: Express) {
 
   app.post('/api/register', async (req, res, next) => {
     try {
-      // Commenting out database interaction for checking existing username
-      // const existingUserByUsername = await storage.getUserByUsername(
-      //   req.body.username,
-      // );
-      // if (existingUserByUsername) {
-      //   return res.status(400).json({ message: 'Username already exists' });
-      // }
-
-      const user = {
-        id: Math.floor(Math.random() * 100000), // Generate a temporary ID
-        username: req.body.username,
-        // Add any other necessary properties here...d
-      };
-      req.login(user, (err) => {
+      const existingUserByUsername = await storage.getUserByUsername(
+        req.body.username,
+      );
+      if (existingUserByUsername) {
+        return res.status(400).json({ message: 'Username already exists' });
+      }
+      
+      const hashedPassword = await hashPassword(req.body.password);
+      const newUser  = await storage.createUser({
+        ...req.body,
+        password: hashedPassword,
+      });
+      req.login(newUser, (err) => {
         if (err) return next(err);
-        // Respond with the temporary user object
-        res.status(201).json(user);
+        const { password, ...userWithoutPassword } = newUser;
+        res.status(201).json(userWithoutPassword);
       });
     } catch (error) {d
       res.status(400).json({ message: 'Registration failed', error });
@@ -149,15 +146,13 @@ export function setupAuth(app: Express) {
       if (!req.isAuthenticated()) {
         return res.sendStatus(401);
       }
-      // Mocked user data since we're not using a database
-      // if (!req.user) {
-      //     return res.status(404).json({ message: "User not found" });
-      // }
-      const mockedUser = {
-        id: req.user.id,
-        username: req.user.username,
-      };
-      res.json(mockedUser);
+      if (!req.user) {
+          return res.status(404).json({ message: "User not found" });
+      }
+      if (req.user) {
+        const { password, ...userWithoutPassword } = req.user;
+        res.json(userWithoutPassword);
+      }
     } finally {
       console.log('/api/user');
     }
@@ -165,11 +160,14 @@ export function setupAuth(app: Express) {
 
   app.get('/api/random-user', async (req, res) => {
     try {
-      // const users = Array.from(storage.users.values());
-      const users = []; //Commented to remove db interactiond
-      console.log('/api/random-user');
-      if (users.length === 0) {
+      const users = await db.select().from(schema.users).orderBy(sql`random()`).limit(1);
+      
+       if (users.length === 0) {
         return res.status(404).json({ message: 'No users found' });
+      }
+      const randomUser = users[0];
+      console.log('/api/random-user');
+      
       }
 
       const randomIndex = Math.floor(Math.random() * users.length);
