@@ -277,7 +277,7 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
               <div className="flex justify-center items-center py-4">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
-            ) : users && users.length > 0 ? (
+            ) : Array.isArray(users) && users.length > 0 ? (
               <div className="space-y-2">
                 {users
                   .filter((u) => u.id !== user?.id)
