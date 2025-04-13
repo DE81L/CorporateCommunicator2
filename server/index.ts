@@ -2,6 +2,7 @@ import { createApp } from './app';
 import http from 'http';
 import { db, connectToDb } from './db'; // Updated import here
 import 'dotenv-safe/config';
+import path from 'path';
 
 
 import * as schema from '../shared/schema';
@@ -58,6 +59,11 @@ async function startServer() {
       });
     }
   });
+
+    // Catch-all route for serving the client-side application
+    app.get('*', (_req, res) => {
+        res.sendFile(path.join(__dirname, '..', 'dist', 'public', 'index.html'));
+    });
 
   // Determine the port based on environment
   const PORT = 3000;
