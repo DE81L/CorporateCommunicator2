@@ -1,8 +1,10 @@
-import { db } from '../server/db';
+import { db, connectToDb } from '../server/db';
 import { sql } from 'drizzle-orm';
 
 async function checkDb() {
   try {
+    await connectToDb(); // Establish database connection
+
     const hasLastNameColumn = await db.execute(sql`SELECT column_name FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'last_name';`);
     if (hasLastNameColumn.rows.length === 0) {
       console.error('Error: The "last_name" column does not exist in the "users" table.');
