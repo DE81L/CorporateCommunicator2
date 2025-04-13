@@ -19,11 +19,6 @@ export function createApiClient(isElectron: boolean) {
         body: body ? JSON.stringify(body) : undefined,
       });
 
-      if(path === "/api/user"){
-        console.log("response.ok:", response.ok);
-        console.log("response:", response);
-      }
-
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || `HTTP error! Status: ${response.status}`);
