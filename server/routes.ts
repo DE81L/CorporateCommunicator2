@@ -123,19 +123,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // User API - Get current user
   app.get("/api/user", async (req, res) => {
-    console.log(`app.get("/api/user")`);
+    console.log(`[API] GET /api/user`);
+
     try {
+      console.log(`[API] /api/user: Attempting database connection`);
       await connectToDb(); // Ensure database connection
+      console.log(`[API] /api/user: Database connection successful`);
+
       if (req.isAuthenticated()) {
+        console.log(`[API] /api/user: User is authenticated`);
         // Exclude password from the user data
         const { password, ...userWithoutPassword } = req.user as User;
+        console.log(`[API] /api/user: User data fetched successfully`);
         return res.json(userWithoutPassword);
       } else {
+        console.log(`[API] /api/user: User is not authenticated`);
         return res.status(401).json({ message: "Unauthorized" });
       }
     } catch (error) {
-      console.error("Database connection failed:", error);
-      return res.status(500).json({ message: "Database connection failed" });
+      console.error(`[API] /api/user: An error occurred:`, error);
+      return res.status(500).json({
+        message: "An error occurred while processing your request",
+        error: (error as Error).message
+      });
     }
   });
 
