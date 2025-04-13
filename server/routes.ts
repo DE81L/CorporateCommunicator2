@@ -125,6 +125,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (req.isAuthenticated()) {
         // Exclude password from the user data
+        console.log('[API] /api/user: req.user contents:', req.user);
+
         const { password, ...userWithoutPassword } = req.user as User;
 
 
