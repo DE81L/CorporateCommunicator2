@@ -2,6 +2,8 @@ import { eq, and, desc, asc } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { Store } from "express-session";
+import { log } from "console";
+
 import * as schema from "../shared/electron-shared/schema";
 import { db } from "./db";
 
@@ -76,6 +78,7 @@ export class PgStorage implements IStorage {
 
   // User operations
   async getUser(id: number) {
+    log("getUser");
     const result = await db.select().from(schema.users)
       .where(eq(schema.users.id, id));
     return result[0];
@@ -110,6 +113,7 @@ export class PgStorage implements IStorage {
 
   async listUsers() {
     return await db.select().from(schema.users);
+    log("listUsers");
   }
 
   // Message operations
@@ -120,6 +124,7 @@ export class PgStorage implements IStorage {
   }
 
   async getDirectMessages(senderId: number, receiverId: number) {
+    log("getDirectMessages");
     return await db.select().from(schema.messages)
       .where(
         and(
@@ -131,6 +136,7 @@ export class PgStorage implements IStorage {
   }
 
   async createMessage(insertMessage: schema.InsertMessage) {
+    log("createMessage");
     const result = await db.insert(schema.messages)
       .values({
         ...insertMessage,
@@ -141,11 +147,13 @@ export class PgStorage implements IStorage {
   }
 
   async deleteMessage(id: number) {
+    log("deleteMessage");
     await db.delete(schema.messages)
       .where(eq(schema.messages.id, id));
   }
 
   // Group operations
+  log("getGroup");
   async getGroup(id: number) {
     const result = await db.select().from(schema.groups)
       .where(eq(schema.groups.id, id));
@@ -153,6 +161,7 @@ export class PgStorage implements IStorage {
   }
 
   async createGroup(insertGroup: schema.InsertGroup) {
+    log("createGroup");
     const result = await db.insert(schema.groups)
       .values({
         ...insertGroup,
@@ -163,10 +172,12 @@ export class PgStorage implements IStorage {
   }
 
   async listGroups() {
+    log("listGroups");
     return await db.select().from(schema.groups);
   }
 
   async getGroupsByUserId(userId: number) {
+    log("getGroupsByUserId");
     const members = await db.select().from(schema.groupMembers)
       .where(eq(schema.groupMembers.userId, userId));
     
@@ -176,11 +187,13 @@ export class PgStorage implements IStorage {
   }
 
   async getAnnouncementGroups() {
+    log("getAnnouncementGroups");
     return await db.select().from(schema.groups)
       .where(eq(schema.groups.isAnnouncement, true));
   }
 
   // Group member operations
+  log("addGroupMember");
   async addGroupMember(insertMember: schema.InsertGroupMember) {
     const result = await db.insert(schema.groupMembers)
       .values({
@@ -192,11 +205,13 @@ export class PgStorage implements IStorage {
   }
 
   async getGroupMembers(groupId: number) {
+    log("getGroupMembers");
     return await db.select().from(schema.groupMembers)
       .where(eq(schema.groupMembers.groupId, groupId));
   }
 
   async isUserInGroup(userId: number, groupId: number) {
+    log("isUserInGroup");
     const result = await db.select().from(schema.groupMembers)
       .where(
         and(
@@ -209,6 +224,7 @@ export class PgStorage implements IStorage {
 
   // Request operations
   async getRequest(id: number): Promise<schema.Request | undefined> {
+    log("getRequest");
     const result = await db.select().from(schema.requests)
       .where(eq(schema.requests.id, id));
     return result[0];
@@ -222,6 +238,7 @@ export class PgStorage implements IStorage {
   }
 
   async updateRequestStatus(id: number, status: string): Promise<schema.Request | undefined> {
+    log("updateRequestStatus");
     const result = await db.update(schema.requests)
       .set({ requestStatus: status })
       .where(eq(schema.requests.id, id))
@@ -230,18 +247,21 @@ export class PgStorage implements IStorage {
   }
 
   async getUserRequests(userId: number): Promise<schema.Request[]> {
+    log("getUserRequests");
     return await db.select().from(schema.requests)
       .where(eq(schema.requests.creatorId, userId))
       .orderBy(desc(schema.requests.createdAt));
   }
 
   async getAssignedRequests(userId: number): Promise<schema.Request[]> {
+    log("getAssignedRequests");
     return await db.select().from(schema.requests)
       .where(eq(schema.requests.assigneeId, userId))
       .orderBy(desc(schema.requests.createdAt));
   }
 
   async listRequests(): Promise<schema.Request[]> {
+    log("listRequests");
     return await db.select().from(schema.requests)
       .orderBy(desc(schema.requests.createdAt));
   }
@@ -250,6 +270,7 @@ export class PgStorage implements IStorage {
     requestId: number,
     updateFields: Partial<schema.Request>,
   ): Promise<schema.Request> {
+    log("updateRequestComplete");
     const result = await db.update(schema.requests)
       .set(updateFields)
       .where(eq(schema.requests.id, requestId))
@@ -258,6 +279,7 @@ export class PgStorage implements IStorage {
   }
 
   // Wiki operations
+  log("getWikiEntry");
   async getWikiEntry(id: number) {
     const result = await db.select().from(schema.wikiEntries)
       .where(eq(schema.wikiEntries.id, id));
@@ -265,6 +287,7 @@ export class PgStorage implements IStorage {
   }
 
   async createWikiEntry(insertEntry: schema.InsertWikiEntry) {
+    log("createWikiEntry");
     const now = schema.convertHelpers.toDbDate(new Date());
     const result = await db.insert(schema.wikiEntries)
       .values({
@@ -277,6 +300,7 @@ export class PgStorage implements IStorage {
   }
 
   async updateWikiEntry(id: number, updateFields: Partial<schema.WikiEntry>) {
+    log("updateWikiEntry");
     const result = await db.update(schema.wikiEntries)
       .set({
         ...updateFields,
@@ -288,21 +312,25 @@ export class PgStorage implements IStorage {
   }
 
   async deleteWikiEntry(id: number) {
+    log("deleteWikiEntry");
     await db.delete(schema.wikiEntries)
       .where(eq(schema.wikiEntries.id, id));
   }
 
   async listWikiEntries() {
+    log("listWikiEntries");
     return await db.select().from(schema.wikiEntries)
       .orderBy(asc(schema.wikiEntries.title));
   }
 
   async getWikiEntriesByCategory(category: string) {
+    log("getWikiEntriesByCategory");
     return await db.select().from(schema.wikiEntries)
       .where(eq(schema.wikiEntries.category, category))
       .orderBy(asc(schema.wikiEntries.title));
   }
 
+  log("getWikiCategory");
   // Wiki category operations
   async getWikiCategory(id: number): Promise<schema.WikiCategory | undefined> {
     const result = await db.select().from(schema.wikiCategories)
@@ -311,6 +339,7 @@ export class PgStorage implements IStorage {
   }
 
   async createWikiCategory(insertCategory: schema.InsertWikiCategory): Promise<schema.WikiCategory> {
+    log("createWikiCategory");
     const result = await db.insert(schema.wikiCategories)
       .values(insertCategory)
       .returning();
@@ -318,6 +347,7 @@ export class PgStorage implements IStorage {
   }
 
   async updateWikiCategory(id: number, updateFields: Partial<schema.WikiCategory>): Promise<schema.WikiCategory> {
+    log("updateWikiCategory");
     const result = await db.update(schema.wikiCategories)
       .set(updateFields)
       .where(eq(schema.wikiCategories.id, id))
@@ -326,15 +356,18 @@ export class PgStorage implements IStorage {
   }
 
   async deleteWikiCategory(id: number): Promise<void> {
+    log("deleteWikiCategory");
     await db.delete(schema.wikiCategories)
       .where(eq(schema.wikiCategories.id, id));
   }
 
   async listWikiCategories(): Promise<schema.WikiCategory[]> {
+    log("listWikiCategories");
     return await db.select().from(schema.wikiCategories)
       .orderBy(asc(schema.wikiCategories.name));
   }
 
+  log("getWikiCategoriesByParent");
   async getWikiCategoriesByParent(parentId: number): Promise<schema.WikiCategory[]> {
     return await db.select().from(schema.wikiCategories)
       .where(eq(schema.wikiCategories.parentId, parentId))

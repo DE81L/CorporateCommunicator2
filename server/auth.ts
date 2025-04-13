@@ -13,15 +13,18 @@ declare global {
   }
 }
 
-const scryptAsync = promisify(scrypt);//this is not used
+const scryptAsync = promisify(scrypt); //this is not used
 
 async function hashPassword(password: string) {
+  console.log("hashPassword");
+
   const salt = randomBytes(16).toString("hex");
   const buf = (await scryptAsync(password, salt, 64)) as Buffer;
   return `${buf.toString("hex")}.${salt}`;
 }
 
 async function comparePasswords(supplied: string, stored: string) {
+  console.log("comparePasswords");
   const [hashed, salt] = stored.split(".");
   const hashedBuf = Buffer.from(hashed, "hex");
   const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
@@ -47,6 +50,7 @@ export function setupAuth(app: Express) {
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {
+      console.log("LocalStrategy");
       try {
         // Commenting out database interaction for user lookup
         // let user = await storage.getUserByUsername(username);
@@ -54,13 +58,13 @@ export function setupAuth(app: Express) {
         // // If not found, try by email
         // if (!user) {
         //   user = await storage.getUserByEmail(username);
-        // }
-          const user = { id: 1, username };
+        // }git 
+        const user = { id: 1, username };
 
         // Commenting out password comparison
         // if (!user || !(await comparePasswords(password, user.password))) {
         if (!user) {
-
+          console.log("LocalStrategy: no user");
           return done(null, false);
         } else {
           return done(null, user);
@@ -71,11 +75,16 @@ export function setupAuth(app: Express) {
     }),
   );
 
-  passport.serializeUser((user, done) => done(null, user.id));
-  passport.deserializeUser(async (id: any, done) => { // any, instead of number
+  passport.serializeUser((user, done) => {
+    console.log("serializeUser");
+    done(null, user.id);
+  });
+  passport.deserializeUser(async (id: any, done) => {
+    // any, instead of number
+    console.log("deserializeUser");
     try {
       // const user = await storage.getUser(id);
-      const user = {id, username: "temporary-username"}; // temporary fix, remove this
+      const user = { id, username: "temporary-username" }; // temporary fix, remove this
       done(null, user);
     } catch (error) {
       done(error);
@@ -83,6 +92,7 @@ export function setupAuth(app: Express) {
     });
   
 
+  
   app.post("/api/register", async (req, res, next) => {
     try {
       // Commenting out database interaction for checking existing username
@@ -98,14 +108,17 @@ export function setupAuth(app: Express) {
         username: req.body.username,
         // Add any other necessary properties here...
       };
-        req.login(user, (err) => {
-          if (err) return next(err);
-          // Respond with the temporary user object
-          res.status(201).json(user);
-        });
-    
+      req.login(user, (err) => {
+        if (err) return next(err);
+        // Respond with the temporary user object
+        res.status(201).json(user);
+      });
     } catch (error) {
       res.status(400).json({ message: "Registration failed", error });
+      console.log("Registration failed");
+    }
+    finally{
+      console.log("/api/register");
     }
   });
 
@@ -115,7 +128,7 @@ export function setupAuth(app: Express) {
       if (!user)
         return res.status(401).json({ message: "Invalid credentials" });
       req.login(user, (err) => {
-        if (err) return next(err);
+          if (err) return next(err);
         const { password , ...userWithoutPassword } = user;
         return res.status(200).json(userWithoutPassword);
       });
@@ -123,32 +136,41 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/logout", (req, res, next) => {
-    req.logout((err) => {
-      if (err) return next(err);
-      res.sendStatus(200);
-    });
+    try {
+      req.logout((err) => {
+        if (err) return next(err);
+        res.sendStatus(200);
+      });
+    } finally {
+      console.log("/api/logout");
+    }
   });
 
   app.get("/api/user", (req, res) => {
+    try {
       if (!req.isAuthenticated()) {
-          return res.sendStatus(401);
+        return res.sendStatus(401);
       }
-    // Mocked user data since we're not using a database
-    // if (!req.user) {
-    //     return res.status(404).json({ message: "User not found" });
-    // }
-    const mockedUser = {
-      id: req.user.id,
-      username: req.user.username,
-    };
+      // Mocked user data since we're not using a database
+      // if (!req.user) {
+      //     return res.status(404).json({ message: "User not found" });
+      // }
+      const mockedUser = {
+        id: req.user.id,
+        username: req.user.username,
+      };
       res.json(mockedUser);
+    } finally {
+      console.log("/api/user");
+    }
   });
 
   app.get("/api/random-user", async (req, res) => {
-      try {
-        // const users = Array.from(storage.users.values());
-        const users = []; //Commented to remove db interaction
-        if (users.length === 0) {
+    try {
+      // const users = Array.from(storage.users.values());
+      const users = []; //Commented to remove db interaction
+      console.log("/api/random-user");
+      if (users.length === 0) {
           return res.status(404).json({ message: "No users found" });
         }
   
@@ -161,5 +183,8 @@ export function setupAuth(app: Express) {
         res.json(userWithoutPassword);
       } catch (error) {
         res.status(500).json({ message: "Failed to get random user", error });
-      }
-  })};
+      } finally {
+          console.log("/api/random-user");
+        }
+  });
+};

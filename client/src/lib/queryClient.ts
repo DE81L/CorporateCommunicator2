@@ -32,13 +32,22 @@ export function createApiClient(isElectron: boolean) {
 
 export function getQueryFn<T = unknown>(path: string) {
 
-  return async (): Promise<T> => {
-      // Определяем, запущено ли приложение в Electron
+   return async (): Promise<T> => {
+    // Определяем, запущено ли приложение в Electron
     const isElectron = Boolean((window as any).electron);
     const apiClient = createApiClient(isElectron);
-    
-    const response = await apiClient.request("GET", path);
-    return response.json();
+    try {
+      console.log(`Sending request to: ${path}`);
+      const response = await apiClient.request("GET", path);
+      console.log(`Received response for ${path}:`, response);
+      if (!response.ok) throw new Error(`Error ${response.status}`);
+      const data = await response.json();
+      console.log(`Parsed data for ${path}:`, data);
+      return data;
+    } catch (error) {
+      console.error(`Error fetching ${path}:`, error);
+      throw error;
+    }
   };
 }
 

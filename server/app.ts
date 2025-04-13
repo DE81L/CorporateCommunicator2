@@ -10,7 +10,9 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
+// Log function calls with their names
 export async function createApp() {
+  log(`Entering function: createApp`);
   const app = express();
   const isElectron = process.env.ELECTRON === 'true';
   const isReplit = process.env.REPLIT_DB_URL !== undefined;
@@ -40,6 +42,7 @@ export async function createApp() {
     log('Setting up for Electron environment');
     // Electron-specific routes or configuration here
     app.get('/api/environment', (req, res) => {
+        log(`Entering function: api/environment (Electron)`);
       res.json({
         environment: 'electron',
         version: process.env.npm_package_version || 'unknown'
@@ -50,6 +53,7 @@ export async function createApp() {
     log('Setting up for Web/Replit environment');
     // Web-specific routes or configuration here
     app.get('/api/environment', (req, res) => {
+      log(`Entering function: api/environment (Web/Replit)`);
       res.json({
         environment: isReplit ? 'replit' : 'web',
         version: process.env.npm_package_version || 'unknown'
@@ -62,6 +66,7 @@ export async function createApp() {
   
   // Error handling middleware
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    log(`Entering function: Error Handling Middleware`);
     log(`Error: ${err.message}`, 'error');
     res.status(err.status || 500).json({
       error: {
@@ -84,6 +89,7 @@ export async function createApp() {
         
         // Provide a basic route for development
         app.get('*', (req, res) => {
+          log(`Entering function: GET * (Development)`);
           if (req.path.startsWith('/api')) {
             // Let API requests pass through
             return res.status(404).json({ error: 'API endpoint not found' });
@@ -121,6 +127,7 @@ export async function createApp() {
         
         // Handle the error when static files aren't available
         app.get('*', (req, res) => {
+          log(`Entering function: GET * (Production)`);
           if (req.path.startsWith('/api')) {
             // Let API requests pass through
             return res.status(404).json({ error: 'API endpoint not found' });

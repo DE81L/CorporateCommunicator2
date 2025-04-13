@@ -43,6 +43,7 @@ export interface User {
 export type UserWithoutPassword = Omit<User, "password">;
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  console.log(`registerRoutes`);
   const httpServer = createServer(app);
   setupAuth(app);
   
@@ -63,6 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const clients = new Map<number, WebSocketClient>();
 
   wss.on("connection", (ws: WebSocketClient) => {
+    console.log(`wss.on("connection")`);
     ws.isAlive = true;
 
     ws.on("message", async (message) => {
@@ -82,6 +84,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
 
     ws.on("close", async () => {
+      console.log(`ws.on("close")`);
       if (ws.userId) {
         await storage.updateUserOnlineStatus(ws.userId, false);
         clients.delete(ws.userId);
@@ -94,6 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Users API
   app.get("/api/users", async (req, res) => {
+    console.log(`app.get("/api/users")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -119,6 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // User API - Get current user
   app.get("/api/user", (req, res) => {
+    console.log(`app.get("/api/user")`);
     if (req.isAuthenticated()) {
       // Exclude password from the user data
       const { password, ...userWithoutPassword } = req.user as User;
@@ -129,6 +134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/random-user", async (req, res) => {
+    console.log(`app.get("/api/random-user")`);
     try {
       const users = await storage.listUsers();
       if (users.length === 0) {
@@ -155,6 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Messages API
   app.get("/api/messages/:userId", async (req, res) => {
+    console.log(`app.get("/api/messages/:userId")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -175,6 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Group Messages API
   app.get("/api/groups/:groupId/messages", async (req, res) => {
+    console.log(`app.get("/api/groups/:groupId/messages")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -200,6 +208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Groups API
   app.get("/api/groups", async (req, res) => {
+    console.log(`app.get("/api/groups")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -212,6 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/groups", async (req, res) => {
+    console.log(`app.post("/api/groups")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -232,6 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/groups/:groupId/members", async (req, res) => {
+    console.log(`app.post("/api/groups/:groupId/members")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -281,6 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/groups/:groupId/members", async (req, res) => {
+    console.log(`app.get("/api/groups/:groupId/members")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -306,6 +318,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Announcements API
   app.get("/api/announcements", async (req, res) => {
+    console.log(`app.get("/api/announcements")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -319,6 +332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Requests API with enhanced error handling
   app.post("/api/requests", async (req, res) => {
+    console.log(`app.post("/api/requests")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -341,6 +355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/requests", async (req, res) => {
+    console.log(`app.get("/api/requests")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -353,6 +368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.patch("/api/requests/:requestId/complete", async (req, res) => {
+    console.log(`app.patch("/api/requests/:requestId/complete")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -408,6 +424,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Helper function to broadcast user status
   function broadcastUserStatus(userId: number, isOnline: boolean) {
+    console.log(`broadcastUserStatus`);
     const statusUpdate = JSON.stringify({
       type: "user_status",
       userId: userId,
@@ -425,12 +442,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 const getUsers = async () => {
+  console.log(`getUsers`);
   const result = await pool.query("SELECT * FROM users");
   return result.rows;
 };
 
 // Add explicit type annotations
 const handleUserUpdate = async (user: UserWithoutPassword) => {
+  console.log(`handleUserUpdate`);
   // ... implementation
 };
 
@@ -438,6 +457,7 @@ const handleUserUpdate = async (user: UserWithoutPassword) => {
 function addWikiRoutes(app: Express) {
   // Wiki entries
   app.get("/api/wiki", async (req, res) => {
+    console.log(`app.get("/api/wiki")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -450,6 +470,7 @@ function addWikiRoutes(app: Express) {
   });
 
   app.get("/api/wiki/:id", async (req, res) => {
+    console.log(`app.get("/api/wiki/:id")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -471,6 +492,7 @@ function addWikiRoutes(app: Express) {
   });
 
   app.post("/api/wiki", async (req, res) => {
+    console.log(`app.post("/api/wiki")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -502,6 +524,7 @@ function addWikiRoutes(app: Express) {
   });
 
   app.put("/api/wiki/:id", async (req, res) => {
+    console.log(`app.put("/api/wiki/:id")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -539,6 +562,7 @@ function addWikiRoutes(app: Express) {
   });
 
   app.delete("/api/wiki/:id", async (req, res) => {
+    console.log(`app.delete("/api/wiki/:id")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -568,6 +592,7 @@ function addWikiRoutes(app: Express) {
 
   // Wiki categories
   app.get("/api/wiki/categories", async (req, res) => {
+    console.log(`app.get("/api/wiki/categories")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -580,6 +605,7 @@ function addWikiRoutes(app: Express) {
   });
 
   app.get("/api/wiki/categories/:id", async (req, res) => {
+    console.log(`app.get("/api/wiki/categories/:id")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -601,6 +627,7 @@ function addWikiRoutes(app: Express) {
   });
 
   app.get("/api/wiki/categories/:id/entries", async (req, res) => {
+    console.log(`app.get("/api/wiki/categories/:id/entries")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -623,6 +650,7 @@ function addWikiRoutes(app: Express) {
   });
 
   app.post("/api/wiki/categories", async (req, res) => {
+    console.log(`app.post("/api/wiki/categories")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -652,6 +680,7 @@ function addWikiRoutes(app: Express) {
   });
 
   app.put("/api/wiki/categories/:id", async (req, res) => {
+    console.log(`app.put("/api/wiki/categories/:id")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 
@@ -688,6 +717,7 @@ function addWikiRoutes(app: Express) {
   });
 
   app.delete("/api/wiki/categories/:id", async (req, res) => {
+    console.log(`app.delete("/api/wiki/categories/:id")`);
     if (!req.isAuthenticated())
       return res.status(401).json({ message: "Unauthorized" });
 

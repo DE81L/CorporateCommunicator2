@@ -5,6 +5,7 @@ import * as schema from '../shared/schema';
 
 // Function to start a quick server on port 5000 for Replit environment
 function startQuickServer() {
+  console.log('startQuickServer function called');
   if (process.env.REPLIT_DB_URL) {
     console.log('Starting quick server for Replit on port 5000...');
     const quickServer = http.createServer((req, res) => {
@@ -25,6 +26,7 @@ function startQuickServer() {
  * Main server entry point with environment detection
  */
 async function startServer() {
+  console.log('startServer function called');
   await connectToDb();
   console.log('Connected to database');
 
@@ -33,6 +35,7 @@ async function startServer() {
   const { app, server } = await createApp();
   
   // Add health check endpoint
+  console.log('Adding health check endpoint');
   app.get("/api/health", async (req, res) => {
     try {
       // Check database connection by attempting a simple query
@@ -64,6 +67,7 @@ async function startServer() {
   
   // Handle termination gracefully
   const shutdown = () => {
+    console.log('shutdown function called');
     console.log('Shutting down server...');
     
     // Cleanup all servers

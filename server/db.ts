@@ -26,6 +26,7 @@ export const db = drizzle(connection, { schema });
  * Execute a SQL query against the database
  */
 export async function query(text: string, params?: any[]) {
+  console.log("Function 'query' called");
   const start = Date.now();
   try {
     const res = await pool.query(text, params);
@@ -42,6 +43,7 @@ export async function query(text: string, params?: any[]) {
  * Connect to the database and verify connection
  */
 export async function connectToDb(): Promise<void> {
+  console.log("Function 'connectToDb' called");
   try {
     // Test connection
     const client = await pool.connect();
@@ -71,5 +73,6 @@ export async function connectToDb(): Promise<void> {
  * Helper function to generate incremental IDs for in-memory collections
  */
 export function getNextId(collection: Map<number, any>): number {
+  console.log("Function 'getNextId' called");
   return collection.size > 0 ? Math.max(...collection.keys()) + 1 : 1;
 }
