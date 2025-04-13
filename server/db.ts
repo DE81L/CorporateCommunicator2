@@ -1,10 +1,9 @@
-import pkg from 'pg';
-const { Pool } = pkg;
 import dotenv from 'dotenv';
+import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { sql } from '@vercel/postgres';
+import { sql } from 'drizzle-orm';
 import postgres from 'postgres';
-import * as schema from '../shared/electron-shared/schema';
+import * as schema from '../shared/schema';
 
 // Load environment variables
 dotenv.config();
@@ -16,14 +15,12 @@ const isReplit = process.env.REPLIT_DB_URL !== undefined;
 /**
  * Configure database connection based on environment
  */
+
 const url = process.env.POSTGRES_URL;
 if (!url) {
   throw new Error('POSTGRES_URL is not set');
 }
-export const pool = new Pool({
-  connectionString: url,
-
-});
+export const pool = new Pool({ connectionString: url, });
 
 
 const connection = postgres(url, { max: 1 });
