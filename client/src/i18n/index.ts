@@ -19,6 +19,7 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
+    initImmediate: false,
     resources,
     fallbackLng: 'ru',
     interpolation: {
@@ -33,5 +34,10 @@ i18n
   .catch(error => {
     console.error('i18n initialization error:', error);
   });
+  
+// Set language to Russian by default if not detected
+if (!i18n.language) {
+    i18n.changeLanguage('ru');
+}
 
 export default i18n;

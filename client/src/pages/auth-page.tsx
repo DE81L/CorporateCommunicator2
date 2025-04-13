@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../hooks/use-auth";
+import i18n from "../i18n";
 import { useState } from "react";
 import { z } from "zod";
 import { Redirect } from "wouter";
@@ -26,7 +27,6 @@ import {
 } from "@/components/ui/form";
 import { useTranslation } from "react-i18next";
 
-
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
@@ -41,9 +41,8 @@ const registerSchema = z.object({
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, { 
   message: "Passwords do not match",
-  path: ["confirmPassword"],
+    path: ["confirmPassword"],
 });
-
 
 export default function AuthPage() { 
   const { t } = useTranslation();
@@ -69,8 +68,8 @@ export default function AuthPage() {
         </div>
       <Tabs defaultValue={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")}>
         <TabsList>
-          <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
-          <TabsTrigger value="register">{t('auth.register')}</TabsTrigger>
+          <TabsTrigger value="login">{i18n.t('auth.login')}</TabsTrigger>
+          <TabsTrigger value="register">{i18n.t('auth.register')}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="login">
@@ -102,20 +101,20 @@ function LoginForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('auth.loginTitle')}</CardTitle>
-        <CardDescription>{t('auth.loginDescription')}</CardDescription>
+        <CardTitle>{i18n.t('auth.loginTitle')}</CardTitle>
+        <CardDescription>{i18n.t('auth.loginDescription')}</CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
             <FormField
               control={form.control}
-              name="username"
+                    name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('auth.usernameOrEmail')}</FormLabel>
+                  <FormLabel>{i18n.t('auth.usernameOrEmail')}</FormLabel>
                   <FormControl>
-                    <Input
+                                        <Input
                       placeholder={t('auth.enterUsernameOrEmail')}
                       {...field}
                     />
@@ -129,11 +128,11 @@ function LoginForm({
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('auth.password')}</FormLabel>
+                  <FormLabel>{i18n.t('auth.password')}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder={t('auth.enterPassword')}
+                                            placeholder={i18n.t('auth.enterPassword')}
                       {...field}
                     />
                   </FormControl>
@@ -149,14 +148,14 @@ function LoginForm({
                   className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                 />
                 <label htmlFor="remember-me" className="text-sm text-gray-600">
-                  {t('auth.rememberMe')}
+                  {i18n.t('auth.rememberMe')}
                 </label>
               </div>
               <Button variant="link" className="px-0">
-                {t('auth.forgotPassword')}
+                {i18n.t('auth.forgotPassword')}
               </Button>
             </div>
-          </CardContent>
+                    </CardContent>
           <CardFooter className="flex justify-end">
             <Button type="submit">
               {t('auth.login')}
@@ -186,15 +185,15 @@ function RegisterForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('auth.registerTitle')}</CardTitle>
-        <CardDescription>{t('auth.registerDescription')}</CardDescription>
+        <CardTitle>{i18n.t('auth.registerTitle')}</CardTitle>
+        <CardDescription>{i18n.t('auth.registerDescription')}</CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
              <FormField
             control={form.control}
-            name="username"
+                        name="username"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('auth.username')}</FormLabel>
@@ -210,7 +209,7 @@ function RegisterForm({
           
           <CardFooter className="flex justify-end">
             <Button type="submit">
-              {t('auth.register')}
+                            {i18n.t('auth.register')}
             </Button>
           </CardFooter>
         </form>
