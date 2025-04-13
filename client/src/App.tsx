@@ -1,5 +1,6 @@
 
-import { Toaster } from 'react-hot-toast';
+import { useEffect, useState } from 'react';
+
 
 import HomePage from './pages/home-page';
 import { LanguageProvider } from './lib/i18n/LanguageContext';
@@ -10,26 +11,46 @@ import EnvironmentIndicator from "./components/electron-info";
 import { useElectron } from "./hooks/use-electron";
 import { ProtectedRoute } from "./lib/protected-route";
 
+interface Msg { from: string; text: string; ts: number }
+
+declare global {
+  interface Window {
+    chatAPI: {
+      bootstrap: (fn: (d: { username: string; chat: Msg[] }) => void) => void;
+      onMessage: (fn: (m: Msg) => void) => void;
+      send: (from: string, text: string) => void;
+    };
+  }
+}
+
 export default function App() {
-  const isElectron = useElectron();
-  const queryClient = new QueryClient();
+  const [me, setMe] = useState('user?');
+  const [chat, setChat] = useState<Msg[]>([]);
+  const [text, setText] = useState('');
+
+  useEffect(() => {
+    window.chatAPI.bootstrap(({ username, chat }) => {
+      setMe(username);
+      setChat(chat);
+    });
+    window.chatAPI.onMessage((m) => setChat(c => [...c, m]));
+  }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <LanguageProvider>
-          <EnvironmentIndicator />
-          <Toaster />
-          <div className="flex flex-col h-screen">
-            {/* Only show window frame in Electron */}
-              {isElectron && <WindowFrame />}
-            {/* Main content area with conditional padding */}
-            <div className={`flex-1 overflow-auto ${isElectron ? 'pt-0' : ''}`}>
-              <ProtectedRoute path="/" component={HomePage} />
-            </div>
-            </div>
-        </LanguageProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <div style={{padding:16,fontFamily:'sans-serif'}}>
+      <h2>{me}</h2>
+      <div style={{border:'1px solid #ccc',height:400,overflowY:'auto',padding:8,marginBottom:8}}>
+        {chat.map(m=>(
+          <div key={m.ts} style={{textAlign:m.from===me?'right':'left'}}>
+            <b>{m.from}</b>: {m.text}
+          </div>
+        ))}
+      </div>
+      <form onSubmit={e=>{e.preventDefault(); if(text) {window.chatAPI.send(me,text); setText('');}}}>
+        <input value={text} onChange={e=>setText(e.target.value)} style={{width:'80%'}} autoFocus/>
+        <button type="submit">Send</button>
+      </form>
+    </div>
   );
 }
+

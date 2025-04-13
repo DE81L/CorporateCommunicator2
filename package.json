@@ -6,8 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev:api": "echo \"API disabled – sleep time 😴\"",
-    "dev": "concurrently -k \"cd client && cross-env ELECTRON=true NODE_ENV=development vite\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development ELECTRON=true electron electron/main.cjs --no-sandbox\"",
-    "build": "cross-env ELECTRON=true NODE_ENV=production vite build && npm run build:electron",
+    "dev": "concurrently -k \"cd client && cross-env ELECTRON=true vite\" \"wait-on http://localhost:5173 && electron electron/main.cjs --no-sandbox\"",    "build": "cross-env ELECTRON=true  vite build && npm run build:electron",
     "build:electron": "tsc -p electron/tsconfig.json",
     "start": "cross-env NODE_ENV=production ELECTRON=true electron .",
     "check": "tsc -p client/tsconfig.json -noEmit"
