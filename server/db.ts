@@ -1,14 +1,14 @@
 import pkg from 'pg';
 const { Pool } = pkg;
 import dotenv from 'dotenv';
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import * as schema from "../shared/electron-shared/schema";
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as schema from '../shared/electron-shared/schema';
 
 // Load environment variables
 dotenv.config();
 
-// Environment detection
+// Environment detectiona
 const isElectron = process.env.ELECTRON === 'true';
 const isReplit = process.env.REPLIT_DB_URL !== undefined;
 
@@ -17,11 +17,44 @@ const isReplit = process.env.REPLIT_DB_URL !== undefined;
  */
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+
 });
 
 const connection = postgres(process.env.DATABASE_URL!, { max: 1 });
 export const db = drizzle(connection, { schema });
 
+async function checkDatabaseAndUser(): Promise<boolean> {
+  try {
+    // 1. Verify database connection (a simple query should suffice)
+    await db.execute(sql`SELECT 1`); // Execute a trivial query
+
+    // 2. Check for the specific user (adapt the query to your schema)
+    const user = await db.query.users.findFirst({
+      // Assuming you have a users table in your schema
+      where: (users, { eq }) => eq(users.id, 1), // Adjust the where clause as needed
+    });
+
+    if (
+      user &&
+      user.username === 'est' &&
+      user.email === 'a.a@a.com' &&
+      // Add other attribute checks as needed (adjust column names!)
+      user.firstname === 'a' &&
+      user.lastname === 'a' &&
+      user.isOnline === 0 && // Assuming isOnline is 0/1
+      user.avatarurl === '__NULL_VALUE_7f9c2b3a4e'
+    ) {
+      console.log('Database connected and user exists!');
+      return true;
+    } else {
+      console.log('Database connected, but user not found or data mismatch.');
+      return false;
+    }
+  } catch (error) {
+    console.error('Database connection or check failed:', error);
+    return false;
+  }
+}
 /**
  * Execute a SQL query against the database
  */
@@ -49,14 +82,14 @@ export async function connectToDb(): Promise<void> {
     const client = await pool.connect();
     const result = await client.query('SELECT NOW()');
     client.release();
-    
+
     console.log('✅ Connected to PostgreSQL database');
     console.log(`Database time: ${result.rows[0].now}`);
-    
+    await checkDatabaseAndUser();
     // Log environment-specific database info
     if (isElectron) {
       console.log('Using local database configuration for Electron');
-    } else if (isReplit) {
+    } else if (isReplit) {      
       console.log('Using Replit database configuration');
     } else {
       console.log('Using standard web database configuration');
