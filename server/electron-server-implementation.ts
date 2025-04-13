@@ -2,7 +2,7 @@ import { log } from 'console';
 
 import { ElectronServerInterface } from '../shared/electron-shared/electron-server-interface';
 import { connectToDb } from './db';
-import { setupAuth } from './auth';
+import { setupAuth } from './auth'; 
 import { registerRoutes } from './routes';
 import { setupVite, serveStatic } from './vite';
 

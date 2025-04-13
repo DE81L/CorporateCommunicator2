@@ -13,7 +13,7 @@ import {
   convertHelpers
 } from "../shared/electron-shared/schema";
 import { z } from "zod";
-import { pool } from "./db"; // Updated import
+import { pool } from "./db";
 
 interface WebSocketClient extends WebSocket {
   userId?: number;

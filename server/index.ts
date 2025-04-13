@@ -1,6 +1,6 @@
 import { createApp } from './app';
 import http from 'http';
-import { db, connectToDb } from './db';
+import { db, connectToDb } from './db'; // Updated import here
 import dotenv from 'dotenv';
 dotenv.config();
 import * as schema from '../shared/schema';

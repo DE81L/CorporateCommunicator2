@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
-import { connectToDb } from './db';
+import { connectToDb } from './db'; // Remove .cjs if present
 import { registerRoutes } from './routes';
 import { setupAuth } from './auth';
 import { setupVite, serveStatic, log } from './vite';

@@ -5,7 +5,7 @@ import { Store } from "express-session";
 import { log } from "console";
 
 import * as schema from "../shared/electron-shared/schema";
-import { db } from "./db";
+import { db } from "./db"; // Updated import
 
 const MemoryStore = createMemoryStore(session);
 
