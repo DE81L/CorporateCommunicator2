@@ -2,7 +2,7 @@
 // import { Strategy as LocalStrategy } from 'passport-local';
 import { Express, NextFunction, Request, Response } from 'express';
 // import session from 'express-session';
-// import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
+import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
 // import { promisify } from 'util';
 import { User as SelectUser } from '@shared/electron-shared/schema';
 
@@ -13,6 +13,7 @@ declare global {
 }
 
 import { storage } from "./storage";
+import { promisify } from 'util';
 
 const scryptAsync = promisify(scrypt); //this is not used
 

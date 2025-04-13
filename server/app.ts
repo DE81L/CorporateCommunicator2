@@ -18,7 +18,7 @@ export async function createApp() {
   const isReplit = process.env.REPLIT_DB_URL !== undefined;
   
   log(`Environment: ${isElectron ? 'Electron' : 'Web'}`);
-  if (isReplit) log('Running in Replit environment');
+  if (isReplit) log('Running in Replit environment'); // This is environment detection log
   
   // Basic middleware
   app.use(express.json());
@@ -30,7 +30,7 @@ export async function createApp() {
     log('✅ Database connection verified');
   } catch (err) {
     log(`Failed to connect to database: ${err instanceof Error ? err.message : String(err)}`, 'error');
-    // Provide fallback database behavior if needed
+    
   }
   
   // Setup authentication
@@ -39,10 +39,10 @@ export async function createApp() {
   // Environment-specific setup
   if (isElectron) {
     // Electron-specific setup
-    log('Setting up for Electron environment');
+    log('Setting up for Electron environment'); // This is environment detection log
     // Electron-specific routes or configuration here
     app.get('/api/environment', (req, res) => {
-        log(`Entering function: api/environment (Electron)`);
+       
       res.json({
         environment: 'electron',
         version: process.env.npm_package_version || 'unknown'
@@ -50,10 +50,10 @@ export async function createApp() {
     });
   } else {
     // Web/Replit-specific setup
-    log('Setting up for Web/Replit environment');
+    log('Setting up for Web/Replit environment'); // This is environment detection log
     // Web-specific routes or configuration here
     app.get('/api/environment', (req, res) => {
-      log(`Entering function: api/environment (Web/Replit)`);
+      // removed log
       res.json({
         environment: isReplit ? 'replit' : 'web',
         version: process.env.npm_package_version || 'unknown'
@@ -66,7 +66,6 @@ export async function createApp() {
   
   // Error handling middleware
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    log(`Entering function: Error Handling Middleware`);
     log(`Error: ${err.message}`, 'error');
     res.status(err.status || 500).json({
       error: {
@@ -85,7 +84,7 @@ export async function createApp() {
       try {
         await setupVite(app, server);
       } catch (err) {
-        log(`Vite setup error: ${err instanceof Error ? err.message : String(err)}`, 'error');
+        log(`Vite setup error: ${err instanceof Error ? err.message : String(err)}`, 'error'); // This is error handling log
         
         // Provide a basic route for development
         app.get('*', (req, res) => {
@@ -123,7 +122,7 @@ export async function createApp() {
       try {
         serveStatic(app);
       } catch (err) {
-        log(`Static serving error: ${err instanceof Error ? err.message : String(err)}`, 'error');
+        log(`Static serving error: ${err instanceof Error ? err.message : String(err)}`, 'error'); // This is error handling log
         
         // Handle the error when static files aren't available
         app.get('*', (req, res) => {
