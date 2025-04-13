@@ -57,6 +57,10 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       console.log('LocalStrategy');
+      console.log(`Attempting to authenticate user: ${username}`);
+      console.log(`Password provided: ${password}`);
+
+      
       try {
         let user = await storage.getUserByUsername(username);
 
@@ -65,7 +69,12 @@ export function setupAuth(app: Express) {
           user = await storage.getUserByEmail(username);
         }
 
+        
         if (!user || !(await comparePasswords(password, user.password))) {
+          if (user){
+            console.log(`Password comparison failed for user: ${user.username || user.email}`);
+            console.log(`Stored password hash: ${user.password}`);
+          }
           console.log('LocalStrategy: no user');
           return done(null, false);
         } else {
