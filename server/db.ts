@@ -27,7 +27,7 @@ export const pool = new Pool({ connectionString: url, });
 const connection = postgres(url, { max: 1 });
 export const db = drizzle(connection, { schema });
 
-async function checkDatabaseAndUser(): Promise<boolean> {
+async function checkDatabaseUser(): Promise<boolean> {
     try {
     // 1. Verify database connection (a simple query should suffice)
     await db.execute(sql`SELECT 1`); // Execute a trivial query
@@ -89,7 +89,10 @@ export async function connectToDb(): Promise<void> {
 
     console.log('✅ Connected to PostgreSQL database');
     console.log(`Database time: ${result.rows[0].now}`);
-    await checkDatabaseAndUser();
+
+    // Call the user check function after connecting
+    await checkDatabaseUser().catch((error) => console.error('User check failed:', error));
+
     // Log environment-specific database info
     if (isElectron) {
       console.log('Using local database configuration for Electron');
