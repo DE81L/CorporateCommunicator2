@@ -121,7 +121,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User API - Get current user
   app.get("/api/user", async (req, res) => {
     try {
-      await connectToDb(); // Ensure database connection
 
       if (req.isAuthenticated()) {
         // Exclude password from the user data
