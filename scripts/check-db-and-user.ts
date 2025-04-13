@@ -7,7 +7,7 @@ async function checkDbAndUser() {
     // Use environment variables or a configuration file to store your database credentials
     // For example, you might use 'process.env.DATABASE_URL' here.
     // Replace with your actual database URL or connection configuration.
-    const databaseUrl = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/ccnew'; 
+    const databaseUrl = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/mess';
     sql = postgres(databaseUrl);
 
     const result = await sql`select current_timestamp`;
