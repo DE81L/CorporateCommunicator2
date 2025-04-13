@@ -1,27 +1,31 @@
 import { db, pool } from '../server/db';
 import { sql } from 'drizzle-orm';
 
+
 async function checkDb() {
+  console.log('Attempting to connect to the database...');
+  let client;
   try {
-    // Establish database connection using the pool directly
-    const client = await pool.connect();
-    await client.query('SELECT 1'); // Simple query to check connection
-    client.release();
-    
-    console.log('Connected to the database for check.')
-    
+    client = await pool.connect();
+    console.log('Successfully connected to the database.');
+
     const hasLastNameColumn = await db.execute(sql`SELECT column_name FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'last_name';`);
-    if (hasLastNameColumn.rows.length === 0) {
-      console.error('Error: The "last_name" column does not exist in the "users" table.');
-      process.exit(1);
-    } else {
+    if (hasLastNameColumn && hasLastNameColumn.rows.length > 0) {
       console.log('Success: The "last_name" column exists in the "users" table.');
       process.exit(0);
+    } else {
+      console.error(
+        'Error: The "last_name" column does not exist in the "users" table.'
+      );
+      process.exit(1);
     }
   } catch (error) {
     console.error('Error checking database:', error);
     process.exit(1);
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 }
-
 checkDb();
