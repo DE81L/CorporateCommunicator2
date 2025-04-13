@@ -112,6 +112,7 @@
     "@vitejs/plugin-react-swc": "^3.8.1",
     "autoprefixer": "^10.4.20",
     "cross-env": "^7.0.3",
+    "dotenv-safe": "^9.1.0",
     "drizzle-kit": "^0.30.4",
     "esbuild": "^0.25.0",
     "postcss": "^8.4.47",
