@@ -7,17 +7,17 @@ async function checkDb() {
   try {
     client = await pool.connect();
     console.log('Successfully connected to the database.');
-    // Check for the "last_name" column in the "users" table
+    // Check for the "lastname" column in the "users" table
     const hasLastNameColumn = await db.execute(sql`
       SELECT column_name 
       FROM information_schema.columns 
-      WHERE table_name = 'users' AND column_name = 'last_name';
+      WHERE table_name = 'users' AND column_name = 'lastname';
     `);
     if (hasLastNameColumn && !hasLastNameColumn.columns) {
-      console.error('Error: The "last_name" column does not exist in the "users" table.');
+      console.error('Error: The "lastname" column does not exist in the "users" table.');
       process.exit(1);
     }
-    console.log('Success: The "last_name" column exists in the "users" table.');
+    console.log('Success: The "lastname" column exists in the "users" table.');
     // Fetch the first user from the "users" table
     const firstUser = await db.execute(sql`SELECT * FROM users LIMIT 1`);
     if (firstUser) {

@@ -75,14 +75,14 @@ export const groupMembers = pgTable("group_members", {
 // Make sure these are exported
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  firstName: text('first_name').notNull(),
+  firstName: text('firstname').notNull(),
   username: text("username").notNull(),
   email: text("email").notNull(),
   password: text("password").notNull(),
   firstname: text("firstname").notNull(),
-  lastName: text("last_name").notNull(),
-  isOnline: integer("is_online").default(0),
-  avatarUrl: text("avatar_url").default(NULL_TEXT),
+  lastName: text("lastname").notNull(),
+  isOnline: integer("isonline").default(0),
+  avatarUrl: text("avatarurl").default(NULL_TEXT),
 });
 
 // Таблица заявок с требуемыми полями

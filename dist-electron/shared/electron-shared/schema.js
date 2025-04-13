@@ -72,10 +72,10 @@ exports.users = (0, pg_core_1.pgTable)("users", {
     username: (0, pg_core_1.text)("username").notNull(),
     email: (0, pg_core_1.text)("email").notNull(),
     password: (0, pg_core_1.text)("password").notNull(),
-    firstName: (0, pg_core_1.text)("first_name").notNull(),
-    lastName: (0, pg_core_1.text)("last_name").notNull(),
-    isOnline: (0, pg_core_1.integer)("is_online").default(0),
-    avatarUrl: (0, pg_core_1.text)("avatar_url").default(exports.NULL_TEXT),
+    firstName: (0, pg_core_1.text)("firstname").notNull(),
+    lastName: (0, pg_core_1.text)("lastname").notNull(),
+    isOnline: (0, pg_core_1.integer)("isonline").default(0),
+    avatarUrl: (0, pg_core_1.text)("avatarurl").default(exports.NULL_TEXT),
 });
 // Таблица заявок с требуемыми полями
 exports.requests = (0, pg_core_1.pgTable)("requests", {
