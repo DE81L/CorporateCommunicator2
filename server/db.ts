@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 import pg from 'pg';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { PostgresError } from 'postgres';
 import { sql } from 'drizzle-orm';
 import postgres from 'postgres';
 import * as schema from '../shared/schema';
@@ -55,13 +54,9 @@ async function checkDatabaseAndUser(): Promise<boolean> {
       return false;
     }
   } catch (error) {
-    if(error instanceof PostgresError && error.code === "42703") {
-      console.error('Database connection or check failed, missing column:', error);
-    } else {
-    
-    }
-    
     console.error('Database connection or check failed:', error);
+
+
     return false;
   }
 }
@@ -116,7 +111,7 @@ export async function connectToDb(): Promise<void> {
 
 export async function checkDatabaseUser(): Promise<void>{
   console.log("Function 'checkDatabaseUser' called")
-  await checkDatabaseAndUser().catch((error) => console.error('User check failed:', error));
+  await checkDatabaseAndUser().catch((error) => console.error('User check failed:', error));  
 }
 
 /**
