@@ -40,6 +40,28 @@ async function checkDatabaseAndUser(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Check if a column exists in a table
+ */
+export async function checkColumnExists(
+  tableName: string,
+  columnName: string,
+): Promise<boolean> {
+  console.log(`Checking if column '${columnName}' exists in table '${tableName}'`);
+  try {
+    const result = await db.execute(sql`
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_name = ${tableName} AND column_name = ${columnName};
+    `);
+    return result.rows.length > 0;
+  } catch (error) {
+    console.error(`Error checking column existence:`, error);
+    return false;
+  }
+}
+
 /**
  * Execute a SQL query against the database
  */

@@ -13,7 +13,7 @@ import {
   convertHelpers
 } from "../shared/electron-shared/schema";
 import { z } from "zod";
-import { pool } from "./db";
+import { pool, connectToDb } from "./db";
 
 interface WebSocketClient extends WebSocket {
   userId?: number;
@@ -122,14 +122,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User API - Get current user
-  app.get("/api/user", (req, res) => {
+  app.get("/api/user", async (req, res) => {
     console.log(`app.get("/api/user")`);
-    if (req.isAuthenticated()) {
-      // Exclude password from the user data
-      const { password, ...userWithoutPassword } = req.user as User;
-      return res.json(userWithoutPassword);
-    } else {
-      return res.status(401).json({ message: "Unauthorized" });
+    try {
+      await connectToDb(); // Ensure database connection
+      if (req.isAuthenticated()) {
+        // Exclude password from the user data
+        const { password, ...userWithoutPassword } = req.user as User;
+        return res.json(userWithoutPassword);
+      } else {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+    } catch (error) {
+      console.error("Database connection failed:", error);
+      return res.status(500).json({ message: "Database connection failed" });
     }
   });
 

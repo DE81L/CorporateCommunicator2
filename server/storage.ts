@@ -4,7 +4,7 @@ import createMemoryStore from "memorystore";
 import { Store } from "express-session";
 import { log } from "console";
 
-import * as schema from "../shared/electron-shared/schema";
+import * as schema from "../shared/electron-shared/schema"; import { checkColumnExists } from "./db";
 import { db } from "./db"; // Updated import
 
 const MemoryStore = createMemoryStore(session);
@@ -79,6 +79,13 @@ export class PgStorage implements IStorage {
   // User operations
   async getUser(id: number) {
     log("getUser");
+        // Check if the 'lastname' column exists in the 'users' table
+    const columnExists = await checkColumnExists("users", "lastname");
+    if (!columnExists) {
+      throw new Error(
+        "The 'lastname' column is missing from the 'users' table.",
+      );
+    }
     const result = await db.select().from(schema.users)
       .where(eq(schema.users.id, id));
     return result[0];
