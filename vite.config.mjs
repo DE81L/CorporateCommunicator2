@@ -37,6 +37,6 @@ export default defineConfig(({ mode }) => {
         }
       }
     },
-    publicDir: "client/public"
+    publicDir: "public"
   }
 })
