@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       proxy: {
         '/api': {
-          target: 'http://localhost:3000',
+          target: env.VITE_API_URL,
           changeOrigin: true,
           configure: (proxy, _options) => {
             proxy.on('error', (err, _req, res) => {

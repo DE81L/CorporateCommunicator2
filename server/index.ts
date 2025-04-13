@@ -9,6 +9,7 @@ import { createApp } from './app';
 import http from 'http';
 import { db, connectToDb, checkDatabaseUser } from './db'; // Updated import here
 import 'dotenv-safe/config';
+import cors from 'cors';
 import { sql } from 'drizzle-orm';
 import path from 'path';
 
@@ -49,6 +50,9 @@ async function startServer() {
   // Start quick server for Replit if needed
   const quickServer = startQuickServer();
   const { app, server } = await createApp();
+
+  // Enable CORS for requests from http://localhost:5173
+  app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
   
   // Add health check endpoint
   console.log('Adding health check endpoint');
@@ -81,7 +85,7 @@ async function startServer() {
   // Commented out as requested
   // await electronServer.setupVite();
 
-  server.listen(PORT, () => {
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
   }); 
 

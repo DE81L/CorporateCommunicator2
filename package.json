@@ -6,8 +6,9 @@
   "license": "MIT",
   "scripts": {
     "dev:api": "npx tsx watch server/index.ts",
-    "dev": "concurrently -k \"npm:dev:api\" \"cd client && cross-env ELECTRON=true NODE_ENV=development vite\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development ELECTRON=true electron electron/main.cjs --no-sandbox\"",
+    "dev": "concurrently -k \"npm:dev:api\" \"wait-on tcp:3000 && cd client && cross-env ELECTRON=true vite\" \"npm:dev:electron\"",
     "dev:autoauth": "AUTO_AUTH=true npx tsx watch server/index.ts",
+    "dev:electron": "wait-on http://localhost:5173 && cross-env NODE_ENV=development ELECTRON=true electron electron/main.cjs --no-sandbox",
     "check:db": "tsx scripts/check-db.ts",
     "dev:client": "cd client && cross-env ELECTRON=true NODE_ENV=development vite",
     "debug:api": "tsx scripts/debug-api.ts",
