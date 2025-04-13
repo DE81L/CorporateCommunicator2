@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import "./setupMocks";          // 👈 add this line
 import App from "./App";
 import "./index.css";
 import { installMockElectronAPI } from "./lib/web-polyfills";
