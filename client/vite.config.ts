@@ -37,12 +37,3 @@ export default defineConfig(({ mode }) => {
     },
   };
 });
-      proxy: {
-        '/api': {
-          target: env.VITE_API_URL || 'http://localhost:3000',
-          changeOrigin: true,
-        }
-      }
-    },
-  };
-});
