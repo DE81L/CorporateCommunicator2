@@ -31,9 +31,12 @@ export function createApiClient(isElectron: boolean) {
 }
 
 export function getQueryFn<T = unknown>(path: string) {
+
   return async (): Promise<T> => {
-    const { isElectron } = useElectron();
+      // Определяем, запущено ли приложение в Electron
+    const isElectron = Boolean((window as any).electron);
     const apiClient = createApiClient(isElectron);
+    
     const response = await apiClient.request("GET", path);
     return response.json();
   };

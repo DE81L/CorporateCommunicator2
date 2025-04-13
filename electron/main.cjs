@@ -60,7 +60,7 @@ function createWindow() {
   const startUrl = isDev
     ? 'http://localhost:5173' // Vite dev server
     : url.format({
-        pathname: path.join(__dirname, '../client/dist/index.html'),
+        pathname: path.join(__dirname, '../dist/public/index.html'),
         protocol: 'file:',
         slashes: true,
       });
