@@ -5,6 +5,7 @@ import { loadEnv } from 'vite';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, path.resolve(__dirname, '..'), '');
+  console.log(`API URL: ${env.VITE_API_URL}`);
   console.log(env);
   return {
     plugins: [react()],
