@@ -1,12 +1,9 @@
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
-import { Express } from 'express';
+import { Express, NextFunction, Request, Response } from 'express';
 import session from 'express-session';
 import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
-import { storage } from "./storage";
-import { db } from "./db";
-import { sql } from "drizzle-orm";
 import { User as SelectUser } from '@shared/electron-shared/schema';
 
 declare global {
@@ -14,6 +11,8 @@ declare global {
     interface User extends SelectUser { }
   }
 }
+
+import { storage } from "./storage";
 
 const scryptAsync = promisify(scrypt); //this is not used
 
@@ -112,7 +111,7 @@ export function setupAuth(app: Express) {
       res.status(400).json({ message: 'Registration failed', error });
       console.log('Registration failed');
     }
-    finally {
+    finally{
       console.log('/api/register');
     }
   });
@@ -155,32 +154,6 @@ export function setupAuth(app: Express) {
       }
     } finally {
       console.log('/api/user');
-    }
-  });
-
-  app.get('/api/random-user', async (req, res) => {
-    try {
-      const users = await db.select().from(schema.users).orderBy(sql`random()`).limit(1);
-      
-       if (users.length === 0) {
-        return res.status(404).json({ message: 'No users found' });
-      }
-      const randomUser = users[0];
-      console.log('/api/random-user');
-      
-      }
-
-      const randomIndex = Math.floor(Math.random() * users.length);
-      const randomUser = users[randomIndex];
-
-      // Remove password from response
-      const userObj = randomUser as { [key: string]: any };
-      const { password, ...userWithoutPassword } = userObj;
-      res.json(userWithoutPassword);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to get random user', error });
-    } finally {
-      console.log('/api/random-user');
     }
   });
 }
