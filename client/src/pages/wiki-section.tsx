@@ -117,7 +117,7 @@ export default function WikiSection() {
       };
       return request('POST', '/api/wiki', payload); // Commented out: API call to create wiki entry
     },*/
-    },
+    
     onSuccess: () => {
       toast({
         title: "Success",

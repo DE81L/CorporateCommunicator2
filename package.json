@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "concurrently -k \"cd client && vite\" \"wait-on http://localhost:5173 && electron electron/main.cjs --no-sandbox\"",
+    "server": "tsx watch server/index.ts",
     "start": "electron ."
   },
   "dependencies": {
