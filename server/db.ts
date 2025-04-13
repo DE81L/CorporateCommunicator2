@@ -2,6 +2,7 @@ import pkg from 'pg';
 const { Pool } = pkg;
 import dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
+import { sql } from '@vercel/postgres';
 import postgres from 'postgres';
 import * as schema from '../shared/electron-shared/schema';
 
@@ -24,7 +25,7 @@ const connection = postgres(process.env.DATABASE_URL!, { max: 1 });
 export const db = drizzle(connection, { schema });
 
 async function checkDatabaseAndUser(): Promise<boolean> {
-  try {
+    try {
     // 1. Verify database connection (a simple query should suffice)
     await db.execute(sql`SELECT 1`); // Execute a trivial query
 
@@ -51,6 +52,7 @@ async function checkDatabaseAndUser(): Promise<boolean> {
       return false;
     }
   } catch (error) {
+
     console.error('Database connection or check failed:', error);
     return false;
   }
@@ -96,7 +98,7 @@ export async function connectToDb(): Promise<void> {
     }
     
     return;
-  } catch (err) {
+    } catch (err) {
     console.error('Database connection error:', err);
     throw new Error(`Failed to connect to database: ${err instanceof Error ? err.message : String(err)}`);
   }
