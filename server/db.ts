@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { Pool } from 'pg';
+import pg from 'pg';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { sql } from 'drizzle-orm';
 import postgres from 'postgres';
@@ -20,6 +20,7 @@ const url = process.env.POSTGRES_URL;
 if (!url) {
   throw new Error('POSTGRES_URL is not set');
 }
+const { Pool } = pg;
 export const pool = new Pool({ connectionString: url, });
 
 
