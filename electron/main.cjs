@@ -6,7 +6,7 @@
  */
 
 // Conditionally try to load Electron
-let electron;
+let electron
 try {
   electron = require('electron');
   if (!electron) {
@@ -19,7 +19,7 @@ try {
 }
 
 // If we get here, Electron is available
-const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage } = electron;
+const { app, Tray, Menu, ipcMain, nativeImage } = electron;
 const path = require('path');
 const url = require('url');
 const isDev = process.env.NODE_ENV === 'development';
@@ -134,6 +134,35 @@ function createTray() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 app.whenReady().then(() => {
+  const { BrowserWindow } = require("electron");
+
+  function createChatWindow(userFlag /* '--user1' or '--user2' */) {
+    const win = new BrowserWindow({
+      webPreferences: {
+        preload: path.join(__dirname, "preload.cjs"),
+        additionalArguments: [userFlag],  // reaches preload via process.argv
+      },
+    });
+    win.loadURL(isDev
+        ? "http://localhost:5173"
+        : `file://${path.join(__dirname, "../dist/public/index.html")}`);
+    return win;
+  }
+  
+  const windows = new Set();
+  
+  windows.add(createChatWindow("--user1"));
+  windows.add(createChatWindow("--user2"));
+  
+  /* ---  tiny in‑memory message bus  --- */
+  ipcMain.on("chat:register", (ev) => {
+    windows.add(ev.sender);
+  });
+  
+  ipcMain.on("chat:send", (_ev, msg) => {
+    // broadcast to every renderer
+    windows.forEach((wc) => wc.send("chat:message", msg));
+  });
   try {
     console.log(i18n.t('serverRunning', { port: process.env.PORT || 3000 }));
     createWindow();
