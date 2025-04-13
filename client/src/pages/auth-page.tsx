@@ -204,6 +204,71 @@ function RegisterForm({
                 </FormItem>
               )}
             />
+              <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('auth.firstName')}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={t('auth.enterFirstName')} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('auth.lastName')}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={t('auth.enterLastName')} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('auth.email')}</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder={t('auth.enterEmail')} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('auth.password')}</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder={t('auth.enterPassword')} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('auth.confirmPassword')}</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder={t('auth.confirmPassword')} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </CardContent>
           
           
