@@ -153,9 +153,9 @@ export class PgStorage implements IStorage {
   }
 
   // Group operations
-  log("getGroup");
   async getGroup(id: number) {
-    const result = await db.select().from(schema.groups)
+    log("getGroup");
+      const result = await db.select().from(schema.groups)
       .where(eq(schema.groups.id, id));
     return result[0];
   }
@@ -193,8 +193,8 @@ export class PgStorage implements IStorage {
   }
 
   // Group member operations
-  log("addGroupMember");
   async addGroupMember(insertMember: schema.InsertGroupMember) {
+      log("addGroupMember");
     const result = await db.insert(schema.groupMembers)
       .values({
         ...insertMember,
@@ -279,8 +279,8 @@ export class PgStorage implements IStorage {
   }
 
   // Wiki operations
-  log("getWikiEntry");
   async getWikiEntry(id: number) {
+      log("getWikiEntry");
     const result = await db.select().from(schema.wikiEntries)
       .where(eq(schema.wikiEntries.id, id));
     return result[0];
@@ -330,8 +330,8 @@ export class PgStorage implements IStorage {
       .orderBy(asc(schema.wikiEntries.title));
   }
 
-  log("getWikiCategory");
   // Wiki category operations
+    async getWikiCategory(id: number): Promise<schema.WikiCategory | undefined> {
   async getWikiCategory(id: number): Promise<schema.WikiCategory | undefined> {
     const result = await db.select().from(schema.wikiCategories)
       .where(eq(schema.wikiCategories.id, id));
@@ -367,8 +367,8 @@ export class PgStorage implements IStorage {
       .orderBy(asc(schema.wikiCategories.name));
   }
 
-  log("getWikiCategoriesByParent");
   async getWikiCategoriesByParent(parentId: number): Promise<schema.WikiCategory[]> {
+      log("getWikiCategoriesByParent");
     return await db.select().from(schema.wikiCategories)
       .where(eq(schema.wikiCategories.parentId, parentId))
       .orderBy(asc(schema.wikiCategories.name));
