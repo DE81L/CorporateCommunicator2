@@ -1,14 +1,13 @@
-
 import { Toaster } from 'react-hot-toast';
 
-import HomePage from './pages/home-page';
+import AuthPage from './pages/auth-page';
 import { LanguageProvider } from './lib/i18n/LanguageContext';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./hooks/use-auth";
 import { WindowFrame } from "./components/ui/window-frame";
 import EnvironmentIndicator from "./components/electron-info";
 import { useElectron } from "./hooks/use-electron";
-import { ProtectedRoute } from "./lib/protected-route";
+
 
 export default function App() {
   const isElectron = useElectron();
@@ -25,7 +24,7 @@ export default function App() {
               {isElectron && <WindowFrame />}
             {/* Main content area with conditional padding */}
             <div className={`flex-1 overflow-auto ${isElectron ? 'pt-0' : ''}`}>
-              <ProtectedRoute path="/" component={HomePage} />
+              <AuthPage/>
             </div>
             </div>
         </LanguageProvider>
