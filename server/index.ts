@@ -1,3 +1,8 @@
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 import { createApp } from './app';
 import http from 'http';
 import { db, connectToDb } from './db'; // Updated import here
