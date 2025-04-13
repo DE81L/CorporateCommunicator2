@@ -6,16 +6,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { Loader2 } from "lucide-react";
 
 export function LanguageSwitcher() {
-    const { t, language, setLanguage } = useLanguage();
-    const currentLanguage: string = language;
+    const { t, i18n } = useTranslation();
+    const currentLanguage = i18n.language;
 
-    const handleLanguageChange = (value: string) => {
-      setLanguage(value);
+    const handleLanguageChange = async (value: string) => {
+        await i18n.changeLanguage(value);
   };
 
 

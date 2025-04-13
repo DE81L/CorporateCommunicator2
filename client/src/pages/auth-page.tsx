@@ -24,7 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useTranslation } from "react-i18next";
 
 
 const loginSchema = z.object({
@@ -46,7 +46,7 @@ const registerSchema = z.object({
 
 
 export default function AuthPage() { 
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const { user, login: loginFn, register } = useAuth();
   
   const login = async (data: z.infer<typeof loginSchema>) => {
@@ -90,7 +90,7 @@ function LoginForm({
 }: {
   onSubmit: (data: z.infer<typeof loginSchema>) => void;
 }) {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -173,7 +173,7 @@ function RegisterForm({
 }: {
   onSubmit: (data: z.infer<typeof registerSchema>) => void;
 }) {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {

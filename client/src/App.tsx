@@ -1,7 +1,6 @@
 import { Toaster } from 'react-hot-toast';
 
 import AuthPage from './pages/auth-page';
-import { LanguageProvider } from './lib/i18n/LanguageContext';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./hooks/use-auth";
 import { WindowFrame } from "./components/ui/window-frame";
@@ -16,18 +15,16 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <LanguageProvider>
           <EnvironmentIndicator />
           <Toaster />
           <div className="flex flex-col h-screen">
             {/* Only show window frame in Electron */}
               {isElectron && <WindowFrame />}
             {/* Main content area with conditional padding */}
-            <div className={`flex-1 overflow-auto ${isElectron ? 'pt-0' : ''}`}>
-              <AuthPage/>
-            </div>
-            </div>
-        </LanguageProvider>
+          <div className={`flex-1 overflow-auto ${isElectron ? 'pt-0' : ''}`}>
+            <AuthPage />
+          </div>
+        </div>
       </AuthProvider>
     </QueryClientProvider>
   );
