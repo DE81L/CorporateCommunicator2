@@ -1,27 +1,32 @@
 import { Express, Request, Response } from 'express';
+import { storage } from "./storage";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
 import * as schema from '@shared/electron-shared/schema';
 
 export function setupAutoAuth(app: Express) {
   app.get('/api/random-user', async (req: Request, res: Response) => {
-    try {
-      const users = await db.select().from(schema.users).orderBy(sql`random()`).limit(1);
-      
+     try {
+      const users = await storage.listUsers();
       if (users.length === 0) {
-        return res.status(404).json({ message: 'No users found' });
+        return res.status(404).json({ message: "No users found" });
       }
-      const randomUser = users[0];
-      console.log('/api/random-user');
+      const randomIndex = Math.floor(Math.random() * users.length);
+      const randomUser = users[randomIndex];
+      const { password, ...safeUser} = randomUser;
 
-      // Remove password from response
-      const userObj = randomUser as { [key: string]: any };
-      const { password, ...userWithoutPassword } = userObj;
-      res.json(userWithoutPassword);
+      // Fix: Add proper error handling for login
+      req.login(randomUser, (err) => {
+        // Note: Pass full user object for login
+        if (err) {
+          console.error("Error logging in user:", err);
+          return res.status(500).json({ message: "Error logging in user" });
+        }
+        return res.json(safeUser); // Return user without password
+      });
     } catch (error) {
-      res.status(500).json({ message: 'Failed to get random user', error });
-    } finally {
-      console.log('/api/random-user');
-    }
+      console.error("Error fetching random user:", error);
+      res.status(500).json({ message: "Error fetching random user" });
+    } 
   });
 }

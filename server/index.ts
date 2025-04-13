@@ -1,5 +1,7 @@
+import { setupAutoAuth } from './autoAuth';
+
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { dirname, join } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -7,6 +9,7 @@ import { createApp } from './app';
 import http from 'http';
 import { db, connectToDb, checkDatabaseUser } from './db'; // Updated import here
 import 'dotenv-safe/config';
+import { sql } from 'drizzle-orm';
 import path from 'path';
 
 
@@ -117,3 +120,4 @@ startServer().catch(err => {
 
 export { startServer };
 import electronServer from './electron-server-implementation';
+
