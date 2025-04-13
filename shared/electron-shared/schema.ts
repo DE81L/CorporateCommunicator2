@@ -75,6 +75,7 @@ export const groupMembers = pgTable("group_members", {
 // Make sure these are exported
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
+  firstName: text('first_name').notNull(),
   username: text("username").notNull(),
   email: text("email").notNull(),
   password: text("password").notNull(),
