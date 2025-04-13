@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import pg from 'pg';
 import { drizzle } from 'drizzle-orm/postgres-js';
+import { PostgresError } from 'postgres';
 import { sql } from 'drizzle-orm';
 import postgres from 'postgres';
 import * as schema from '../shared/schema';
@@ -27,7 +28,7 @@ export const pool = new Pool({ connectionString: url, });
 const connection = postgres(url, { max: 1 });
 export const db = drizzle(connection, { schema });
 
-async function checkDatabaseUser(): Promise<boolean> {
+async function checkDatabaseAndUser(): Promise<boolean> {
     try {
     // 1. Verify database connection (a simple query should suffice)
     await db.execute(sql`SELECT 1`); // Execute a trivial query
@@ -54,7 +55,12 @@ async function checkDatabaseUser(): Promise<boolean> {
       return false;
     }
   } catch (error) {
-
+    if(error instanceof PostgresError && error.code === "42703") {
+      console.error('Database connection or check failed, missing column:', error);
+    } else {
+    
+    }
+    
     console.error('Database connection or check failed:', error);
     return false;
   }
@@ -89,10 +95,9 @@ export async function connectToDb(): Promise<void> {
 
     console.log('✅ Connected to PostgreSQL database');
     console.log(`Database time: ${result.rows[0].now}`);
-
-    // Call the user check function after connecting
-    await checkDatabaseUser().catch((error) => console.error('User check failed:', error));
-
+    
+   
+    
     // Log environment-specific database info
     if (isElectron) {
       console.log('Using local database configuration for Electron');
@@ -107,6 +112,11 @@ export async function connectToDb(): Promise<void> {
     console.error('Database connection error:', err);
     throw new Error(`Failed to connect to database: ${err instanceof Error ? err.message : String(err)}`);
   }
+}
+
+export async function checkDatabaseUser(): Promise<void>{
+  console.log("Function 'checkDatabaseUser' called")
+  await checkDatabaseAndUser().catch((error) => console.error('User check failed:', error));
 }
 
 /**

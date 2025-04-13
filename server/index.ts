@@ -5,7 +5,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 import { createApp } from './app';
 import http from 'http';
-import { db, connectToDb } from './db'; // Updated import here
+import { db, connectToDb, checkDatabaseUser } from './db'; // Updated import here
 import 'dotenv-safe/config';
 import path from 'path';
 
@@ -39,7 +39,9 @@ async function startServer() {
   
   console.log('startServer function called');
   await connectToDb();
+
   console.log('Connected to database');
+  await checkDatabaseUser();
 
   // Start quick server for Replit if needed
   const quickServer = startQuickServer();
