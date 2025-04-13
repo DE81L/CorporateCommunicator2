@@ -1,5 +1,4 @@
 import { QueryClient } from "@tanstack/react-query";
-import { useElectron } from "@/hooks/use-electron";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
