@@ -1,7 +1,5 @@
 
 import { useEffect, useState } from 'react';
-
-
 import HomePage from './pages/home-page';
 import { LanguageProvider } from './lib/i18n/LanguageContext';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -10,6 +8,7 @@ import { WindowFrame } from "./components/ui/window-frame";
 import EnvironmentIndicator from "./components/electron-info";
 import { useElectron } from "./hooks/use-electron";
 import { ProtectedRoute } from "./lib/protected-route";
+
 
 interface Msg { from: string; text: string; ts: number }
 
@@ -23,33 +22,56 @@ declare global {
   }
 }
 
+
 export default function App() {
-  const [me, setMe] = useState('user?');
+  const [user, setUser] = useState('');
   const [chat, setChat] = useState<Msg[]>([]);
-  const [text, setText] = useState('');
+  const [input, setInput] = useState('');
 
   useEffect(() => {
-    window.chatAPI.bootstrap(({ username, chat }) => {
-      setMe(username);
-      setChat(chat);
+    window.chatAPI.bootstrap((data) => {
+      setUser(data.username);
+      setChat(data.chat);
     });
-    window.chatAPI.onMessage((m) => setChat(c => [...c, m]));
+    window.chatAPI.onMessage((msg) => {
+      setChat((prev) => [...prev, msg]);
+    });
   }, []);
 
+  const send = () => {
+    if (!input) return;
+    window.chatAPI.send(user, input);
+    setInput('');
+  };
+
   return (
-    <div style={{padding:16,fontFamily:'sans-serif'}}>
-      <h2>{me}</h2>
-      <div style={{border:'1px solid #ccc',height:400,overflowY:'auto',padding:8,marginBottom:8}}>
-        {chat.map(m=>(
-          <div key={m.ts} style={{textAlign:m.from===me?'right':'left'}}>
-            <b>{m.from}</b>: {m.text}
+    <div style={{ width: 400, margin: '50px auto' }}>
+      <h2 style={{ textAlign: 'center' }}>User: {user}</h2>
+      <div
+        style={{
+          height: 400,
+          border: '1px solid #ccc',
+          marginBottom: 10,
+          overflowY: 'scroll',
+          padding: 5,
+        }}
+      >
+        {chat.map((msg, i) => (
+          <div key={i}>
+            <b>{msg.from}:</b> {msg.text}
           </div>
         ))}
       </div>
-      <form onSubmit={e=>{e.preventDefault(); if(text) {window.chatAPI.send(me,text); setText('');}}}>
-        <input value={text} onChange={e=>setText(e.target.value)} style={{width:'80%'}} autoFocus/>
-        <button type="submit">Send</button>
-      </form>
+      <div style={{ display: 'flex' }}>
+        <input
+          style={{ flex: 1, padding: '5px' }}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+        />
+        <button style={{ marginLeft: '5px' }} onClick={send}>
+          Send
+        </button>
+      </div>
     </div>
   );
 }
