@@ -14,14 +14,14 @@ async function checkDbAndUser() {
     console.log('✅ Connected to PostgreSQL database');
     console.log('Database time:', result[0].current_timestamp);
 
-    // Add a check for the 'last_name' column in the 'users' table
+    // Add a check for the 'lastname' column in the 'users' table
     try {
       console.log("Function 'checkDatabaseUser' called");
-      await sql`SELECT last_name FROM users LIMIT 1`;
-      console.log('✅ "last_name" column exists in "users" table.');
+      await sql`SELECT lastname FROM users LIMIT 1`;
+      console.log('✅ "lastname" column exists in "users" table.');
       process.exit(0); // Success, exit with code 0
     } catch (error: any) {
-      const errorMessage = `❌ Error: "last_name" column does not exist in "users" table. ${error.message}`;
+      const errorMessage = `❌ Error: "lastname" column does not exist in "users" table. ${error.message}`;
       console.error(errorMessage);
       process.exit(1); // Failure, exit with code 1
     }
