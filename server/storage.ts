@@ -331,7 +331,6 @@ export class PgStorage implements IStorage {
   }
 
   // Wiki category operations
-    async getWikiCategory(id: number): Promise<schema.WikiCategory | undefined> {
   async getWikiCategory(id: number): Promise<schema.WikiCategory | undefined> {
     const result = await db.select().from(schema.wikiCategories)
       .where(eq(schema.wikiCategories.id, id));
