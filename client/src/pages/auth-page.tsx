@@ -1,10 +1,11 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "../hooks/use-auth"; // Import useAuth from hooks
+import { useAuth } from "../hooks/use-auth";
 import { useState } from "react";
 import { z } from "zod";
 import { Redirect } from "wouter";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -23,7 +24,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -32,16 +34,19 @@ const loginSchema = z.object({
 
 const registerSchema = z.object({
   username: z.string().min(1, "Username is required"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
+}).refine((data) => data.password === data.confirmPassword, { 
   message: "Passwords do not match",
   path: ["confirmPassword"],
 });
 
 
 export default function AuthPage() { 
-  const { t } = useTranslation();
+  const { t } = useLanguage();
   const { user, login: loginFn, register } = useAuth();
   
   const login = async (data: z.infer<typeof loginSchema>) => {
@@ -49,11 +54,7 @@ export default function AuthPage() {
   };
 
   const registerFn = async (data: z.infer<typeof registerSchema>) => {
-    await register({
-      username: data.username,
-      password: "",
-      confirmPassword: ""
-    });
+    await register(data);
   };
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
@@ -62,7 +63,10 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col">
+        <div className="flex justify-end p-4">
+            <LanguageSwitcher />
+        </div>
       <Tabs defaultValue={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")}>
         <TabsList>
           <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
@@ -86,7 +90,7 @@ function LoginForm({
 }: {
   onSubmit: (data: z.infer<typeof loginSchema>) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useLanguage();
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -169,7 +173,7 @@ function RegisterForm({
 }: {
   onSubmit: (data: z.infer<typeof registerSchema>) => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useLanguage();
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
