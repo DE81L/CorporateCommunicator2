@@ -69,10 +69,11 @@ exports.groupMembers = (0, pg_core_1.pgTable)("group_members", {
 // Make sure these are exported
 exports.users = (0, pg_core_1.pgTable)("users", {
     id: (0, pg_core_1.serial)("id").primaryKey(),
+    firstName: (0, pg_core_1.text)('firstname').notNull(),
     username: (0, pg_core_1.text)("username").notNull(),
     email: (0, pg_core_1.text)("email").notNull(),
     password: (0, pg_core_1.text)("password").notNull(),
-    firstName: (0, pg_core_1.text)("firstname").notNull(),
+    firstname: (0, pg_core_1.text)("firstname").notNull(),
     lastName: (0, pg_core_1.text)("lastname").notNull(),
     isOnline: (0, pg_core_1.integer)("isonline").default(0),
     avatarUrl: (0, pg_core_1.text)("avatarurl").default(exports.NULL_TEXT),
