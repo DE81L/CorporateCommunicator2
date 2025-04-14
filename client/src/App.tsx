@@ -9,23 +9,23 @@ import { useElectron } from "./hooks/use-electron";
 
 
 export default function App() {
-  const isElectron = useElectron();
-  const queryClient = new QueryClient();
+    const isElectron = useElectron();
+    const queryClient = new QueryClient();
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-          <EnvironmentIndicator />
-          <Toaster />
-          <div className="flex flex-col h-screen">
-            {/* Only show window frame in Electron */}
-              {isElectron && <WindowFrame />}
-            {/* Main content area with conditional padding */}
-          <div className={`flex-1 overflow-auto ${isElectron ? 'pt-0' : ''}`}>
-            <AuthPage />
-          </div>
-        </div>
-      </AuthProvider>
-    </QueryClientProvider>
-  );
+    return (
+        <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+                <EnvironmentIndicator />
+                <Toaster />
+                <div className="flex flex-col h-screen">
+                    {/* Only show window frame in Electron */}
+                    {isElectron && <WindowFrame />}
+                    {/* Main content area with conditional padding */}
+                    <div className={`flex-1 overflow-auto ${isElectron ? 'pt-0' : ''}`}>
+                        <AuthPage />
+                    </div>
+                </div>
+            </AuthProvider>
+        </QueryClientProvider>
+    );
 }
