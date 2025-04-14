@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { useLocation } from "wouter";
 import { getQueryFn, createApiClient, queryClient } from "../lib/queryClient";
+import { useToast } from "./use-toast";
 import { useTranslations } from "./use-translations";
 
 
@@ -66,6 +67,7 @@ export const registerSchema = (t: (key: string) => string) => {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslations();
+  const { toast } = useToast();
 
   const regSchema = useMemo(
     () => registerSchema((key: string) => t(key as any)),
@@ -83,17 +85,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials): Promise<UserWithoutPassword> => {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(credentials),
-      });
-      const user = await res.json();
-      return user;
+      console.log("Attempting hardcoded login with:", credentials);
+
+            // Hardcoded user data
+     
+      const user2: UserWithoutPassword = {
+        id: 4, // Assuming ID for user2
+        username: "user2",
+        email: "user2@example.com",
+        firstName: "user2",
+        lastName: "user2",
+        isOnline: true,
+        avatarUrl: null
+      }; const user1: UserWithoutPassword = {
+        id: 3,
+        username: "user1",
+        email: "user1@example.com",
+        firstName: "user1",
+        lastName: "user1",
+        isOnline: true,
+        avatarUrl: null
+      };
+
+        // Check which user to log in as (simple check based on username/email)
+        if (credentials.username === "user1" || credentials.username === "user1@example.com") {
+          console.log("Hardcoding login for user1");
+          // Simulate network delay for realism (optional)
+          await new Promise(resolve => setTimeout(resolve, 300));
+          return user1;
+        }
+  
+        if (credentials.username === "user2" || credentials.username === "user2@example.com") {
+          console.log("Hardcoding login for user2");
+          // Simulate network delay for realism (optional)
+          await new Promise(resolve => setTimeout(resolve, 300));
+          return user2;
+        }
+  
+      // Simulate network delay for realism (optional)
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return user1;
     },
-    
+        onSuccess: (loggedInUser) => {
+      queryClient.setQueryData(["/api/user"], loggedInUser);
+      toast({
+        title: "Hardcoded Login Successful",
+        description: `Logged in as ${loggedInUser.firstName}`,
+      });
+    },
+      onError: (error: Error) => {
+      toast({
+        title: "Hardcoded Login Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
     const logoutMutation = useMutation({
     mutationFn: async () => {
