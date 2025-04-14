@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../hooks/use-auth";
 import i18n from "../i18n";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { z } from "zod";
 import { Redirect } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -47,9 +47,14 @@ const registerSchema = z.object({
 export default function AuthPage() { 
   const { user, login: loginFn, register } = useAuth();
   
-  const login = async (data: z.infer<typeof loginSchema>) => {
-    await loginFn({username: data.username, password: data.password});
-  };
+  const login = useCallback(async (data: z.infer<typeof loginSchema>) => {
+      if (user) {
+        console.log('User is already logged in. Skipping login attempt.');
+        return;
+      }
+      await loginFn({username: data.username, password: data.password});
+    }
+, [loginFn, user]);
 
   const registerFn = async (data: z.infer<typeof registerSchema>) => {
     await register(data);
