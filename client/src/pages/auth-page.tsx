@@ -1,11 +1,11 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "../hooks/use-auth";
+import { LoginCredentials, useAuth } from "../hooks/use-auth";
 import i18n from "../i18n";
 import { useCallback, useState } from "react";
 import { z } from "zod";
-import { Redirect } from "wouter";
-import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
+import { Button } from "@/components/ui/button";  
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,7 +25,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";  
+
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -45,16 +46,22 @@ const registerSchema = z.object({
 });
 
 export default function AuthPage() { 
-  const { user, login: loginFn, register } = useAuth();
+  const { user, login: loginFn, register, isLoading } = useAuth();
   
+  const [, setLocation] = useLocation();
+
   const login = useCallback(async (data: z.infer<typeof loginSchema>) => {
       if (user) {
         console.log('User is already logged in. Skipping login attempt.');
         return;
       }
-      await loginFn({username: data.username, password: data.password});
+    try {
+      await loginFn({username: data.username, password: data.password} as LoginCredentials);
+      setLocation("/");
+    } catch (e) {
+      console.error(e);
     }
-, [loginFn, user]);
+  }, [loginFn, user, setLocation]);
 
   const registerFn = async (data: z.infer<typeof registerSchema>) => {
     await register(data);
@@ -62,9 +69,7 @@ export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
   if (user) {
-    return <Redirect to="/" />;
-  }
-
+        }
   return (
     <div className="min-h-screen flex flex-col">
         <div className="flex justify-end p-4">
@@ -102,7 +107,7 @@ function LoginForm({
     },
   });
 
-  return (
+  return (    
     <Card>
       <CardHeader>
         <CardTitle>{i18n.t('auth.loginTitle')}</CardTitle>
@@ -161,7 +166,7 @@ function LoginForm({
             </div>
                     </CardContent>
           <CardFooter className="flex justify-end">
-            <Button type="submit">
+            <Button type="submit" >
               {t('auth.login')}
             </Button>
           </CardFooter>
