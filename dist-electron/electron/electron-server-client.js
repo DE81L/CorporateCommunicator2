@@ -17,5 +17,8 @@ const electronServerClient = {
     serveStatic: async (path) => {
         return await electron_1.ipcRenderer.invoke('server:serveStatic', path); // Assuming serveStatic returns a string
     },
+    registerApp: function () {
+        throw new Error('Function not implemented.');
+    }
 };
 exports.default = electronServerClient;
