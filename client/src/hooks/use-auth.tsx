@@ -9,7 +9,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/ui/use-toast"; // Предполагается использование shadcn/ui toast
+import { useToast } from "@/hooks/use-toast"; // Предполагается использование shadcn/ui toast
 import { useTranslations } from '@/hooks/use-translations'; // Предполагается использование переводов
 
 // Схема валидации для формы входа
@@ -46,6 +46,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const { t } = useTranslations(); // Хук для переводов
+  const { toast } = useToast();
 
   // Запрос для получения текущего пользователя при загрузке приложения
   const { data: user, isLoading: isLoadingUser } = useQuery<UserWithoutPassword | null>({
