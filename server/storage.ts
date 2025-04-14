@@ -1,4 +1,4 @@
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, desc, asc, inArray } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { Store } from "express-session";
@@ -6,6 +6,7 @@ import { Store } from "express-session";
 import * as schema from "../shared/electron-shared/schema"; import { checkColumnExists } from "./db";
 import { hashPassword } from "./auth"; 
 import { db } from "./db"; // Updated import
+import { log } from "console";
 
 const MemoryStore = createMemoryStore(session);
 
@@ -74,6 +75,12 @@ export interface IStorage {
 }
 
 export class PgStorage implements IStorage {
+  getMessages(groupId: number): Promise<schema.Message[]> {
+    throw new Error("Method not implemented.");
+  }
+  getWikiEntryByTitle(title: string): Promise<schema.WikiEntry | undefined> {
+    throw new Error("Method not implemented.");
+  }
   sessionStore: Store = new MemoryStore({ checkPeriod: 86400000 });
 
   // User operations
@@ -186,13 +193,13 @@ export class PgStorage implements IStorage {
     
     const groupIds = members.map(m => m.groupId);
     return await db.select().from(schema.groups)
-      .where(schema.groups.id.in(groupIds));
+      .where(inArray(schema.groups.id, groupIds));
   }
 
   async getAnnouncementGroups() {
     log("getAnnouncementGroups");
     return await db.select().from(schema.groups)
-      .where(eq(schema.groups.isAnnouncement, true));
+      .where(eq(schema.groups.isAnnouncement, 1));
   }
 
   // Group member operations
@@ -282,13 +289,13 @@ export class PgStorage implements IStorage {
 
   async createWikiEntry(insertEntry: schema.InsertWikiEntry) {
     log("createWikiEntry");
-    const now = schema.convertHelpers.toDbDate(new Date());
+    const now = new Date();
     const result = await db.insert(schema.wikiEntries)
       .values({
         ...insertEntry,
         createdAt: now,
         updatedAt: now
-      })
+      }) 
       .returning();
     return result[0];
   }
@@ -297,7 +304,7 @@ export class PgStorage implements IStorage {
     const result = await db.update(schema.wikiEntries)
       .set({
         ...updateFields,
-        updatedAt: schema.convertHelpers.toDbDate(new Date())
+        updatedAt: new Date()
       })
       .where(eq(schema.wikiEntries.id, id))
       .returning();

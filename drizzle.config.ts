@@ -8,10 +8,9 @@ if (!process.env.POSTGRES_URL) {
 
 export default {
     schema: './shared/schema.ts',
-    out: './drizzle',
-    driver: 'pg',
-    dialect: 'postgresql',
-    dbCredentials: {
-        connectionString: process.env.POSTGRES_URL!,
-    }
+        out: './drizzle',
+        dialect: 'postgresql',
+        dbCredentials: {
+            url: process.env.POSTGRES_URL!,
+        }
 } satisfies Config;

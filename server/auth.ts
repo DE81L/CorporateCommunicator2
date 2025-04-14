@@ -4,8 +4,7 @@ import { Express, NextFunction, Request, Response } from 'express';
 import session from 'express-session';
 import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
-import { User as SelectUser } from '@shared/electron-shared/schema';
-
+import { User as SelectUser } from '../shared/electron-shared/schema';
 declare global {
   namespace Express {
     interface User extends SelectUser {}
@@ -13,7 +12,6 @@ declare global {
 }
 
 import { storage } from "./storage";
-import { promisify } from 'util';
 
 const scryptAsync = promisify(scrypt); //this is not used
 
@@ -88,7 +86,7 @@ export function setupAuth(app: Express) {
 
   passport.serializeUser((user, done) => {
     console.log('serializeUser');
-    done(null, user.id);
+    done(null, (user as SelectUser).id);
   });
   passport.deserializeUser(async (id: any, done) => {
     // any, instead of number
@@ -129,7 +127,7 @@ export function setupAuth(app: Express) {
   });
 
   app.post('/api/login', (req, res, next) => {
-    passport.authenticate('local', (err, user, info) => {
+    passport.authenticate('local', (err: Error | null, user: Express.User | false | null, info: any) => {
       if (err) return next(err);
       if (!user)
         return res.status(401).json({ message: 'Invalid credentials' });
@@ -153,7 +151,7 @@ export function setupAuth(app: Express) {
       }
       if (req.user) {
         const { password, ...userWithoutPassword } = req.user;
-        res.json(userWithoutPassword);
+        const { password: _, ...userWithoutPassword } = (req.user as Express.User);
       }
     } finally {
       console.log('/api/user');
