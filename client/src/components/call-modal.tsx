@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog } from "@/components/ui/dialog";
 import { MicOffIcon, VideoOffIcon, PhoneOffIcon, UserIcon } from "lucide-react";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useTranslations } from "@/lib/i18n/LanguageContext";
 
 export type TranslationKey = "call.in_progress" | "common.cancel" | `call.${"video" | "audio"}`;
 
@@ -33,7 +33,7 @@ export default function CallModal({
   const [callDuration, setCallDuration] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
-  const { t } = useLanguage();
+  const { t } = useTranslations();
 
   // Start call timer when modal opens
   useEffect(() => {

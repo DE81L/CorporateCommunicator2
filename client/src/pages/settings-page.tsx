@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLanguage } from '@/lib/i18n/translations.ts';
+import { useTranslations } from '@/lib/i18n/translations.ts';
 import {
   Card,
   CardContent,
@@ -27,7 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Bell, Moon, Sun, Globe, User, Lock, Settings as SettingsIcon } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
-  const { t, language, setLanguage } = useLanguage();
+  const { t, language, setLanguage } = useTranslations();
   const { toast } = useToast();
   const [theme, setTheme] = React.useState<'light' | 'dark' | 'system'>('system');
   const [emailNotifications, setEmailNotifications] = React.useState(true);

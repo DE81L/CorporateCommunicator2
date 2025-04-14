@@ -45,7 +45,6 @@ const registerSchema = z.object({
 });
 
 export default function AuthPage() { 
-  const { t } = useTranslation();
   const { user, login: loginFn, register } = useAuth();
   
   const login = async (data: z.infer<typeof loginSchema>) => {
