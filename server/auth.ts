@@ -25,14 +25,18 @@ export async function hashPassword(password: string) {
 
 async function comparePasswords(supplied: string, stored: string) {
   console.log('comparePasswords');
+  console.log('Supplied password (raw):', supplied);
   const parts = stored.split('.');
   if (parts.length !== 2) {
     return false; // No salt found, password comparison fails
   }
   const [hashed, salt] = parts;
+  console.log('Salt:', salt);
 
   const hashedBuf = Buffer.from(hashed, 'hex');
+  console.log('Stored password hash (hex):', hashedBuf.toString('hex'));
   const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+  console.log('Supplied password hash (hex):', suppliedBuf.toString('hex'));
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
