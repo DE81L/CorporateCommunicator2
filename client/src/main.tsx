@@ -1,14 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
-import "./index.css";
-import { installMockElectronAPI } from "./lib/web-polyfills";
-
-// Install web polyfills if needed
-if (import.meta.env.VITE_WEB_ONLY === 'true' || !import.meta.env.ELECTRON) {
-  console.log('Running in web-only mode, installing polyfills...');
-  installMockElectronAPI();
-}
+import "./index.css"
 
 const root = createRoot(document.getElementById("root")!);
 
