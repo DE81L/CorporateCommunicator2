@@ -142,8 +142,8 @@ app.whenReady().then(async () => {
   // Initialize server via client
   const electronServerClient = (await import('./electron-server-client')).default; // Dynamic import
   await electronServerClient.connectToDb();
-  await electronServerClient.setupAuth();
-  await electronServerClient.registerRoutes();
+  await electronServerClient.setupAuth(app);
+  await electronServerClient.registerRoutes(app);
   await electronServerClient.setupVite();
 
   // Create window and tray
