@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async (userData: z.infer<typeof regSchema>) => {
       const { confirmPassword, ...data } = userData;      
       const apiClient = createApiClient(false);
-      const res = await apiClient.request("/api/register", JSON.stringify(data));
+      const res = await apiClient.request("POST", "/api/register", JSON.stringify(data));
       if (res.ok) {
         return res.json();
       }
