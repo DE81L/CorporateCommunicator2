@@ -1,6 +1,3 @@
---- a/client/src/pages/auth-page.tsx
-+++ b/client/src/pages/auth-page.tsx
-
  import React from 'react';
  import { useForm } from 'react-hook-form';
  import { useNavigate } from 'react-router-dom'; // 1. Импортируем useNavigate
