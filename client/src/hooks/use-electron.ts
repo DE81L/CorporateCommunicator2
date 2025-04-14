@@ -1,7 +1,5 @@
 import { api } from '../api';
 
-const useElectron = () => {
+export const useElectron = () => {
   return api;
-}; 
-
-export const useElectron = () => { return api };
+};
