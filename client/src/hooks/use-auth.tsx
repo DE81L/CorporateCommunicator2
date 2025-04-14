@@ -129,6 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         onSuccess: (loggedInUser) => {
       queryClient.setQueryData(["/api/user"], loggedInUser);
       toast({
+          setLocation("/");
         title: "Hardcoded Login Successful",
         description: `Logged in as ${loggedInUser.firstName}`,
       });
