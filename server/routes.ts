@@ -8,9 +8,9 @@ import {
   insertGroupSchema,
   insertGroupMemberSchema,
   insertRequestSchema,
-  insertWikiEntrySchema,
-  insertWikiCategorySchema,
-  convertHelpers
+    insertWikiEntrySchema as baseInsertWikiEntrySchema,
+    insertWikiCategorySchema as baseInsertWikiCategorySchema,
+    convertHelpers
 } from "../shared/electron-shared/schema";
 import { z } from "zod";
 import { pool, connectToDb } from "./db";
@@ -46,7 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   console.log(`registerRoutes`);
   const httpServer = createServer(app);
   setupAuth(app);
-  
+
   // Add Wiki routes
   addWikiRoutes(app);
 
@@ -109,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Don't send password hash
       const safeUsers = users.map((user) => {
         const { password, ...safeUser} = user;
-        return safeUser;
+          return safeUser;
       });
       res.json(safeUsers);
     } catch (error) {
@@ -141,7 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: (error as Error).message
       });
     }
-  });
+    });
 
 
   // Messages API
@@ -385,11 +385,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .json({ message: "Not authorized to update this request" });
       }
 
-      const updatedRequest = await storage.updateRequestComplete(requestId, {
-        status: "completed",
+      const updateData: Partial<{ grade: number | null, reviewText: string | null }> = {
         grade,
         reviewText: grade < 5 ? reviewText : null,
-      });
+      };
+      const updatedRequest = await storage.updateRequestComplete(requestId, updateData);
 
       res.json(updatedRequest);
     } catch (error) {
@@ -481,13 +481,13 @@ function addWikiRoutes(app: Express) {
         return res.status(403).json({ message: "Admin privileges required" });
       }
 
-      const entryData = {
-        ...req.body,
-        creatorId: user.id,
-        lastEditorId: user.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+        const entryData = {
+          ...req.body,
+          creatorId: user.id,
+          lastEditorId: user.id,
+          createdAt: new Date(), // Use current date/time
+          updatedAt: new Date(), // Use current date/time
+        };
 
       const parsedEntry = insertWikiEntrySchema.parse(entryData);
       const entry = await storage.createWikiEntry(parsedEntry);
@@ -522,11 +522,11 @@ function addWikiRoutes(app: Express) {
         return res.status(404).json({ message: "Wiki entry not found" });
       }
 
-      const updateData = {
-        ...req.body,
-        lastEditorId: user.id,
-        updatedAt: new Date().toISOString(),
-      };
+        const updateData = {
+          ...req.body,
+          lastEditorId: user.id,
+          updatedAt: new Date(), // Use current date/time
+        };
 
       const updatedEntry = await storage.updateWikiEntry(entryId, updateData);
       res.json(updatedEntry);
@@ -633,13 +633,13 @@ function addWikiRoutes(app: Express) {
         return res.status(403).json({ message: "Admin privileges required" });
       }
 
-      const categoryData = {
-        ...req.body,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+        const categoryData = {
+          ...req.body,
+          createdAt: new Date(), // Use current date/time
+          updatedAt: new Date(), // Use current date/time
+        };
 
-      const parsedCategory = insertWikiCategorySchema.parse(categoryData);
+        const parsedCategory = insertWikiCategorySchema.parse(categoryData);
       const category = await storage.createWikiCategory(parsedCategory);
 
       res.status(201).json(category);
@@ -672,11 +672,11 @@ function addWikiRoutes(app: Express) {
         return res.status(404).json({ message: "Wiki category not found" });
       }
 
-      const updateData = {
-        ...req.body,
-        updatedAt: new Date().toISOString(),
-      };
-
+        const updateData = {
+          ...req.body,
+          updatedAt: new Date(), // Use current date/time
+        };
+        
       const updatedCategory = await storage.updateWikiCategory(categoryId, updateData);
       res.json(updatedCategory);
     } catch (error) {
@@ -715,3 +715,25 @@ function addWikiRoutes(app: Express) {
     }
   });
 }
+
+
+
+// Modified Zod schemas
+const insertWikiEntrySchema = baseInsertWikiEntrySchema.extend({
+  createdAt: z.preprocess((arg) => {
+    if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
+  }, z.date()),
+  updatedAt: z.preprocess((arg) => {
+    if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
+  }, z.date()),
+});
+
+const insertWikiCategorySchema = baseInsertWikiCategorySchema.extend({
+  createdAt: z.preprocess((arg) => {
+    if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
+  }, z.date()),
+  updatedAt: z.preprocess((arg) => {
+    if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
+  }, z.date()),
+});
+

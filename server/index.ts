@@ -13,12 +13,13 @@ import cors from 'cors';
 import { sql } from 'drizzle-orm';
 import path from 'path';
 
-
+// Import the schema, now assumed to be correctly typed
 import * as schema from '../shared/schema';
 
+
 // Function to start a quick server on port 5000 for Replit environment
-function startQuickServer() {
-  console.log('startQuickServer function called');
+function startQuickServer(): http.Server | null {
+  console.log('startQuickServer called');
   if (process.env.REPLIT_DB_URL) {
     console.log('Starting quick server for Replit on port 5000...');
     const quickServer = http.createServer((req, res) => {
@@ -39,15 +40,13 @@ function startQuickServer() {
  * Main server entry point with environment detection
  */
 async function startServer() {
-  
-  
   console.log('startServer function called');
   await connectToDb();
 
   console.log('Connected to database');
   await checkDatabaseAndUser();
 
-  // Start quick server for Replit if needed
+   // Start quick server for Replit if needed
   const quickServer = startQuickServer();
   const { app, server } = await createApp();
 
@@ -58,8 +57,8 @@ async function startServer() {
   console.log('Adding health check endpoint');
   app.get("/api/health", async (req, res) => {
     try {
-      // Check database connection by attempting a simple query
-      await db.select({ id: 1 }).from(schema.users).limit(1);
+      // Check database connection by attempting a simple query against the users table
+      await db.select({ id: sql<number>`1` }).from(schema.users).limit(1);
       res.json({ 
         status: "healthy",
         timestamp: new Date().toISOString(),
@@ -74,22 +73,20 @@ async function startServer() {
     }
   });
 
-    // Catch-all route for serving the client-side application
-    app.get('*', (_req, res) => {
-        res.sendFile(path.join(__dirname, '..', 'dist', 'public', 'index.html'));
-    });
+  // Catch-all route for serving the client-side application
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'dist', 'public', 'index.html'));
+  });
 
   // Determine the port based on environment
   const PORT = 3000;
-  
-  // Commented out as requested
-  // await electronServer.setupVite();
 
   server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
   }); 
 
-  
+  // // // // // // // //
+
   // Handle termination gracefully
   const shutdown = () => {
     console.log('shutdown function called');
