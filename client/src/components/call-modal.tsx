@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog } from "@/components/ui/dialog";
 import { MicOffIcon, VideoOffIcon, PhoneOffIcon, UserIcon } from "lucide-react";
-import { useTranslations } from "@/lib/i18n/LanguageContext";
+import { useTranslations } from "@/hooks/use-translations";
 
-export type TranslationKey = "call.in_progress" | "common.cancel" | `call.${"video" | "audio"}`;
+export type TranslationKey =  "call.video" | "call.audio" | "call.in_progress" | "common.cancel";
 
 interface CallModalProps {
   isOpen: boolean;
@@ -69,7 +69,7 @@ export default function CallModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-primary-800 text-white border-none">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle> 
             {t(`call.${callType}`)} {t("call.in_progress")}
           </DialogTitle>
         </DialogHeader>
