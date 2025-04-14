@@ -150,7 +150,6 @@ export function setupAuth(app: Express) {
         return res.status(404).json({ message: 'User not found' });
       }
       if (req.user) {
-        const { password, ...userWithoutPassword } = req.user;
         const { password: _, ...userWithoutPassword } = (req.user as Express.User);
       }
     } finally {
