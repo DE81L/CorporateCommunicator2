@@ -115,26 +115,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Если это не user1 или user2, имитируем ошибку
       console.log("Hardcoded login failed for:", credentials.username);
-      throw new Error(t("auth.invalidCredentials")); // Используем перевод для сообщения об ошибке
+      throw new Error("sadasd"); // Используем перевод для сообщения об ошибке
     },
     // --- КОНЕЦ ИЗМЕНЕНИЯ ---
     onSuccess: (loggedInUser) => {
       console.log("Hardcoded login mutation succeeded for:", loggedInUser);
       // Обновляем данные пользователя в кэше React Query
       queryClient.setQueryData(["/api/user"], loggedInUser);
-      toast({
-        title: t('auth.loginSuccessTitle'), // "Login Successful"
-        description: t('auth.welcomeBack', { name: loggedInUser.firstName || loggedInUser.username }), // "Welcome back, {name}!"
-      });
+
       // Навигация должна происходить в компоненте, который вызвал login
     },
     onError: (error: Error) => {
       console.error("Hardcoded login mutation failed:", error);
-      toast({
-        title: t('auth.loginFailed'), // "Login Failed"
-        description: error.message, // Показываем сообщение из ошибки (включая "Invalid credentials")
-        variant: "destructive",
-      });
+
     },
   });
 
@@ -159,10 +152,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       queryClient.setQueryData(["/api/user"], null);
       // Можно также сбросить другие связанные кэши, если необходимо
       queryClient.invalidateQueries(); // Инвалидировать все запросы для чистого состояния
-      toast({
-        title: t('auth.logoutSuccessTitle'), // "Logged Out"
-        description: t('auth.logoutSuccessDesc'), // "You have been successfully logged out."
-      });
       // Навигация на страницу входа обычно происходит в компоненте/роутере
     },
      onError: (error: Error) => {
@@ -170,11 +159,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
        // Даже если API выхода не сработал, лучше очистить локальное состояние
        queryClient.setQueryData(["/api/user"], null);
        queryClient.invalidateQueries();
-      toast({
-        title: t('auth.logoutFailed'), // "Logout Failed"
-        description: error.message,
-        variant: "destructive",
-      });
     },
   });
 

@@ -1,17 +1,14 @@
  import React from 'react';
  import { useForm } from 'react-hook-form';
- import { useNavigate } from 'react-router-dom'; // 1. Импортируем useNavigate
  import { useAuth, LoginCredentials } from '@/hooks/use-auth';
  import { Button } from "@/components/ui/button";
  import { Input } from "@/components/ui/input";
  import { Label } from "@/components/ui/label";
  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
- import { toast } from "@/components/ui/use-toast";
  import { useTranslations } from '@/hooks/use-translations';
  
- export function AuthPage() {
-   const { login, isLoggingIn } = useAuth(); // Получаем login и статус isLoggingIn
-   const navigate = useNavigate(); // 2. Получаем функцию navigate
+ export default function AuthPage() {
+   const { login, isLoggingIn } = useAuth(); // Получаем login и статус isLoggingIn // 2. Получаем функцию navigate
    const { t } = useTranslations();
  
    const { register, handleSubmit, formState: { errors } } = useForm<LoginCredentials>({
@@ -31,7 +28,7 @@
        console.log('Hardcoded login successful in AuthPage, navigating to /');
  
        // --- ВЫПОЛНЯЕМ НАВИГАЦИЮ ---
-       navigate('/'); // Перенаправляем на главную страницу
+       // Перенаправляем на главную страницу
        // ---------------------------
  
      } catch (error) {
