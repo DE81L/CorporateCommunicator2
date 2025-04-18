@@ -52,13 +52,12 @@ async function startServer() {
   const quickServer = startQuickServer();
   const { app, server } = await createApp();
 
-    // Enable CORS for requests from VITE_API_URL or http://localhost:5173
+  // Enable CORS for requests from FRONTEND_URL or http://localhost:5173
   app.use(
     cors({
-      origin: process.env.VITE_API_URL || "http://localhost:5173",
+      origin: process.env.FRONTEND_URL || "http://localhost:5173",
       credentials: true,
-    })
-  );
+    }));
 
   // Add body-parsing middleware
   // 1. Parse JSON bodies (for API clients sending JSON)
