@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Redirect } from 'wouter';
@@ -15,6 +16,7 @@ import {
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -34,7 +36,7 @@ const registerSchema = z.object({
 });
 
 export default function AuthPage() {
-  const { user, login: loginFn, register: registerFn } = useAuth();
+  const { user, login: loginFn } = useAuth();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"login"|"register">("login");
 
@@ -127,17 +129,36 @@ export default function AuthPage() {
   // ───────────────────────────────────────────────────
   function RegisterForm() {
     const form = useForm<z.infer<typeof registerSchema>>({
-      resolver: zodResolver(registerSchema),
+      resolver: zodResolver(registerSchema)
     });
+    const { toast } = useToast();
+    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const registerMutation = useMutation({
+      mutationFn: async (data: z.infer<typeof registerSchema>) => {
+        const res = await fetch(`${baseURL}/api/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || 'Registration failed');
+        }
+        return await res.json();
+      },
+      onSuccess: () => {
+        console.log('Registration successful!');
+      },
+      onError: (error: Error) => {
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong.",
+          description: error.message
+        })
+      },
+    })
 
-    const onSubmit = (data: z.infer<typeof registerSchema>) =>
-      registerFn({
-        username: data.username,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        password: data.password,
-      });
+    const onSubmit = (data: z.infer<typeof registerSchema>) => registerMutation.mutate(data)
 
     return (
       <Card className="mx-auto mt-6 w-full max-w-md">

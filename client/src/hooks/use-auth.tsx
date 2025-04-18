@@ -80,8 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         mutationFn: async (credentials: LoginCredentials) => {
       try {
         const res = await fetch(`${baseURL}/api/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           credentials: 'include',
           body: JSON.stringify(credentials),
         });
