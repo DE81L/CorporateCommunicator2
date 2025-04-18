@@ -1,91 +1,234 @@
- import React from 'react';
- import { useForm } from 'react-hook-form';
- import { useAuth, LoginCredentials } from '@/hooks/use-auth';
- import { Button } from "@/components/ui/button";
- import { Input } from "@/components/ui/input";
- import { Label } from "@/components/ui/label";
- import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
- import { useTranslations } from '@/hooks/use-translations';
- 
- export default function AuthPage() {
-   const { login, isLoggingIn } = useAuth(); // Получаем login и статус isLoggingIn // 2. Получаем функцию navigate
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Redirect } from 'wouter';
+import { useAuth } from '@/hooks/use-auth';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '@/components/language-switcher';
+import {
+  Tabs, TabsList, TabsTrigger, TabsContent
+} from '@/components/ui/tabs';
+import {
+  Card, CardHeader, CardTitle, CardDescription, CardContent
+} from '@/components/ui/card';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
-   const { t } = useTranslations();
- 
-   const { register, handleSubmit, formState: { errors } } = useForm<LoginCredentials>({
-       defaultValues: {
-           username: '',
-           password: '',
-       }
-   });
- 
-   const onSubmit = async (data: LoginCredentials) => {
-     console.log("Form submitted with data:", data);
-     try {
-       // Вызываем login из useAuth (который теперь использует хардкодную мутацию)
-       await login(data);
- 
-       // 3. Если login выполнился успешно (т.е. промис разрешился без ошибки)
-       console.log('Hardcoded login successful in AuthPage, navigating to /');
- 
-       // --- ВЫПОЛНЯЕМ НАВИГАЦИЮ ---
-       // Перенаправляем на главную страницу
-       // ---------------------------
- 
-     } catch (error) {
-       // Ошибка уже обработана и показана через toast в onError мутации (use-auth.tsx)
-       // Можно добавить дополнительное логирование здесь, если нужно
-       console.error("Login attempt caught error in AuthPage:", error);
-     }
-   };
- 
-   return (
-     <div className="flex items-center justify-center min-h-screen bg-background">
-       <Card className="w-full max-w-sm">
-         <CardHeader>
-           <CardTitle className="text-2xl">{t('auth.loginTitle')}</CardTitle>
-           <CardDescription>
-             {t('auth.loginDescription')}
-           </CardDescription>
-         </CardHeader>
-         <CardContent>
-           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-             <div className="space-y-2">
-               <Label htmlFor="username">{t('auth.usernameOrEmail')}</Label>
-               <Input
-                 id="username"
-                 type="text"
-                 placeholder={t('auth.usernameOrEmailPlaceholder')}
-                 {...register("username", { required: t('validation.requiredField') })}
-                 aria-invalid={errors.username ? "true" : "false"}
-               />
-               {errors.username && <p className="text-sm text-destructive">{errors.username.message}</p>}
-             </div>
-             <div className="space-y-2">
-               <Label htmlFor="password">{t('auth.password')}</Label>
-               <Input
-                 id="password"
-                 type="password"
-                 placeholder="********"
-                 {...register("password", { required: t('validation.requiredField') })}
-                 aria-invalid={errors.password ? "true" : "false"}
-               />
-               {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
-             </div>
-             <Button type="submit" className="w-full" disabled={isLoggingIn}>
-               {isLoggingIn ? t('auth.loggingIn') : t('auth.loginButton')}
-             </Button>
-           </form>
-           {/* Можно добавить ссылку на регистрацию или восстановление пароля */}
-           {/* <div className="mt-4 text-center text-sm">
-             Don't have an account?{' '}
-             <a href="#" className="underline">
-               Sign up
-             </a>
-           </div> */}
-         </CardContent>
-       </Card>
-     </div>
-   );
- }
+const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+const registerSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email"),
+  password: z.string().min(6, "Password too short"),
+  confirmPassword: z.string(),
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords must match",
+  path: ["confirmPassword"],
+});
+
+export default function AuthPage() {
+  const { user, login: loginFn, register: registerFn } = useAuth();
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState<"login"|"register">("login");
+
+  if (user) return <Redirect to="/" />;
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <div className="flex justify-end p-4">
+        <LanguageSwitcher />
+      </div>
+      <Tabs defaultValue={activeTab} onValueChange={v => setActiveTab(v as any)}>
+        <TabsList>
+          <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
+          <TabsTrigger value="register">{t('auth.register')}</TabsTrigger>
+        </TabsList>
+
+        {/* LOGIN */}
+        <TabsContent value="login">
+          <LoginForm />
+        </TabsContent>
+
+        {/* REGISTER */}
+        <TabsContent value="register">
+          <RegisterForm />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+
+  // ───────────────────────────────────────────────────
+  function LoginForm() {
+    const form = useForm<z.infer<typeof loginSchema>>({
+      resolver: zodResolver(loginSchema),
+    });
+
+    const onSubmit = (data: z.infer<typeof loginSchema>) =>
+      loginFn({ username: data.username, password: data.password });
+
+    return (
+      <Card className="mx-auto mt-6 w-full max-w-md">
+        <CardHeader>
+          <CardTitle>{t('auth.loginTitle')}</CardTitle>
+          <CardDescription>{t('auth.loginDescription')}</CardDescription>
+        </CardHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth.usernameOrEmail')}</FormLabel>
+                    <FormControl>
+                      <Input placeholder={t('auth.enterUsernameOrEmail')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth.password')}</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder={t('auth.enterPassword')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button type="submit" className="w-full">
+                {t('auth.loginButton')}
+              </Button>
+            </CardContent>
+          </form>
+        </Form>
+      </Card>
+    );
+  }
+
+  // ───────────────────────────────────────────────────
+  function RegisterForm() {
+    const form = useForm<z.infer<typeof registerSchema>>({
+      resolver: zodResolver(registerSchema),
+    });
+
+    const onSubmit = (data: z.infer<typeof registerSchema>) =>
+      registerFn({
+        username: data.username,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        password: data.password,
+      });
+
+    return (
+      <Card className="mx-auto mt-6 w-full max-w-md">
+        <CardHeader>
+          <CardTitle>{t('auth.register')}</CardTitle>
+          <CardDescription>{t('auth.registerDescription')}</CardDescription>
+        </CardHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardContent className="space-y-4">
+            <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth.username')}</FormLabel>
+                    <FormControl>
+                      <Input placeholder={t('auth.enterUsername')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth.firstName')}</FormLabel>
+                    <FormControl>
+                      <Input placeholder={t('auth.enterFirstName')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth.lastName')}</FormLabel>
+                    <FormControl>
+                      <Input placeholder={t('auth.enterLastName')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth.email')}</FormLabel>
+                    <FormControl>
+                      <Input placeholder={t('auth.enterEmail')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth.password')}</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder={t('auth.enterPassword')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth.confirmPassword')}</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder={t('auth.enterConfirmPassword')} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            <Button type="submit" className="w-full">
+                {t('auth.register')}
+              </Button>
+            </CardContent>
+          </form>
+        </Form>
+      </Card>
+    );
+  }
+}
 
