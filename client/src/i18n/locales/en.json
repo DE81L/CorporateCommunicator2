@@ -22,6 +22,7 @@
   "auth": {
     "login": "Login",
     "register": "Register",
+    "loginButton": "Sign In",
     "logout": "Logout",
     "email": "Email",
     "password": "Password",
@@ -49,6 +50,7 @@
     "registerTitle": "Register",
     "registerDescription": "Create a new account",
     "confirmPassword": "Confirm Password",
+    "enterConfirmPassword": "Confirm Password",
     "enterFirstName": "Enter your first name",
     "enterLastName": "Enter your last name",
     "enterEmail": "Enter your email",

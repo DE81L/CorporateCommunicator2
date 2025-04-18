@@ -45,12 +45,16 @@ export default function AuthPage() {
       <div className="flex justify-end p-4">
         <LanguageSwitcher />
       </div>
-      <Tabs defaultValue={activeTab} onValueChange={v => setActiveTab(v as any)}>
-        <TabsList>
-          <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
-          <TabsTrigger value="register">{t('auth.register')}</TabsTrigger>
-        </TabsList>
+      <div className="flex justify-center bg-gray-50 py-4 border-b">
+        <Tabs defaultValue={activeTab} onValueChange={v => setActiveTab(v as any)}>
+          <TabsList className="space-x-4">
+            <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
+            <TabsTrigger value="register">{t('auth.register')}</TabsTrigger>
+          </TabsList>
 
+        
+        
+        
         {/* LOGIN */}
         <TabsContent value="login">
           <LoginForm />
@@ -60,6 +64,8 @@ export default function AuthPage() {
         <TabsContent value="register">
           <RegisterForm />
         </TabsContent>
+        </Tabs>
+      </div>
       </Tabs>
     </div>
   );

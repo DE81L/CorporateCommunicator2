@@ -75,51 +75,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Мутация для входа
   const loginMutation = useMutation({
     // --- НАЧАЛО ИЗМЕНЕНИЯ: Хардкодный вход ---
-    mutationFn: async (credentials: LoginCredentials): Promise<UserWithoutPassword> => {
-      console.log("Attempting hardcoded login with:", credentials);
-
-      // Хардкодные данные пользователей
-      const user1: UserWithoutPassword = {
-        id: 3, // ID для user1
-        username: "user1",
-        email: "user1@example.com",
-        firstName: "User",
-        lastName: "One",
-        isOnline: true,
-        avatarUrl: null
-      };
-
-      const user2: UserWithoutPassword = {
-        id: 4, // ID для user2 (пример)
-        username: "user2",
-        email: "user2@example.com",
-        firstName: "User",
-        lastName: "Two",
-        isOnline: true,
-        avatarUrl: null
-      };
-
-      // Имитация задержки сети
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      // Проверка, каким пользователем пытаемся войти
-      if (credentials.username === "user1" || credentials.username === "user1@example.com") {
-        console.log("Hardcoding login for user1");
-        return user1;
+    mutationFn: async (credentials: LoginCredentials) => {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(credentials),
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Login failed");
       }
-
-      if (credentials.username === "user2" || credentials.username === "user2@example.com") {
-        console.log("Hardcoding login for user2");
-        return user2;
-      }
-
-      // Если это не user1 или user2, имитируем ошибку
-      console.log("Hardcoded login failed for:", credentials.username);
-      throw new Error("sadasd"); // Используем перевод для сообщения об ошибке
+      return await res.json();
     },
     // --- КОНЕЦ ИЗМЕНЕНИЯ ---
     onSuccess: (loggedInUser) => {
-      console.log("Hardcoded login mutation succeeded for:", loggedInUser);
       // Обновляем данные пользователя в кэше React Query
       queryClient.setQueryData(["/api/user"], loggedInUser);
 
@@ -127,7 +97,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onError: (error: Error) => {
       console.error("Hardcoded login mutation failed:", error);
-
     },
   });
 
@@ -137,7 +106,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Здесь можно оставить реальный запрос на выход, если он есть,
       // или просто очистить состояние на клиенте
       try {
-        const res = await fetch('/api/logout', { method: 'POST' });
+        const res = await fetch('/api/logout', {
+           method: 'POST',
+           credentials: 'include',
+           });
         if (!res.ok && res.status !== 401) { // Игнорируем 401, если пользователь уже не авторизован
           console.warn("Logout API call failed:", res.statusText);
           // Можно не выбрасывать ошибку, чтобы выход на клиенте все равно произошел
