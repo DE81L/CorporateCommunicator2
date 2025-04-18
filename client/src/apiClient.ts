@@ -1,5 +1,3 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const errorData = await response.json();
@@ -9,13 +7,12 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 export const getSystemInfo = async () => {
-  const response = await fetch(`${API_BASE}/api/system/info`);
+  const response = await fetch("/api/system/info");
   return handleResponse(response);
 };
 
 export const getAppVersion = async () => {
-  const response = await fetch(`${API_BASE}/api/app/version`);
+  const response = await fetch("/api/app/version");
   return handleResponse(response);
 };
-
 // Add other API functions as needed
