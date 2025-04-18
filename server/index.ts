@@ -52,15 +52,18 @@ async function startServer() {
   const quickServer = startQuickServer();
   const { app, server } = await createApp();
 
+    // Enable CORS for requests from VITE_API_URL or http://localhost:5173
+  app.use(
+    cors({
+      origin: process.env.VITE_API_URL || "http://localhost:5173",
+      credentials: true,
+    })
+  );
+
   // Add body-parsing middleware
   // 1. Parse JSON bodies (for API clients sending JSON)
   app.use(express.json());
 
-  // 2. Parse URL-encoded bodies (if you ever post forms)
-  app.use(express.urlencoded({ extended: true }));
-
-  // Enable CORS for requests from http://localhost:5173
-  app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
   
   // Add health check endpoint
   console.log('Adding health check endpoint');
