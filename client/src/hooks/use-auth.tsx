@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Мутация для входа
 
   const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginCredentials) => {
+        mutationFn: async (credentials: LoginCredentials) => {
       try {
         const res = await fetch(`${baseURL}/api/login`, {
           method: 'POST',
@@ -85,15 +85,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           credentials: 'include',
           body: JSON.stringify(credentials),
         });
-
+        
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.message || 'Login failed');
         }
+        return await res.json();
       } catch (error) {
         throw new Error(`Login failed: ${error}`);
       }
-      return await res.json();
+
     },
     // --- КОНЕЦ ИЗМЕНЕНИЯ ---
     onSuccess: (loggedInUser) => {
