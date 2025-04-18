@@ -9,7 +9,7 @@
  import { toast } from "@/components/ui/use-toast";
  import { useTranslations } from '@/hooks/use-translations';
  
- export function AuthPage() {
+ function AuthPage() {
    const { login, isLoggingIn } = useAuth(); // Получаем login и статус isLoggingIn
    const navigate = useNavigate(); // 2. Получаем функцию navigate
    const { t } = useTranslations();
@@ -90,3 +90,5 @@
      </div>
    );
  }
+
+ export default AuthPage;

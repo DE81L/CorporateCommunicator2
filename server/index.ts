@@ -1,3 +1,5 @@
+import express from 'express';
+
 import { setupAutoAuth } from './autoAuth';
 
 import { fileURLToPath } from 'url';
@@ -49,6 +51,13 @@ async function startServer() {
    // Start quick server for Replit if needed
   const quickServer = startQuickServer();
   const { app, server } = await createApp();
+
+  // Add body-parsing middleware
+  // 1. Parse JSON bodies (for API clients sending JSON)
+  app.use(express.json());
+
+  // 2. Parse URL-encoded bodies (if you ever post forms)
+  app.use(express.urlencoded({ extended: true }));
 
   // Enable CORS for requests from http://localhost:5173
   app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
