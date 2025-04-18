@@ -23,15 +23,13 @@ export async function hashPassword(password: string) {
   return `${buf.toString('hex')}.${salt}`;
 }
 
-async function comparePasswords(supplied: string, stored: string) {  
-  if (!stored.includes('.')) {
-    // fallback to plain‑text check
-    return supplied === stored;
-  }
-  const parts = stored.split('.');
-  const [hash, salt] = parts;
-  const candidateHash = (await scrypt(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(Buffer.from(hash, 'hex'), candidateHash);
+async function comparePasswords(plain:string, stored:string) {
+
+  const [hash, salt] = stored.split('.');
+  const candidate = await scryptAsync(plain, salt, 64) as Buffer;
+
+  return timingSafeEqual(Buffer.from(hash, 'hex'), candidate);
+
 }
 
 export function setupAuth(app: Express) {
@@ -108,7 +106,7 @@ export function setupAuth(app: Express) {
 
       const hashedPassword = await hashPassword(req.body.password);
       const newUser = await storage.createUser({
-        ...req.body,
+         ...req.body,
         password: hashedPassword,
       });
       req.login(newUser, (err) => {

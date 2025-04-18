@@ -85,13 +85,6 @@ export class PgStorage implements IStorage {
 
   // User operations
   async getUser(id: number) {
-        // Check if the 'lastname' column exists in the 'users' table
-    const columnExists = await checkColumnExists("users", "lastname");
-    if (!columnExists) {
-      throw new Error(
-        "The 'lastname' column is missing from the 'users' table.",
-      );
-    }
     const result = await db.select().from(schema.users)
       .where(eq(schema.users.id, id));
     return result[0];
@@ -113,7 +106,7 @@ export class PgStorage implements IStorage {
     const hashedPassword = await hashPassword(insertUser.password);
     const userToInsert = { ...insertUser, password: hashedPassword };
     const result = await db.insert(schema.users)
-      
+    
       .values(userToInsert)
       .returning();
     return result[0];

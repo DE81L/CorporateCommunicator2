@@ -47,15 +47,15 @@ export async function checkDatabaseAndUser(): Promise<boolean> {
 export async function checkColumnExists(
   tableName: string,
   columnName: string,
-): Promise<boolean> {
+): Promise<boolean>{
   console.log(`Checking if column '${columnName}' exists in table '${tableName}'`);
   try {
-    const result = await db.execute(sql`
+    const rows = await db.execute(sql`
       SELECT column_name
       FROM information_schema.columns
       WHERE table_name = ${tableName} AND column_name = ${columnName};
-    `);
-    return result.rows.length > 0;
+    `) as { exists:number }[];
+    return rows.length > 0;
   } catch (error) {
     console.error(`Error checking column existence:`, error);
     return false;
