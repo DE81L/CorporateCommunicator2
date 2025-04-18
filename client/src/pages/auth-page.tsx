@@ -66,7 +66,6 @@ export default function AuthPage() {
         </TabsContent>
         </Tabs>
       </div>
-      </Tabs>
     </div>
   );
 
