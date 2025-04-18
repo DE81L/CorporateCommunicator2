@@ -23,21 +23,15 @@ export async function hashPassword(password: string) {
   return `${buf.toString('hex')}.${salt}`;
 }
 
-async function comparePasswords(supplied: string, stored: string) {
-  console.log('comparePasswords');
-  console.log('Supplied password (raw):', supplied);
-  const parts = stored.split('.');
-  if (parts.length !== 2) {
-    return false; // No salt found, password comparison fails
+async function comparePasswords(supplied: string, stored: string) {  
+  if (!stored.includes('.')) {
+    // fallback to plain‑text check
+    return supplied === stored;
   }
-  const [hashed, salt] = parts;
-  console.log('Salt:', salt);
-
-  const hashedBuf = Buffer.from(hashed, 'hex');
-  console.log('Stored password hash (hex):', hashedBuf.toString('hex'));
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  console.log('Supplied password hash (hex):', suppliedBuf.toString('hex'));
-  return timingSafeEqual(hashedBuf, suppliedBuf);
+  const parts = stored.split('.');
+  const [hash, salt] = parts;
+  const candidateHash = (await scrypt(supplied, salt, 64)) as Buffer;
+  return timingSafeEqual(Buffer.from(hash, 'hex'), candidateHash);
 }
 
 export function setupAuth(app: Express) {
@@ -71,7 +65,7 @@ export function setupAuth(app: Express) {
           user = await storage.getUserByEmail(username);
         }
 
-        
+
         if (!user || !(await comparePasswords(password, user.password))) {
           if (user){
             console.log(`Password comparison failed for user: ${user.username || user.email}`);

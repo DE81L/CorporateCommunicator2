@@ -12,6 +12,8 @@ import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast"; // Предполагается использование shadcn/ui toast
 import { useTranslations } from '@/hooks/use-translations'; // Предполагается использование переводов
 
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 // Схема валидации для формы входа
 const loginSchema = z.object({
   username: z.string().min(1, "Username or email is required"),
@@ -54,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryFn: async () => {
       try {
         const res = await fetch("/api/user"); // Эндпоинт для проверки сессии/токена
-        if (res.status === 401) {
+         if (res.status === 401) {
           return null; // Не авторизован
         }
         if (!res.ok) {
@@ -73,18 +75,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   // Мутация для входа
+
   const loginMutation = useMutation({
-    // --- НАЧАЛО ИЗМЕНЕНИЯ: Хардкодный вход ---
     mutationFn: async (credentials: LoginCredentials) => {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(credentials),
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Login failed");
+      try {
+        const res = await fetch(`${baseURL}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(credentials),
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || 'Login failed');
+        }
+      } catch (error) {
+        throw new Error(`Login failed: ${error}`);
       }
       return await res.json();
     },
@@ -96,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Навигация должна происходить в компоненте, который вызвал login
     },
     onError: (error: Error) => {
-      console.error("Hardcoded login mutation failed:", error);
+      console.error("Login mutation failed:", error);
     },
   });
 
@@ -105,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async () => {
       // Здесь можно оставить реальный запрос на выход, если он есть,
       // или просто очистить состояние на клиенте
-      try {
+          try {
         const res = await fetch('/api/logout', {
            method: 'POST',
            credentials: 'include',
