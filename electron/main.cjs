@@ -59,14 +59,11 @@ function createWindow() {
   // Load the app
   const startUrl = isDev
     ? 'http://localhost:5173' // Vite dev server
-    : url.format({
-        pathname: path.join(__dirname, '../dist/public/index.html'),
-        protocol: 'file:',
-        slashes: true,
-      });
+    : url.pathToFileURL(path.join(__dirname, '../dist/public/index.html')).toString()
 
   console.log('Loading URL:', startUrl);
 
+    
   mainWindow.loadURL(startUrl);
 
   // Add debugging logs
