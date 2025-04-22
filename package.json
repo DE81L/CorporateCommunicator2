@@ -17,7 +17,8 @@
     "check:db:user": "tsx scripts/check-db-and-user.ts",
     "build:electron": "tsc -p electron/tsconfig.json",
     "start": "cross-env NODE_ENV=production ELECTRON=true electron .",
-    "check": "tsc -p client/tsconfig.json"
+    "check": "tsc -p client/tsconfig.json",
+    "hash-passwords": "tsx scripts/hash-passwords.ts"
   },
   "dependencies": {
     "-": "^0.0.1",

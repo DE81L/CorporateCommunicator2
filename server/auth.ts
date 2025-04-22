@@ -24,6 +24,10 @@ export async function hashPassword(password: string) {
 }
 
 async function comparePasswords(plain:string, stored:string) {
+  if (!stored || !stored.includes('.')) {
+    throw new Error('Invalid stored password format');
+  }
+
 
   const [hash, salt] = stored.split('.');
   const candidate = await scryptAsync(plain, salt, 64) as Buffer;
@@ -52,6 +56,9 @@ export function setupAuth(app: Express) {
     new LocalStrategy(async (username, password, done) => {
       console.log('LocalStrategy');
       console.log(`Attempting to authenticate user: ${username}`);
+      let user = await storage.getUserByUsername(username);
+      console.log('LocalStrategy — пользователь из БД:', user);
+      console.log('  → user.password:', user?.password);
       console.log(`Password provided: ${password}`);
 
       
@@ -63,11 +70,11 @@ export function setupAuth(app: Express) {
           user = await storage.getUserByEmail(username);
         }
 
+        if (!user || typeof user.password !== 'string' || !(await comparePasswords(password, user.password))) {
+          if (user) {
+              console.log(`Password comparison failed for user: ${user.username || user.email}`);
+              console.log(`Stored password hash: ${user.password}`);
 
-        if (!user || !(await comparePasswords(password, user.password))) {
-          if (user){
-            console.log(`Password comparison failed for user: ${user.username || user.email}`);
-            console.log(`Stored password hash: ${user.password}`);
           }
           console.log('LocalStrategy: no user');
           return done(null, false);
