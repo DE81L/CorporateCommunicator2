@@ -42,8 +42,8 @@ export default function Header({ toggleSidebar }: HeaderProps) {
     }
   }, [logout, setLocation]);
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  const getInitials = (firstName: string | null, lastName: string | null) => {
+    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
   };
 
   return (
@@ -80,7 +80,8 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                   {notificationCount}
                 </Badge>
               )}
-            </Button><DropdownMenu> <DropdownMenuTrigger asChild> <Button
+            </Button><DropdownMenu> <DropdownMenuTrigger asChild>
+            <Button
                 variant="ghost"
                 className="flex items-center space-x-1 focus:ring-0"
               >
@@ -89,7 +90,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                     <img
                       src={user.avatarUrl}
                       alt={`${user.firstName} ${user.lastName}`}
-                    />
+                     />
                   ) : (
                     <AvatarFallback className="bg-primary-100 text-primary-600">
                       {getInitials(user.firstName, user.lastName)}
@@ -97,10 +98,11 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                   )}
                 </Avatar>
                 <span className="hidden md:block text-sm">
-                  {user.firstName} {user.lastName}
+                 {user.firstName} {user.lastName}
                 </span>
                 <ChevronDownIcon className="h-4 w-4 text-gray-500" /></Button>
-            </DropdownMenuTrigger>            
+            </DropdownMenuTrigger>
+
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuLabel>
                 {user?.firstName} {user?.lastName}
