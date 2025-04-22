@@ -1,5 +1,6 @@
 import { Toaster } from 'react-hot-toast';
 import AuthPage from './pages/auth-page';
+import HomePage from "./pages/home-page";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
 import { WindowFrame } from "./components/ui/window-frame";
@@ -23,8 +24,8 @@ function AppContent() {
       <EnvironmentIndicator />
       <Toaster />
       <div className="flex-1 overflow-auto">
-        {/* TODO: swap in your home/dashboard component here */}
-        <div className="p-6">Welcome, {user.firstName || user.username}!</div>
+        {/* Now rendering your real home screen */}
+        <HomePage />
       </div>
     </div>
   );
