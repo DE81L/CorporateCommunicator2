@@ -3,6 +3,12 @@ import { useAuth } from "./use-auth";
 import { useElectron } from "./use-electron";
 
 export type WebSocketMessageData = {
+  type?:string
+  msgId?:string
+  from?:number
+  timestamp?:number
+  msgIds?:string[]
+  messages?:any[]
   senderId: number;
   content: string;
   groupId?: number;
@@ -18,6 +24,7 @@ export type WebSocketHook = {
   readyState?: number;
   connectionStatus: string;
 };
+
 export type WebSocketMessage = WebSocketMessageData;
   
 export function useWebSocket(): WebSocketHook {
@@ -38,55 +45,66 @@ export function useWebSocket(): WebSocketHook {
 
     socket.current.addEventListener("open", () => {        
         setConnectionStatus("open");
-        setReadyState(socket.current?.readyState ?? -1);
-        const readyState = socket.current?.readyState ?? -1
-        console.log("WebSocket connected", readyState);
+      setReadyState(socket.current?.readyState ?? -1);
+      console.log("WebSocket connected");
+      socket.current?.send(JSON.stringify({ type: "auth", userId: user.id }));
+        // immediately request offline messages
+        socket.current?.send(JSON.stringify({ type: "getOffline", userId: user.id }));
     });
 
 
     socket.current.addEventListener("message", (event: MessageEvent) => {
-      if(socket.current){
+      if (socket.current) {
         try {
-            const data: WebSocketMessageData = JSON.parse(event.data);
-            setReadyState(socket.current.readyState)
-            setLastMessage(data);
-            console.log("Received WebSocket message:", data,"readyState:",socket.current.readyState);
+          const data: WebSocketMessageData = JSON.parse(event.data);
+          setReadyState(socket.current.readyState);
+          console.log("Received WebSocket message:", data, "readyState:", socket.current.readyState);
+          
+          if(data.type === "chat"){
+            setLastMessage(data)
+          }else if(data.type === "offlineBatch"){
+              // process offline messages
+              data.messages?.forEach((msg: any) => setLastMessage(msg));
+
+              // confirm receipt
+              const ids = data.messages?.map((m: any) => m.msgId);
+              socket.current.send(JSON.stringify({ type: "ackOffline", msgIds: ids }));
+          }
+          else if (data.type === "startP2P") {
+            // initiate direct WebRTC connection...
+            console.log("start p2p")
+          }
+        
         } catch (error) {
-            console.error("Error parsing WebSocket message", error);
-        }
-        if(socket.current){
-            try {
-                const data: WebSocketMessageData = JSON.parse(event.data);
-                setReadyState(socket.current.readyState)
-                setLastMessage(data);
-                console.log("Received WebSocket message:", data,"readyState:",socket.current.readyState);
-            } catch (error) {
-                console.error("Error parsing WebSocket message", error);
-            }
+          console.error("Error parsing WebSocket message", error);
         }
       }
     });
 
     socket.current.addEventListener("error", (error) => {
-        setConnectionStatus("Error");
-        setReadyState(socket.current?.readyState ?? -1);
-        console.error("WebSocket error:", error);
+      setConnectionStatus("Error");
+      setReadyState(socket.current?.readyState ?? -1);
+      console.error("WebSocket error:", error);
     });
 
     socket.current.addEventListener("close", (event: CloseEvent) => {
-        setConnectionStatus("Closed");
-        setReadyState(socket.current?.readyState ?? -1);
-
-        console.log("WebSocket connection closed:", event);
+      setConnectionStatus("Closed");
+      setReadyState(socket.current?.readyState ?? -1);
+      console.log("WebSocket connection closed:", event);
     });
 
-    return () => socket.current?.close();
+    window.addEventListener("beforeunload", () => {
+        socket.current?.send(JSON.stringify({ type: "disconnect" }));
+        socket.current?.close();
+      });
+
+      return () => socket.current?.close();
   }, [user]);
 
   const sendMessage = useCallback((message: string, chatId: number) => {
-    console.log("Sending WebSocket message:", message,"readyState:",socket.current?.readyState);
+    console.log("Sending WebSocket message:", message, "readyState:", socket.current?.readyState);
     if (socket.current && socket.current.readyState === WebSocket.OPEN) {
-      socket.current.send(JSON.stringify({ type: "chat", content: message, chatId: chatId }));
+      socket.current.send(JSON.stringify({ type: "chat", content: message, chatId: chatId, id:crypto.randomUUID(), timestamp:Date.now() }));
     } else {
       console.error("WebSocket is not open.");
     }
