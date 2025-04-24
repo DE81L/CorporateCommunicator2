@@ -5,13 +5,10 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Redirect } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'; 
 import { LanguageSwitcher } from '@/components/language-switcher';
-import {
-  Tabs, TabsList, TabsTrigger, TabsContent
-} from '@/components/ui/tabs';
-import {
-  Card, CardHeader, CardTitle, CardDescription, CardContent
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent
 } from '@/components/ui/card';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -47,28 +44,30 @@ export default function AuthPage() {
       <div className="flex justify-end p-4">
         <LanguageSwitcher />
       </div>
-      <div className="flex justify-center bg-gray-50 py-4 border-b">
-        <Tabs defaultValue={activeTab} onValueChange={v => setActiveTab(v as any)}>
-          <TabsList className="space-x-4">
-            <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
-            <TabsTrigger value="register">{t('auth.register')}</TabsTrigger>
-          </TabsList>
-
-        
-        
-        
-        {/* LOGIN */}
-        <TabsContent value="login">
-          <LoginForm />
-        </TabsContent>
-
-        {/* REGISTER */}
-        <TabsContent value="register">
-          <RegisterForm />
-        </TabsContent>
-        </Tabs>
+      <div className="flex justify-center bg-gray-50 py-4 border-b w-full">
+        <div className='w-full max-w-md'>
+          <Tabs defaultValue={activeTab} onValueChange={v => setActiveTab(v as any)} className='w-full'>
+              <Card>
+              <TabsList className="space-x-4 bg-white w-full flex">
+                <TabsTrigger value="login" className='text-gray-500 hover:text-gray-900 bg-white data-[state=active]:bg-white data-[state=active]:text-black flex-1'>{t('auth.login')}</TabsTrigger>
+                <TabsTrigger value="register" className='text-gray-500 hover:text-gray-900 bg-white data-[state=active]:bg-white data-[state=active]:text-black flex-1'>{t('auth.register')}</TabsTrigger>
+              </TabsList>
+                
+              <CardContent className='p-0'>
+                  {/* LOGIN */}
+                  <TabsContent value="login">
+                    <LoginForm />
+                  </TabsContent>
+                  {/* REGISTER */}
+                  <TabsContent value="register">
+                    <RegisterForm />
+                  </TabsContent>
+              </CardContent>
+              </Card>
+            </Tabs>
+        </div>
       </div>
-    </div>
+    </div>    
   );
 
   // ───────────────────────────────────────────────────
@@ -81,11 +80,10 @@ export default function AuthPage() {
       loginFn({ username: data.username, password: data.password });
 
     return (
-      <Card className="mx-auto mt-6 w-full max-w-md">
+      <Card className='p-4'>
         <CardHeader>
           <CardTitle>{t('auth.loginTitle')}</CardTitle>
           <CardDescription>{t('auth.loginDescription')}</CardDescription>
-        </CardHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
@@ -121,7 +119,8 @@ export default function AuthPage() {
               </Button>
             </CardContent>
           </form>
-        </Form>
+        </Form>  
+        </CardHeader>
       </Card>
     );
   }
@@ -161,12 +160,11 @@ export default function AuthPage() {
     const onSubmit = (data: z.infer<typeof registerSchema>) => registerMutation.mutate(data)
 
     return (
-      <Card className="mx-auto mt-6 w-full max-w-md">
+      <div className='p-4'>
         <CardHeader>
           <CardTitle>{t('auth.register')}</CardTitle>
           <CardDescription>{t('auth.registerDescription')}</CardDescription>
         </CardHeader>
-        <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
             <FormField
@@ -252,8 +250,8 @@ export default function AuthPage() {
               </Button>
             </CardContent>
           </form>
-        </Form>
-      </Card>
+        
+      </div>
     );
   }
 }
