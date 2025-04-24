@@ -58,8 +58,7 @@
     "confirmYourPassword": "Confirm your password",
     "passwordsDontMatch": "Passwords don't match",
     "usernameRequired": "Username is required",
-    "passwordRequired": "Password is required",
-    "invalidCredentials": "Invalid credentials"
+    "passwordRequired": "Password is required"
   },
   "nav": {
     "home": "Home",
@@ -112,6 +111,8 @@
     "languageChangeFailed": "Failed to change language"
   },
   "messages": {
+    "noChat": "No chat",
+    "noContacts": "No contacts",
     "title": "Messages",
     "newMessage": "New Message",
     "sent": "Sent",
@@ -247,5 +248,16 @@
     "forbidden": "Access forbidden",
     "languageChangeFailed": "Language Change Failed",
     "tryAgainLater": "Please try again later"
+  },
+  "sidebar": {
+    "nav": {
+      "messages": "Messages",
+      "groups": "Groups",
+      "announcements": "Announcements",
+      "requests": "Requests",
+      "users": "Users",
+      "wiki": "Wiki",
+      "settings": "Settings"
+    }
   }
 }

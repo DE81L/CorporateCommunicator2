@@ -58,8 +58,18 @@
     "confirmYourPassword": "Подтвердите ваш пароль",
     "passwordsDontMatch": "Пароли не совпадают",
     "usernameRequired": "Требуется имя пользователя",
-    "passwordRequired": "Требуется пароль",
-    "invalidCredentials": "Неверные учетные данные"
+    "passwordRequired": "Требуется пароль"
+  },
+  "sidebar": {
+    "nav": {
+      "messages": "Сообщения",
+      "groups": "Группы",
+      "announcements": "Объявления",
+      "requests": "Запросы",
+      "users": "Пользователи",
+      "wiki": "Вики",
+      "settings": "Настройки"
+    }
   },
   "nav": {
     "home": "Главная",
@@ -123,7 +133,9 @@
     "noMessages": "Нет сообщений",
     "messageDeleted": "Сообщение удалено",
     "enterMessage": "Введите сообщение",
+    "noChat": "Нет чата",
     "selectRecipient": "Выберите получателя",
+    "noContacts": "Нет контактов",
     "searchMessages": "Поиск сообщений",
     "attachFile": "Прикрепить файл",
     "readReceipts": "Отчеты о прочтении",
