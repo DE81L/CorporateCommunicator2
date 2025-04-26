@@ -72,14 +72,14 @@ export const groupMembers = pgTable("group_members", {
   isAdmin: integer("is_admin").default(0),
 });
 
-// Make sure these are exported
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  firstName: text('firstname').notNull(),
+
+  // 👇 single, canonical column names
   username: text("username").notNull(),
   email: text("email").notNull(),
   password: text("password").notNull(),
-  firstname: text("firstname").notNull(),
+  firstName: text("firstname").notNull(),
   lastName: text("lastname").notNull(),
   isOnline: integer("isonline").default(0),
   avatarUrl: text("avatarurl").default(NULL_TEXT),

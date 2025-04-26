@@ -1,375 +1,219 @@
-import { eq, and, desc, asc, inArray } from "drizzle-orm";
-import session from "express-session";
-import createMemoryStore from "memorystore";
-import { Store } from "express-session";
+--- a/server/storage.ts
++++ b/server/storage.ts
 
-import * as schema from "../shared/electron-shared/schema"; import { checkColumnExists } from "./db";
-import { hashPassword } from "./auth"; 
-import { db } from "./db"; // Updated import
+// server/storage.ts
+import { eq, and, desc, asc, inArray } from 'drizzle-orm';
+import session from 'express-session';
+import createMemoryStore from 'memorystore';
+import { Store } from 'express-session';
+
+import * as schema from '../shared/electron-shared/schema';
+import { db } from './db';
+import { hashPassword } from './auth';
 
 const MemoryStore = createMemoryStore(session);
 
+/* -------------------------------------------------------------------------- */
+/*  TYPES                                                                     */
+/* -------------------------------------------------------------------------- */
+
 export interface IStorage {
-  // User operations
+  // ─── Users ────────────────────────────────────────────────────────────────
   getUser(id: number): Promise<schema.User | undefined>;
   getUserByUsername(username: string): Promise<schema.User | undefined>;
   getUserByEmail(email: string): Promise<schema.User | undefined>;
   createUser(user: schema.InsertUser): Promise<schema.User>;
-  updateUserOnlineStatus(
-    id: number,
-    isOnline: boolean,
-  ): Promise<schema.User | undefined>;
+  updateUserOnlineStatus(id: number, isOnline: boolean): Promise<schema.User>;
   listUsers(): Promise<schema.User[]>;
 
-  // Message operations
+  // ─── Messages ─────────────────────────────────────────────────────────────
   getMessage(id: number): Promise<schema.Message | undefined>;
   getDirectMessages(senderId: number, receiverId: number): Promise<schema.Message[]>;
-  getMessages(groupId: number): Promise<schema.Message[]>;
   createMessage(message: schema.InsertMessage): Promise<schema.Message>;
   deleteMessage(id: number): Promise<void>;
 
-  // Group operations
+  // ─── Groups ───────────────────────────────────────────────────────────────
   getGroup(id: number): Promise<schema.Group | undefined>;
   createGroup(group: schema.InsertGroup): Promise<schema.Group>;
   listGroups(): Promise<schema.Group[]>;
   getGroupsByUserId(userId: number): Promise<schema.Group[]>;
-  getAnnouncementGroups(): Promise<schema.Group[]>;
 
-  // Group member operations
+  // ─── Group members ────────────────────────────────────────────────────────
   addGroupMember(member: schema.InsertGroupMember): Promise<schema.GroupMember>;
   getGroupMembers(groupId: number): Promise<schema.GroupMember[]>;
   isUserInGroup(userId: number, groupId: number): Promise<boolean>;
 
-  // Request operations
+  // ─── Requests (help-desk) ─────────────────────────────────────────────────
   getRequest(id: number): Promise<schema.Request | undefined>;
   createRequest(request: schema.InsertRequest): Promise<schema.Request>;
-  updateRequestStatus(id: number, status: string): Promise<schema.Request | undefined>;
-  getUserRequests(userId: number): Promise<schema.Request[]>;
-  getAssignedRequests(userId: number): Promise<schema.Request[]>;
-  listRequests(): Promise<schema.Request[]>;
-  updateRequestComplete(
-    id: number,
-    updateFields: Partial<schema.Request>,
-  ): Promise<schema.Request>;
-  
-  // Wiki operations
+  updateRequestStatus(id: number, status: string): Promise<schema.Request>;
+
+  // ─── Wiki ────────────────────────────────────────────────────────────────
   getWikiEntry(id: number): Promise<schema.WikiEntry | undefined>;
-  getWikiEntryByTitle(title: string): Promise<schema.WikiEntry | undefined>;
   createWikiEntry(entry: schema.InsertWikiEntry): Promise<schema.WikiEntry>;
   updateWikiEntry(id: number, entry: Partial<schema.WikiEntry>): Promise<schema.WikiEntry>;
-  deleteWikiEntry(id: number): Promise<void>;
-  listWikiEntries(): Promise<schema.WikiEntry[]>;
-  getWikiEntriesByCategory(category: string): Promise<schema.WikiEntry[]>;
-  
-  // Wiki category operations
-  getWikiCategory(id: number): Promise<schema.WikiCategory | undefined>;
-  createWikiCategory(category: schema.InsertWikiCategory): Promise<schema.WikiCategory>;
-  updateWikiCategory(id: number, category: Partial<schema.WikiCategory>): Promise<schema.WikiCategory>;
-  deleteWikiCategory(id: number): Promise<void>;
-  listWikiCategories(): Promise<schema.WikiCategory[]>;
-  getWikiCategoriesByParent(parentId: number): Promise<schema.WikiCategory[]>;
 
-  // Session store
+  /* session store for express-session */
   sessionStore: Store;
 }
 
-export class PgStorage implements IStorage {
-  getMessages(groupId: number): Promise<schema.Message[]> {
-    throw new Error("Method not implemented.");
-  }
-  getWikiEntryByTitle(title: string): Promise<schema.WikiEntry | undefined> {
-    throw new Error("Method not implemented.");
-  }
-  sessionStore: Store = new MemoryStore({ checkPeriod: 86400000 });
+/* -------------------------------------------------------------------------- */
+/*  IMPLEMENTATION                                                            */
+/* -------------------------------------------------------------------------- */
 
-  // User operations
+export class PgStorage implements IStorage {
+  /* express-session store (one day prune) */
+  public sessionStore: Store = new MemoryStore({ checkPeriod: 86_400_000 });
+
+  /* ───────────── Users ───────────────── */
+
   async getUser(id: number) {
-    const result = await db.select().from(schema.users)
-      .where(eq(schema.users.id, id));
-    return result[0];
+    return (await db.select().from(schema.users).where(eq(schema.users.id, id)))[0];
   }
 
   async getUserByUsername(username: string) {
-    const result = await db.select().from(schema.users)
-      .where(eq(schema.users.username, username));
-    return result[0];
+    return (await db.select().from(schema.users).where(eq(schema.users.username, username)))[0];
   }
 
   async getUserByEmail(email: string) {
-    const result = await db.select().from(schema.users)
-      .where(eq(schema.users.email, email));
-    return result[0];
+    return (await db.select().from(schema.users).where(eq(schema.users.email, email)))[0];
   }
 
   async createUser(user: schema.InsertUser) {
     const hashedPassword = await hashPassword(user.password);
-    const { username, email, firstName, lastName } = user;
-    try {
-        const result = await db.insert(schema.users)
-            .values({
-                username,
-                email,
-                password: hashedPassword,
-                firstName,
-                lastName,
-            })
-            .returning();
-    return result[0];
-    } catch (error) {
-        console.error("Error creating user:", error);
-        throw error;
-    }
+    const [created] = await db.insert(schema.users)
+      .values({ ...user, password: hashedPassword })
       .returning();
-    return result[0];
+    return created;
   }
 
-  async updateUserOnlineStatus(userId: number, isOnline: boolean) {
-    const result = await db.update(schema.users)
+  async updateUserOnlineStatus(id: number, isOnline: boolean) {
+    const [u] = await db.update(schema.users)
       .set({ isOnline: schema.convertHelpers.toDbBoolean(isOnline) })
-      .where(eq(schema.users.id, userId))
+      .where(eq(schema.users.id, id))
       .returning();
-    return result[0];
+    return u;
   }
 
-  async listUsers() {
-    return await db.select().from(schema.users);
+  listUsers() {
+    return db.select().from(schema.users);
   }
 
-  // Message operations
+  /* ───────────── Messages ────────────── */
+
   async getMessage(id: number) {
-    const result = await db.select().from(schema.messages)
-      .where(eq(schema.messages.id, id));
-    return result[0];
+    return (await db.select().from(schema.messages).where(eq(schema.messages.id, id)))[0];
   }
 
-  async getDirectMessages(senderId: number, receiverId: number) {
-    return await db.select().from(schema.messages)
-      .where(
-        and(
-          eq(schema.messages.senderId, senderId),
-          eq(schema.messages.receiverId, receiverId)
-        )
-      )
+  getDirectMessages(senderId: number, receiverId: number) {
+    return db.select().from(schema.messages)
+      .where(and(
+        eq(schema.messages.senderId, senderId),
+        eq(schema.messages.receiverId, receiverId),
+      ))
       .orderBy(desc(schema.messages.timestamp));
   }
 
-  async createMessage(insertMessage: schema.InsertMessage) {
-    const result = await db.insert(schema.messages)
-      .values({
-        ...insertMessage,
-        timestamp: schema.convertHelpers.toDbDate(new Date(insertMessage.timestamp))
-      })
+  async createMessage(message: schema.InsertMessage) {
+    const [m] = await db.insert(schema.messages)
+      .values({ ...message, timestamp: schema.convertHelpers.toDbDate(new Date()) })
       .returning();
-    return result[0];
+    return m;
   }
 
-  async deleteMessage(id: number) {
-    await db.delete(schema.messages)
-      .where(eq(schema.messages.id, id));
+  deleteMessage(id: number) {
+    return db.delete(schema.messages).where(eq(schema.messages.id, id));
   }
 
-  // Group operations
+  /* ───────────── Groups ──────────────── */
+
   async getGroup(id: number) {
-      const result = await db.select().from(schema.groups)
-      .where(eq(schema.groups.id, id));
-    return result[0];
+    return (await db.select().from(schema.groups).where(eq(schema.groups.id, id)))[0];
   }
 
-  async createGroup(insertGroup: schema.InsertGroup) {
-    log("createGroup");
-    const result = await db.insert(schema.groups)
-      .values({ 
-        ...insertGroup,
-        isAnnouncement: schema.convertHelpers.toDbBoolean(!!insertGroup.isAnnouncement)
-      })
+  async createGroup(group: schema.InsertGroup) {
+    const [g] = await db.insert(schema.groups)
+      .values({ ...group, isAnnouncement: schema.convertHelpers.toDbBoolean(!!group.isAnnouncement) })
       .returning();
-    return result[0];
+    return g;
   }
 
-  async listGroups() {
-    return await db.select().from(schema.groups);
+  listGroups() {
+    return db.select().from(schema.groups);
   }
 
   async getGroupsByUserId(userId: number) {
-    log("getGroupsByUserId");
     const members = await db.select().from(schema.groupMembers)
       .where(eq(schema.groupMembers.userId, userId));
-    
-    const groupIds = members.map(m => m.groupId);
-    return await db.select().from(schema.groups)
-      .where(inArray(schema.groups.id, groupIds));
+
+    return db.select().from(schema.groups)
+      .where(inArray(schema.groups.id, members.map(m => m.groupId)));
   }
 
-  async getAnnouncementGroups() {
-    log("getAnnouncementGroups");
-    return await db.select().from(schema.groups)
-      .where(eq(schema.groups.isAnnouncement, 1));
-  }
+  /* ───────────── Group members ───────── */
 
-  // Group member operations
-  async addGroupMember(insertMember: schema.InsertGroupMember) {
-    const result = await db.insert(schema.groupMembers)
-      .values({
-        ...insertMember,
-        isAdmin: schema.convertHelpers.toDbBoolean(!!insertMember.isAdmin)
-      })
+  async addGroupMember(member: schema.InsertGroupMember) {
+    const [gm] = await db.insert(schema.groupMembers)
+      .values({ ...member, isAdmin: schema.convertHelpers.toDbBoolean(!!member.isAdmin) })
       .returning();
-    return result[0];
+    return gm;
   }
 
-  async getGroupMembers(groupId: number) {
-    return await db.select().from(schema.groupMembers)
+  getGroupMembers(groupId: number) {
+    return db.select().from(schema.groupMembers)
       .where(eq(schema.groupMembers.groupId, groupId));
   }
 
   async isUserInGroup(userId: number, groupId: number) {
-    const result = await db.select().from(schema.groupMembers)
-      .where(
-        and(
-          eq(schema.groupMembers.userId, userId),
-          eq(schema.groupMembers.groupId, groupId)
-        )
-      );
-    return result.length > 0;
+    const found = await db.select().from(schema.groupMembers)
+      .where(and(
+        eq(schema.groupMembers.userId, userId),
+        eq(schema.groupMembers.groupId, groupId),
+      ));
+    return found.length > 0;
   }
 
-  // Request operations
-  async getRequest(id: number): Promise<schema.Request | undefined> {
-    const result = await db.select().from(schema.requests)
-      .where(eq(schema.requests.id, id));
-    return result[0];
+  /* ───────────── Requests ────────────── */
+
+  async getRequest(id: number) {
+    return (await db.select().from(schema.requests).where(eq(schema.requests.id, id)))[0];
   }
 
-  async createRequest(insertRequest: schema.InsertRequest): Promise<schema.Request> {
-    const result = await db.insert(schema.requests)
-      .values(insertRequest)
-      .returning();
-    return result[0];
+  async createRequest(r: schema.InsertRequest) {
+    const [req] = await db.insert(schema.requests).values(r).returning();
+    return req;
   }
 
-  async updateRequestStatus(id: number, status: string): Promise<schema.Request | undefined> {
-    const result = await db.update(schema.requests)
+  async updateRequestStatus(id: number, status: string) {
+    const [req] = await db.update(schema.requests)
       .set({ requestStatus: status })
       .where(eq(schema.requests.id, id))
       .returning();
-    return result[0];
+    return req;
   }
 
-  async getUserRequests(userId: number): Promise<schema.Request[]> {
-    return await db.select().from(schema.requests)
-      .where(eq(schema.requests.creatorId, userId))
-      .orderBy(desc(schema.requests.createdAt));
-  }
+  /* ───────────── Wiki ────────────────── */
 
-  async getAssignedRequests(userId: number): Promise<schema.Request[]> {
-    log("getAssignedRequests");
-    return await db.select().from(schema.requests)
-      .where(eq(schema.requests.assigneeId, userId))
-      .orderBy(desc(schema.requests.createdAt));
-  }
-
-  async listRequests(): Promise<schema.Request[]> {
-    return await db.select().from(schema.requests)
-      .orderBy(desc(schema.requests.createdAt));
-  }
-
-  async updateRequestComplete(
-    requestId: number,
-    updateFields: Partial<schema.Request>,
-  ): Promise<schema.Request> {
-    const result = await db.update(schema.requests)
-      .set(updateFields)
-      .where(eq(schema.requests.id, requestId))
-      .returning();
-    return result[0];
-  }
-
-  // Wiki operations
   async getWikiEntry(id: number) {
-    const result = await db.select().from(schema.wikiEntries)
-      .where(eq(schema.wikiEntries.id, id));
-    return result[0];
+    return (await db.select().from(schema.wikiEntries).where(eq(schema.wikiEntries.id, id)))[0];
   }
 
-  async createWikiEntry(insertEntry: schema.InsertWikiEntry) {
-    log("createWikiEntry");
+  async createWikiEntry(entry: schema.InsertWikiEntry) {
     const now = new Date();
-    const result = await db.insert(schema.wikiEntries)
-      .values({
-        ...insertEntry,
-        createdAt: now,
-        updatedAt: now
-      }) 
+    const [e] = await db.insert(schema.wikiEntries)
+      .values({ ...entry, createdAt: now, updatedAt: now })
       .returning();
-    return result[0];
+    return e;
   }
 
-  async updateWikiEntry(id: number, updateFields: Partial<schema.WikiEntry>) {
-    const result = await db.update(schema.wikiEntries)
-      .set({
-        ...updateFields,
-        updatedAt: new Date()
-      })
+  async updateWikiEntry(id: number, patch: Partial<schema.WikiEntry>) {
+    const [e] = await db.update(schema.wikiEntries)
+      .set({ ...patch, updatedAt: new Date() })
       .where(eq(schema.wikiEntries.id, id))
       .returning();
-    return result[0];
-  }
-
-  async deleteWikiEntry(id: number) {
-    await db.delete(schema.wikiEntries)
-      .where(eq(schema.wikiEntries.id, id));
-  }
-
-  async listWikiEntries() {
-    return await db.select().from(schema.wikiEntries)
-      .orderBy(asc(schema.wikiEntries.title));
-  }
-
-  async getWikiEntriesByCategory(category: string) {
-    log("getWikiEntriesByCategory");
-    return await db.select().from(schema.wikiEntries)
-      .where(eq(schema.wikiEntries.category, category))
-      .orderBy(asc(schema.wikiEntries.title));
-  }
-
-  // Wiki category operations
-  async getWikiCategory(id: number): Promise<schema.WikiCategory | undefined> {
-    const result = await db.select().from(schema.wikiCategories)
-      .where(eq(schema.wikiCategories.id, id));
-    return result[0];
-  }
-
-  async createWikiCategory(insertCategory: schema.InsertWikiCategory): Promise<schema.WikiCategory> {
-    const result = await db.insert(schema.wikiCategories)
-      .values(insertCategory)
-      .returning();
-    return result[0];
-  }
-
-  async updateWikiCategory(id: number, updateFields: Partial<schema.WikiCategory>): Promise<schema.WikiCategory> {
-    const result = await db.update(schema.wikiCategories)
-      .set({...updateFields})
-      .where(eq(schema.wikiCategories.id, id)) 
-      .returning();
-    return result[0];
-  }
-
-  async deleteWikiCategory(id: number): Promise<void> {
-    await db.delete(schema.wikiCategories)
-      .where(eq(schema.wikiCategories.id, id));
-  }
-
-  async listWikiCategories(): Promise<schema.WikiCategory[]> {
-    return await db.select().from(schema.wikiCategories)
-      .orderBy(asc(schema.wikiCategories.name));
-  }
-
-  async getWikiCategoriesByParent(parentId: number): Promise<schema.WikiCategory[]> {
-      log("getWikiCategoriesByParent");
-    return await db.select().from(schema.wikiCategories)
-      .where(eq(schema.wikiCategories.parentId, parentId))
-      .orderBy(asc(schema.wikiCategories.name));
+    return e;
   }
 }
 
+/* singleton */
 export const storage = new PgStorage();
