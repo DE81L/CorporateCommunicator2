@@ -88,7 +88,6 @@ export default function AuthPage() {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
               <FormField
-                control={form.control}
                 name="username"
                 render={({ field }) => (
                   <FormItem>
@@ -101,7 +100,6 @@ export default function AuthPage() {
                 )}
               />
               <FormField
-                control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
@@ -160,11 +158,12 @@ export default function AuthPage() {
     const onSubmit = (data: z.infer<typeof registerSchema>) => registerMutation.mutate(data)
 
     return (
-      <div className='p-4'>
+      <Form {...form}>
+        <Card className='p-4'>
         <CardHeader>
           <CardTitle>{t('auth.register')}</CardTitle>
           <CardDescription>{t('auth.registerDescription')}</CardDescription>
-        </CardHeader>
+         </CardHeader>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
             <FormField
@@ -181,7 +180,6 @@ export default function AuthPage() {
                 )}
               />
               <FormField
-                control={form.control}
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
@@ -194,7 +192,6 @@ export default function AuthPage() {
                 )}
               />
               <FormField
-                control={form.control}
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
@@ -207,7 +204,6 @@ export default function AuthPage() {
                 )}
               />
               <FormField
-                control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
@@ -220,7 +216,6 @@ export default function AuthPage() {
                 )}
               />
               <FormField
-                control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
@@ -233,7 +228,6 @@ export default function AuthPage() {
                 )}
               />
               <FormField
-                control={form.control}
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
@@ -250,8 +244,9 @@ export default function AuthPage() {
               </Button>
             </CardContent>
           </form>
-        
-      </div>
+        </Card>
+      </Form>
+
     );
   }
 }
