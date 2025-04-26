@@ -178,7 +178,7 @@ export class PgStorage implements IStorage {
   async createGroup(insertGroup: schema.InsertGroup) {
     log("createGroup");
     const result = await db.insert(schema.groups)
-      .values({
+      .values({ 
         ...insertGroup,
         isAnnouncement: schema.convertHelpers.toDbBoolean(!!insertGroup.isAnnouncement)
       })
@@ -348,8 +348,8 @@ export class PgStorage implements IStorage {
 
   async updateWikiCategory(id: number, updateFields: Partial<schema.WikiCategory>): Promise<schema.WikiCategory> {
     const result = await db.update(schema.wikiCategories)
-      .set(updateFields)
-      .where(eq(schema.wikiCategories.id, id))
+      .set({...updateFields})
+      .where(eq(schema.wikiCategories.id, id)) 
       .returning();
     return result[0];
   }
