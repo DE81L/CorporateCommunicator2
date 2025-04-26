@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { WebSocketServer, WebSocket } from "ws";
-import { setupAuth } from "./auth";
+import { hashPassword, setupAuth } from "./auth";
 import {
   insertMessageSchema,
   insertGroupSchema,
@@ -43,6 +43,24 @@ export interface User {
 export type UserWithoutPassword = Omit<User, "password">;
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  //Register API
+  app.post("/api/register", async (req, res) => {
+    try {
+      const newUser = await storage.createUser({
+        ...req.body,
+      });
+      console.log(`[API] /api/register: User registered:`, newUser);
+
+      res.status(201).json({ message: "Registration successful" });
+    } catch (error) {
+      console.error(`[API] /api/register: Registration failed:`, error);
+
+      res.status(400).json({ message: "Registration failed" });
+    }
+  });
+
+
+
   console.log(`registerRoutes`);
   const httpServer = createServer(app);
   setupAuth(app);

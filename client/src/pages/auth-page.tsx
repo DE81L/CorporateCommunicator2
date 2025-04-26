@@ -155,7 +155,10 @@ export default function AuthPage() {
       },
     })
 
-    const onSubmit = (data: z.infer<typeof registerSchema>) => registerMutation.mutate(data)
+    const onSubmit = (data: z.infer<typeof registerSchema>) => {
+      const { confirmPassword, ...payload } = data;
+      registerMutation.mutate(payload);
+    }
 
     return (
       <Form {...form}>

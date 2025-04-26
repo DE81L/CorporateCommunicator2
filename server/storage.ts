@@ -6,7 +6,6 @@ import { Store } from "express-session";
 import * as schema from "../shared/electron-shared/schema"; import { checkColumnExists } from "./db";
 import { hashPassword } from "./auth"; 
 import { db } from "./db"; // Updated import
-import { log } from "console";
 
 const MemoryStore = createMemoryStore(session);
 
@@ -102,12 +101,24 @@ export class PgStorage implements IStorage {
     return result[0];
   }
 
-  async createUser(insertUser: schema.InsertUser) {
-    const hashedPassword = await hashPassword(insertUser.password);
-    const userToInsert = { ...insertUser, password: hashedPassword };
-    const result = await db.insert(schema.users)
-    
-      .values(userToInsert)
+  async createUser(user: schema.InsertUser) {
+    const hashedPassword = await hashPassword(user.password);
+    const { username, email, firstName, lastName } = user;
+    try {
+        const result = await db.insert(schema.users)
+            .values({
+                username,
+                email,
+                password: hashedPassword,
+                firstName,
+                lastName,
+            })
+            .returning();
+    return result[0];
+    } catch (error) {
+        console.error("Error creating user:", error);
+        throw error;
+    }
       .returning();
     return result[0];
   }
