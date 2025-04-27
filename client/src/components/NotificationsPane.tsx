@@ -1,4 +1,3 @@
-tsx
 import { useState } from "react";
 import {
   Dialog,
