@@ -113,7 +113,7 @@ export function setupAuth(app: Express) {
 
       const hashedPassword = await hashPassword(req.body.password);
       const newUser = await storage.createUser({
-         ...req.body,
+        ...req.body,
         password: hashedPassword,
       });
       req.login(newUser, (err) => {

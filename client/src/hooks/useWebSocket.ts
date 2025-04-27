@@ -39,7 +39,10 @@ export function useWebSocket(): WebSocketHook {
       return;
     }
 
-    const base = api?.isElectron ? `ws://localhost:3000` : `${window.location.origin.replace(/^http/, "ws")}`;
+    const base =
+    api?.isElectron
+      ? `ws://localhost:3000/ws`
+      : `${window.location.origin.replace(/^http/, "ws")}/ws`;
 
     socket.current = new WebSocket(`${base}?userId=${user.id}`);
 
