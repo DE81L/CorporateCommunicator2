@@ -1,8 +1,8 @@
 import { Express, Request, Response } from 'express';
 import { storage } from "./storage";
-import { db } from "./db";
-import { sql } from "drizzle-orm";
-import * as schema from '@shared/electron-shared/schema';
+
+
+
 
 export function setupAutoAuth(app: Express) {
   app.get('/api/random-user', async (req: Request, res: Response) => {
@@ -13,7 +13,8 @@ export function setupAutoAuth(app: Express) {
       }
       const randomIndex = Math.floor(Math.random() * users.length);
       const randomUser = users[randomIndex];
-      const { password, ...safeUser} = randomUser;
+      const { password, ...safeUser } = randomUser;
+
 
       // Fix: Add proper error handling for login
       req.login(randomUser, (err) => {

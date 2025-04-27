@@ -47,7 +47,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/register", async (req, res) => {
     try {
       const newUser = await storage.createUser({
-        ...req.body,
+        ...req.body
       });
       console.log(`[API] /api/register: User registered:`, newUser);
 
@@ -127,9 +127,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Don't send password hash
       const safeUsers = users.map((user) => {
         const { password, ...safeUser} = user;
-          return safeUser;
+        return safeUser;
       });
-      res.json(safeUsers);
+        res.json(safeUsers);
     } catch (error) {
       console.error("Error fetching users from SQL Server:", error);
       res.status(500).json({ message: "Error fetching users" });
@@ -144,7 +144,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Exclude password from the user data
         console.log('[API] /api/user: req.user contents:', req.user);
 
-        const { password, ...userWithoutPassword } = req.user as User;
+          const { password, ...userWithoutPassword } = req.user as User;
 
 
         return res.json(userWithoutPassword);
@@ -265,8 +265,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const memberData = {
         groupId,
-        userId: req.body.userId,
-        isAdmin: req.body.isAdmin || false,
+          userId: req.body.userId,
+          isAdmin: req.body.isAdmin || false,
       };
 
       // Check if user is already in the group
@@ -333,7 +333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const requestData = {
-        ...req.body,
+          ...req.body,
         creatorId: req.user!.id,
       };
 
@@ -367,7 +367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const requestId = parseInt(req.params.requestId);
-      const { grade, reviewText } = req.body;
+        const { grade, reviewText } = req.body;
 
       if (isNaN(requestId)) {
         return res.status(400).json({ message: "Invalid request ID" });
@@ -401,7 +401,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res
           .status(403)
           .json({ message: "Not authorized to update this request" });
-      }
+        }
 
       const updateData: Partial<{ grade: number | null, reviewText: string | null }> = {
         grade,
@@ -497,14 +497,14 @@ function addWikiRoutes(app: Express) {
       const user = req.user as User;
       if (!user || user.isAdmin !== 1) {
         return res.status(403).json({ message: "Admin privileges required" });
-      }
+        }
 
         const entryData = {
-          ...req.body,
-          creatorId: user.id,
-          lastEditorId: user.id,
-          createdAt: new Date(), // Use current date/time
-          updatedAt: new Date(), // Use current date/time
+            ...req.body,
+            creatorId: user.id,
+            lastEditorId: user.id,
+            createdAt: new Date(), // Use current date/time
+            updatedAt: new Date(), // Use current date/time
         };
 
       const parsedEntry = insertWikiEntrySchema.parse(entryData);
@@ -528,17 +528,17 @@ function addWikiRoutes(app: Express) {
       const user = req.user as User;
       if (!user || user.isAdmin !== 1) {
         return res.status(403).json({ message: "Admin privileges required" });
-      }
+        }
 
       const entryId = parseInt(req.params.id);
       if (isNaN(entryId)) {
         return res.status(400).json({ message: "Invalid entry ID" });
-      }
+        }
 
       const existingEntry = await storage.getWikiEntry(entryId);
       if (!existingEntry) {
         return res.status(404).json({ message: "Wiki entry not found" });
-      }
+        }
 
         const updateData = {
           ...req.body,
@@ -565,12 +565,12 @@ function addWikiRoutes(app: Express) {
       const user = req.user as User;
       if (!user || user.isAdmin !== 1) {
         return res.status(403).json({ message: "Admin privileges required" });
-      }
+        }
 
       const entryId = parseInt(req.params.id);
       if (isNaN(entryId)) {
         return res.status(400).json({ message: "Invalid entry ID" });
-      }
+        }
 
       const existingEntry = await storage.getWikiEntry(entryId);
       if (!existingEntry) {
@@ -626,14 +626,14 @@ function addWikiRoutes(app: Express) {
       const categoryId = parseInt(req.params.id);
       if (isNaN(categoryId)) {
         return res.status(400).json({ message: "Invalid category ID" });
-      }
+        }
 
       const category = await storage.getWikiCategory(categoryId);
       if (!category) {
         return res.status(404).json({ message: "Wiki category not found" });
-      }
+        }
 
-      const entries = await storage.getWikiEntriesByCategory(category.name);
+        const entries = await storage.getWikiEntriesByCategory(category.name);
       res.json(entries);
     } catch (error) {
       res.status(500).json({ message: "Error fetching category entries" });
@@ -649,13 +649,13 @@ function addWikiRoutes(app: Express) {
       const user = req.user as User;
       if (!user || user.isAdmin !== 1) {
         return res.status(403).json({ message: "Admin privileges required" });
-      }
+        }
 
         const categoryData = {
           ...req.body,
           createdAt: new Date(), // Use current date/time
           updatedAt: new Date(), // Use current date/time
-        };
+        }
 
         const parsedCategory = insertWikiCategorySchema.parse(categoryData);
       const category = await storage.createWikiCategory(parsedCategory);
@@ -678,14 +678,14 @@ function addWikiRoutes(app: Express) {
       const user = req.user as User;
       if (!user || user.isAdmin !== 1) {
         return res.status(403).json({ message: "Admin privileges required" });
-      }
+        }
 
       const categoryId = parseInt(req.params.id);
       if (isNaN(categoryId)) {
         return res.status(400).json({ message: "Invalid category ID" });
-      }
+        }
 
-      const existingCategory = await storage.getWikiCategory(categoryId);
+        const existingCategory = await storage.getWikiCategory(categoryId);
       if (!existingCategory) {
         return res.status(404).json({ message: "Wiki category not found" });
       }
@@ -714,14 +714,14 @@ function addWikiRoutes(app: Express) {
       const user = req.user as User;
       if (!user || user.isAdmin !== 1) {
         return res.status(403).json({ message: "Admin privileges required" });
-      }
+        }
 
       const categoryId = parseInt(req.params.id);
       if (isNaN(categoryId)) {
         return res.status(400).json({ message: "Invalid category ID" });
-      }
+        }
 
-      const existingCategory = await storage.getWikiCategory(categoryId);
+        const existingCategory = await storage.getWikiCategory(categoryId);
       if (!existingCategory) {
         return res.status(404).json({ message: "Wiki category not found" });
       }

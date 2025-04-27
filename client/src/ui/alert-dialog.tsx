@@ -1,13 +1,13 @@
 // server/storage.ts
-
 import { eq, and, desc, asc, inArray } from 'drizzle-orm';
 import session from 'express-session';
 import createMemoryStore from 'memorystore';
 import { Store } from 'express-session';
 
-import * as schema from '../shared/electron-shared/schema'; 
+import * as schema from '../shared/electron-shared/schema';
 import { db } from './db';
 import { hashPassword } from './auth';
+
 
 const MemoryStore = createMemoryStore(session);
 
@@ -78,8 +78,6 @@ export class PgStorage implements IStorage {
   }
 
   async createUser(user: schema.InsertUser) {
-    const { password, ...userWithoutPassword } = user;
-    
     const hashedPassword = await hashPassword(user.password);
     const [created] = await db.insert(schema.users)
       .values({ ...user, password: hashedPassword })
@@ -180,8 +178,8 @@ export class PgStorage implements IStorage {
   }
 
   async createRequest(r: schema.InsertRequest) {
-    const [req] = await db.insert(schema.requests).values(r).returning();
-   return req;
+    const [req] = await db.insert(schema.requests).values({ ...r }).returning();
+    return req;
   }
 
   async updateRequestStatus(id: number, status: string) {
