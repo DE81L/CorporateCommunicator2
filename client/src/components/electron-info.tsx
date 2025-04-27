@@ -3,7 +3,7 @@ import { useElectron } from "@/hooks/use-electron";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useWebSocket } from "@/lib/useWebSocket";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import {
   Cpu, 
   Database,

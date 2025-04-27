@@ -54,7 +54,6 @@ export default function Header({ toggleSidebar }: HeaderProps) {
               
           </Button>
           <NotificationsPane open={open} onOpenChange={setOpen} />
-        </div>
       </div>
     </header>
   );

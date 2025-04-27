@@ -1,0 +1,1 @@
+export const useElectron = () => ({ isElectron: window.navigator.userAgent.includes('Electron'), api });

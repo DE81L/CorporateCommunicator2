@@ -9,7 +9,7 @@ import ContactsSection from "@/pages/contacts-section";
 import SettingsSection from "@/pages/settings-section";
 import WikiSection from "@/pages/wiki-section";
 import CallModal from "@/components/call-modal";
-import { useWebSocket } from "@/lib/useWebSocket";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import { SectionType } from "@/types/sections";
 
 export default function HomePage() {

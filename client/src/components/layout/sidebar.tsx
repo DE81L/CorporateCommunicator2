@@ -9,11 +9,12 @@ import {
   ContactIcon,
   SettingsIcon,
   XIcon,
-  WifiIcon,
-    WifiOffIcon,
-    LucideIcon,
-    BookOpenIcon,
-    LogOutIcon
+  WifiIcon,WifiOffIcon,
+  LucideIcon,
+  BookOpenIcon,
+  LogOutIcon,
+
+  
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge, BadgeProps } from "@/components/ui/badge";
@@ -25,7 +26,8 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuItem
-  } from "@/components/ui/dropdown-menu";
+  } from "@/components/ui/dropdown-menu"
+
 interface SidebarProps {
   activeSection: SectionType;
   setActiveSection: (section: SectionType) => void;
@@ -42,7 +44,7 @@ export default function Sidebar({
   connectionStatus,
 }: SidebarProps) {
   const { user } = useAuth();
-    const { t } = useTranslation();
+  const { t } = useTranslation();
     const {setLocation, handleLogout} = useAuth()
 
   if (!user) return null;
@@ -58,7 +60,7 @@ export default function Sidebar({
     id: SectionType;
     icon: LucideIcon;
     label: string;
-      badge?: number;
+    badge?: number;
   }> = [
     {
       id: "messages",
@@ -127,7 +129,6 @@ export default function Sidebar({
             </div>
           ) : (
             <div className="flex items-center text-red-600">
-
               <WifiOffIcon className="h-3 w-3 mr-1" />
               <span>Disconnected</span>
             </div>
@@ -149,7 +150,7 @@ export default function Sidebar({
             >
               <item.icon className="mr-3 h-5 w-5" />
 
-              <span>{item.label}</span>
+              <span>{item.label}</span> 
               {item.badge ? (
                 <Badge className="ml-auto" variant="destructive">
                   {item.badge}
@@ -161,46 +162,42 @@ export default function Sidebar({
 
         {/* Profile dropdown section */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-        <DropdownMenu>
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
-            <button className="flex w-full items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
-                {user.firstName[0]}
-                {user.lastName[0]}
-            </div>
+              <button className="flex w-full items-center gap-3">
+                <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
+                  {user.firstName[0]}
+                  {user.lastName[0]}
+                </div>
                 <div className="flex-1 text-left">
-
-          <p className="text-sm font-medium">
-            {user.firstName} {user.lastName}
-          </p>
-          <p className="text-xs text-gray-500 truncate">{user.email}</p>
-        </div>
-            </button>
+                  <p className="text-sm font-medium">
+                    {user.firstName} {user.lastName}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                </div>
+              </button>
             </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="start">
-                    <DropdownMenuLabel>{user.username}</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                        {/* <LanguageSwitcher />          reuse existing component */}
+            <DropdownMenuContent className="w-56" align="start">
+              <DropdownMenuLabel>{user.username}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {/* <LanguageSwitcher />          reuse existing component */}
               <p className="text-sm font-medium">
                 {user.firstName} {user.lastName}
               </p>
               <p className="text-xs text-gray-500 truncate">{user.email}</p>
-            </div>
-          </div>
-        </div>
-                    {/* Settings */}
-                    <DropdownMenuItem onClick={() => setLocation("/settings")}>
-                        <SettingsIcon className="mr-2 h-4 w-4" />
-                        {t("sidebar.nav.settings")}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    {/* Logout */}
-                    <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
-                        <LogOutIcon className="mr-2 h-4 w-4" />
-                        {t("auth.logout")}
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-        </DropdownMenu>
+              {/* Settings */}
+              <DropdownMenuItem onClick={() => setLocation("/settings")}>
+                <SettingsIcon className="mr-2 h-4 w-4" />
+                {t("sidebar.nav.settings")}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {/* Logout */}
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+                <LogOutIcon className="mr-2 h-4 w-4" />
+                {t("auth.logout")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </aside>
     </>
