@@ -87,6 +87,11 @@ export default function Sidebar({
       badge: 2,
     },
     { id: "contacts", icon: ContactIcon, label: t("sidebar.nav.contacts") },
+     {
+      id: "settings",
+      icon: SettingsIcon,
+      label: t("sidebar.nav.settings"),
+    },
     { id: "wiki", icon: BookOpenIcon, label: t("sidebar.nav.wiki") || "Wiki" },
   ];
 
@@ -185,22 +190,20 @@ export default function Sidebar({
              
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 bg-white border" align="start">
-              <DropdownMenuLabel className="text-sm">
-                  {user.username}
+              <DropdownMenuLabel className="font-normal text-sm">
+                <p className="text-sm font-medium">
+                  {user.firstName} {user.lastName}
+                </p>
+                <p className="text-xs text-gray-500 truncate">{user.email}</p>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {/* <LanguageSwitcher />          reuse existing component */}
-              <p className="text-sm font-medium">
-                {user.firstName} {user.lastName}
-              </p>
-              <p className="text-xs text-gray-500 truncate">{user.email}</p>
-
               <DropdownMenuItem onClick={() => setLocation("/settings")}>
                 <SettingsIcon className="mr-2 h-4 w-4" />
                 {t("sidebar.nav.settings")}
               </DropdownMenuItem>
               
-             
+
               <DropdownMenuSeparator />
              
               <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">

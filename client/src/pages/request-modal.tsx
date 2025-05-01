@@ -1,21 +1,27 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
-  Form, FormField, FormItem, FormLabel, FormControl, FormMessage
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Input, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Textarea } from "@/components/ui";
 import { Loader2, Plus } from "lucide-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
-
-const schema = z.object({
-  cabinet: z.string().min(1, "Укажите кабинет"),
-  description: z.string().min(1, "Опишите проблему"),
-  deadline: z.string().optional(),
+import { useToast, useElectron } from "@/hooks";
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -27,18 +33,39 @@ interface Props {
 }
 
 export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+  const { user, subdivisions } = useElectron()
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: { cabinet: "", description: "", deadline: "" },
+  const taskOptions = [
+    { id: "1", name: "Не работает принтер" },
+    { id: "2", name: "Нет интернета" },
+    { id: "3", name: "Не работает проектор" },
+    { id: "4", name: "другое" },
+  ]
+
+  const requestSchema = z.object({
+    receiverSubdivisionId: z.coerce.number(),
+    cabinet: z.string().optional(),
+    taskId: z.string().min(1, "Выберите задачу"),
+    customTitle: z.string().optional(),
+    comment: z.string().optional(),
+  });
+
+  type RequestFormValues = z.infer<typeof requestSchema>;
+
+  const form = useForm<RequestFormValues>({
+    resolver: zodResolver(requestSchema),
+    defaultValues: {
+      receiverSubdivisionId: subdivisions[0]?.id ?? 0,
+      taskId: taskOptions[0]?.id ?? "",
+    },
   });
 
   const createRequest = useMutation({
-    mutationFn: async (data: FormValues) => {
+    mutationFn: async (data: RequestFormValues) => {
       const payload = {
-        ...data, // Spread form values
+        ...data,
         numberOfRequest: crypto.randomUUID().slice(0, 8),
         requestStatus: 'новая',
         grade: null, // Initialize grade
@@ -65,13 +92,13 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
       }),
   });
 
+  const isOtherSelected = form.watch("taskId") === "4";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {/* Trigger slot lets RequestsSection wrap this if it wants, but we never render it here */}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Новая заявка</DialogTitle>
-          <DialogDescription>Заполните поля и нажмите «Создать».</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -79,49 +106,81 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
             onSubmit={form.handleSubmit((data) => createRequest.mutate(data))}
             className="space-y-4"
           >
-            <FormField
-              control={form.control}
-              name="cabinet"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Кабинет</FormLabel>
+            <FormField control={form.control} name="receiverSubdivisionId" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Получатель</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value.toString()}>
                   <FormControl>
-                    <Input placeholder="301-А" {...field} />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите подразделение" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectGroup>
+                      {subdivisions.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="phone" render={() => (
+              <FormItem>
+                <FormLabel>Номер телефона</FormLabel>
+                <FormControl>
+                  <Input value={user?.phone} disabled />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="cabinet" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Кабинет (опционально)</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="301-А" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="taskId" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Задача</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите задачу" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectGroup>
+                      {taskOptions.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )} />
+            {isOtherSelected && (
+              <FormField control={form.control} name="customTitle" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Название задачи</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Введите название задачи" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="deadline"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Дедлайн (дата)</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Описание</FormLabel>
-                  <FormControl>
-                    <Textarea rows={4} placeholder="Подробно опишите проблему" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
+              )} />
+            )}
+             <FormField control={form.control} name="comment" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Комментарий</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Добавьте комментарий" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+          <DialogFooter>
               <Button
                 type="submit"
                 disabled={createRequest.isPending}
@@ -141,7 +200,7 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
               </Button>
             </DialogFooter>
           </form>
-        </Form>
+        </Form> 
       </DialogContent>
     </Dialog>
   );

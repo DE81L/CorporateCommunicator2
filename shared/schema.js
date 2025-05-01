@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, date, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, date, timestamp, foreignKey } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 // Define special null-like values
@@ -168,3 +168,50 @@ export const insertWikiCategorySchema = z.object({
     createdAt: z.string(),
     updatedAt: z.string(),
 });
+
+export const subdivisions = pgTable("subdivisions", {
+    id: serial("id").primaryKey(),
+    name: text("name").notNull(),
+});
+
+export const tasksCatalog = pgTable("tasks_catalog", {
+    id: serial("id").primaryKey(),
+    title: text("title").notNull(),
+});
+
+export const requests = pgTable("requests", {
+    id: serial("id").primaryKey(),
+    senderId: integer("sender_id")
+        .notNull()
+        .references(() => users.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+    receiverSubdivisionId: integer("receiver_subdivision_id")
+        .notNull()
+        .references(() => subdivisions.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+    cabinet: text("cabinet").notNull(),
+    phone: text("phone").notNull(),
+    taskId: integer("task_id")
+        .notNull()
+        .references(() => tasksCatalog.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+    customTitle: text("custom_title"),
+    comment: text("comment"),
+    status: text("status").notNull(),
+    createdAt: timestamp("created_at").notNull(),
+    finishedAt: timestamp("finished_at"),
+}, (table) => {
+  return {
+    senderIdIdx: foreignKey({
+      columns: [table.senderId],
+      foreignColumns: [users.id]
+    })
+  }
+});
+

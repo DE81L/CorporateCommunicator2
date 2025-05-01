@@ -34,7 +34,9 @@ export function useWebSocket(): WebSocketHook {
   const [lastMessage, setLastMessage] = useState<WebSocketMessageData | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<string>("connecting")
   const [readyState, setReadyState] = useState<number>(-1);
-  useEffect(() => {
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openSocket = useCallback(() => {
     if (!user) {
       return;
     }
@@ -42,18 +44,16 @@ export function useWebSocket(): WebSocketHook {
     const base = apiUrl.replace(/^http/, "ws") + "/ws";
     const url = `${base}?userId=${user.id}`
     console.log(url)
-    
-    socket.current = new WebSocket(url);
 
-    socket.current.addEventListener("open", () => {        
-        setConnectionStatus("open");
+    socket.current = new WebSocket(url);
+    socket.current.addEventListener("open", () => {
+      setConnectionStatus("open");
       setReadyState(socket.current?.readyState ?? -1);
       console.log("WebSocket connected");
       socket.current?.send(JSON.stringify({ type: "auth", userId: user.id }));
-        // immediately request offline messages
-        socket.current?.send(JSON.stringify({ type: "getOffline", userId: user.id }));
+      // immediately request offline messages
+      socket.current?.send(JSON.stringify({ type: "getOffline", userId: user.id }));
     });
-
 
     socket.current.addEventListener("message", (event: MessageEvent) => {
       if (socket.current) {
@@ -61,22 +61,22 @@ export function useWebSocket(): WebSocketHook {
           const data: WebSocketMessageData = JSON.parse(event.data);
           setReadyState(socket.current.readyState);
           console.log("Received WebSocket message:", data, "readyState:", socket.current.readyState);
-          
-          if(data.type === "chat"){
-            setLastMessage(data)
-          }else if(data.type === "offlineBatch"){
-              // process offline messages
-              data.messages?.forEach((msg: any) => setLastMessage(msg));
 
-              // confirm receipt
-              const ids = data.messages?.map((m: any) => m.msgId);
-              socket.current.send(JSON.stringify({ type: "ackOffline", msgIds: ids }));
+          if (data.type === "chat") {
+            setLastMessage(data)
+          } else if (data.type === "offlineBatch") {
+            // process offline messages
+            data.messages?.forEach((msg: any) => setLastMessage(msg));
+
+            // confirm receipt
+            const ids = data.messages?.map((m: any) => m.msgId);
+            socket.current.send(JSON.stringify({ type: "ackOffline", msgIds: ids }));
           }
           else if (data.type === "startP2P") {
             // initiate direct WebRTC connection...
             console.log("start p2p")
           }
-        
+
         } catch (error) {
           console.error("Error parsing WebSocket message", error);
         }
@@ -93,7 +93,13 @@ export function useWebSocket(): WebSocketHook {
       setConnectionStatus("Closed");
       setReadyState(socket.current?.readyState ?? -1);
       console.log("WebSocket connection closed:", event);
+      if(import.meta.env.DEV){
+        reconnectTimer.current = setTimeout(() => openSocket(), 3000);
+      }
     });
+  }, [user]);
+  useEffect(() => {
+    openSocket();
 
     window.addEventListener("beforeunload", () => {
         socket.current?.send(JSON.stringify({ type: "disconnect" }));
@@ -101,7 +107,11 @@ export function useWebSocket(): WebSocketHook {
       });
 
       return () => socket.current?.close();
-  }, [user]);
+      reconnectTimer.current && clearTimeout(reconnectTimer.current);
+      if (socket.current) {
+        socket.current.close();
+      }
+  }, [user, openSocket]);
 
   const sendMessage = useCallback((message: string, chatId: number) => {
     console.log("Sending WebSocket message:", message, "readyState:", socket.current?.readyState);

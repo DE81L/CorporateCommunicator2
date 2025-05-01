@@ -92,10 +92,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         return await res.json();
       } catch (error) {
-        throw new Error(`Login failed: ${error}`);
+         // Проверяем, является ли ошибка сетевой ошибкой
+         if (error instanceof TypeError && error.message === 'Failed to fetch') {
+          queryClient.invalidateQueries(); // Очищаем кэш при сетевой ошибке
+        }
+        throw error; // Перебрасываем ошибку дальше
       }
-
-    },
+        },
     // --- КОНЕЦ ИЗМЕНЕНИЯ ---
     onSuccess: (loggedInUser) => {
       // Обновляем данные пользователя в кэше React Query

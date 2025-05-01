@@ -8,7 +8,7 @@ import {
   insertGroupSchema,
   insertGroupMemberSchema,
   insertRequestSchema,
-    insertWikiEntrySchema as baseInsertWikiEntrySchema,
+  insertWikiEntrySchema as baseInsertWikiEntrySchema,
     insertWikiCategorySchema as baseInsertWikiCategorySchema,
     convertHelpers
 } from "../shared/electron-shared/schema";
@@ -332,7 +332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(401).json({ message: "Unauthorized" });
 
     try {
-      const requestData = {
+        const requestData = {
           ...req.body,
         creatorId: req.user!.id,
       };
@@ -366,31 +366,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(401).json({ message: "Unauthorized" });
 
     try {
+        const requestId = parseInt(req.params.requestId);
+
+        if (isNaN(requestId)) {
+            return res.status(400).json({ message: "Invalid request ID" });
+        }
       const requestId = parseInt(req.params.requestId);
-        const { grade, reviewText } = req.body;
 
-      if (isNaN(requestId)) {
-        return res.status(400).json({ message: "Invalid request ID" });
-      }
-
-      if (grade !== undefined && (grade < 1 || grade > 5)) {
-        return res
-          .status(400)
-          .json({ message: "Grade must be between 1 and 5" });
-      }
-
-      if (
-        grade !== undefined &&
-        grade < 5 &&
-        (!reviewText || reviewText.trim().length === 0)
-      ) {
-        return res
-          .status(400)
-          .json({ message: "Review text required for grades below 5" });
-      }
-
-      const request = await storage.getRequest(requestId);
-      if (!request) {
+        const request = await storage.getRequest(requestId);
+        if (!request) {
         return res.status(404).json({ message: "Request not found" });
       }
 
@@ -401,12 +385,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res
           .status(403)
           .json({ message: "Not authorized to update this request" });
-        }
+        } 
+        
+        const updateData = { status: "finished" };
 
-      const updateData: Partial<{ grade: number | null, reviewText: string | null }> = {
-        grade,
-        reviewText: grade < 5 ? reviewText : null,
-      };
       const updatedRequest = await storage.updateRequestComplete(requestId, updateData);
 
       res.json(updatedRequest);
@@ -745,7 +727,6 @@ const insertWikiEntrySchema = baseInsertWikiEntrySchema.extend({
     if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
   }, z.date()),
 });
-
 const insertWikiCategorySchema = baseInsertWikiCategorySchema.extend({
   createdAt: z.preprocess((arg) => {
     if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
