@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ColumnsType } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,7 @@ export default function RequestsSection() {
 
   useEffect(() => { load(); }, []);
 
-  const columns: ColumnsType<Request> = [
+  const columns: ColumnDef<Request>[] = [
     { accessorKey: "numberOfRequest", header: "№ заявки" },
     {
       accessorKey: "requestStatus",
