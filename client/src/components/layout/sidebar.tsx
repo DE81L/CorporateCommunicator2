@@ -1,4 +1,5 @@
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth"; // Import useAuth
+import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import {
@@ -17,7 +18,7 @@ import {
   
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge, BadgeProps } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { type SectionType } from "@/types/sections";
 import {
     DropdownMenu,
@@ -26,6 +27,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuItem
+
   } from "@/components/ui/dropdown-menu"
 
 interface SidebarProps {
@@ -43,9 +45,14 @@ export default function Sidebar({
   setIsOpen,
   connectionStatus,
 }: SidebarProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth(); // Use useAuth here
   const { t } = useTranslation();
-    const {setLocation, handleLogout} = useAuth()
+  const [, setLocation] = useLocation();
+  
+  const handleLogout = async () => {
+    await logout();
+    setLocation("/auth");
+  };
 
   if (!user) return null;
 
@@ -79,7 +86,7 @@ export default function Sidebar({
       label: t("sidebar.nav.requests"),
       badge: 2,
     },
-    { id: "contacts", icon: ContactIcon, label: t("sidebar.nav.users") },
+    { id: "contacts", icon: ContactIcon, label: t("sidebar.nav.contacts") },
     { id: "wiki", icon: BookOpenIcon, label: t("sidebar.nav.wiki") || "Wiki" },
   ];
 
@@ -159,39 +166,43 @@ export default function Sidebar({
             </Button>
           ))}
         </nav>
-
         {/* Profile dropdown section */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex w-full items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
-                  {user.firstName[0]}
-                  {user.lastName[0]}
+              <Button variant="ghost" className="flex w-full items-center justify-start gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
+                    {user.firstName[0]}
+                    {user.lastName[0]}
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-medium">
-                    {user.firstName} {user.lastName}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                <div className="flex-1 ">
+                    <p className="text-sm font-medium">
+                      {user.firstName} {user.lastName}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
-              </button>
+              </Button>
+             
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="start">
-              <DropdownMenuLabel>{user.username}</DropdownMenuLabel>
+            <DropdownMenuContent className="w-56 bg-white border" align="start">
+              <DropdownMenuLabel className="text-sm">
+                  {user.username}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {/* <LanguageSwitcher />          reuse existing component */}
               <p className="text-sm font-medium">
                 {user.firstName} {user.lastName}
               </p>
               <p className="text-xs text-gray-500 truncate">{user.email}</p>
-              {/* Settings */}
+
               <DropdownMenuItem onClick={() => setLocation("/settings")}>
                 <SettingsIcon className="mr-2 h-4 w-4" />
                 {t("sidebar.nav.settings")}
               </DropdownMenuItem>
+              
+             
               <DropdownMenuSeparator />
-              {/* Logout */}
+             
               <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                 <LogOutIcon className="mr-2 h-4 w-4" />
                 {t("auth.logout")}
@@ -200,6 +211,6 @@ export default function Sidebar({
           </DropdownMenu>
         </div>
       </aside>
-    </>
+    </> 
   );
 }

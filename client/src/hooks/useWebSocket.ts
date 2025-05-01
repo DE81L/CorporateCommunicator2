@@ -38,13 +38,12 @@ export function useWebSocket(): WebSocketHook {
     if (!user) {
       return;
     }
-
-    const base =
-    api?.isElectron
-      ? `ws://localhost:3000/ws`
-      : `${window.location.origin.replace(/^http/, "ws")}/ws`;
-
-    socket.current = new WebSocket(`${base}?userId=${user.id}`);
+    const apiUrl = import.meta.env.VITE_API_URL || window.location.origin;
+    const base = apiUrl.replace(/^http/, "ws") + "/ws";
+    const url = `${base}?userId=${user.id}`
+    console.log(url)
+    
+    socket.current = new WebSocket(url);
 
     socket.current.addEventListener("open", () => {        
         setConnectionStatus("open");
