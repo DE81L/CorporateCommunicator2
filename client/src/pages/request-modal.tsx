@@ -38,13 +38,13 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
   const createRequest = useMutation({
     mutationFn: async (data: FormValues) => {
       const payload = {
-        ...data,
-        numberOfRequest: crypto.randomUUID().slice(0, 8), // quick fake “№ заявки”
-        requestStatus: "новая",
-        grade: null,
+        ...data, // Spread form values
+        numberOfRequest: crypto.randomUUID().slice(0, 8),
+        requestStatus: 'новая',
+        grade: null, // Initialize grade
       };
       const res = await fetch("/api/requests", {
-        method: "POST",
+        method: "POST", // create a new request
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
