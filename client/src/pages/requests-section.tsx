@@ -16,7 +16,7 @@ export interface Request {
   grade?: number;
 }
 
-export default function RequestsPage() {
+export default function RequestsSection() {
   const [data, setData] = useState<Request[]>([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
