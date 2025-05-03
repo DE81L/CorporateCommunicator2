@@ -9,8 +9,8 @@ import {
   insertGroupMemberSchema,
   insertRequestSchema,
   insertWikiEntrySchema as baseInsertWikiEntrySchema,
-    insertWikiCategorySchema as baseInsertWikiCategorySchema,
-    convertHelpers
+  insertWikiCategorySchema as baseInsertWikiCategorySchema,
+  convertHelpers
 } from "../shared/electron-shared/schema";
 import { z } from "zod";
 import { pool, connectToDb } from "./db";
@@ -42,46 +42,16 @@ export interface User {
 
 export type UserWithoutPassword = Omit<User, "password">;
 
-export async function registerRoutes(app: Express): Promise<Server> {
-  //Register API
-  app.post("/api/register", async (req, res) => {
-    try {
-      const newUser = await storage.createUser({
-        ...req.body
-      });
-      console.log(`[API] /api/register: User registered:`, newUser);
+export async function registerRoutes(app: Express, server: Server): Promise<void> {
+  const wss = new WebSocketServer({ noServer: true });
 
-      res.status(201).json({ message: "Registration successful" });
-    } catch (error) {
-      console.error(`[API] /api/register: Registration failed:`, error);
-
-      res.status(400).json({ message: "Registration failed" });
-    }
+  server.on('upgrade', (request, socket, head) => {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
   });
 
-
-
-  console.log(`registerRoutes`);
-  const httpServer = createServer(app);
-  setupAuth(app);
-
-  // Add Wiki routes
-  addWikiRoutes(app);
-
-  // WebSocket setup
-  const wss = new WebSocketServer({
-    server: httpServer,
-    path: "/ws",
-    port: undefined, // Let it use the HTTP server's port
-  });
-
-  wss.on("error", (error) => {
-    console.error("WebSocket Server Error:", error);
-  });
-
-  const clients = new Map<number, WebSocketClient>();
-
-  wss.on("connection", (ws: WebSocketClient) => {
+  wss.on("connection", (ws: WebSocketClient, request) => {
     ws.isAlive = true;
 
     ws.on("message", async (message) => {
@@ -109,6 +79,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  setupAuth(app);
+
+  // Add Wiki routes
+  addWikiRoutes(app);
+
   // API Routes
 
   // Users API
@@ -126,10 +101,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Don't send password hash
       const safeUsers = users.map((user) => {
-        const { password, ...safeUser} = user;
+        const { password, ...safeUser } = user;
         return safeUser;
       });
-        res.json(safeUsers);
+      res.json(safeUsers);
     } catch (error) {
       console.error("Error fetching users from SQL Server:", error);
       res.status(500).json({ message: "Error fetching users" });
@@ -139,13 +114,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User API - Get current user
   app.get("/api/user", async (req, res) => {
     try {
-
       if (req.isAuthenticated()) {
         // Exclude password from the user data
         console.log('[API] /api/user: req.user contents:', req.user);
 
-          const { password, ...userWithoutPassword } = req.user as User;
-
+        const { password, ...userWithoutPassword } = req.user as User;
 
         return res.json(userWithoutPassword);
       } else {
@@ -159,8 +132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: (error as Error).message
       });
     }
-    });
-
+  });
 
   // Messages API
   app.get("/api/messages/:userId", async (req, res) => {
@@ -265,8 +237,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const memberData = {
         groupId,
-          userId: req.body.userId,
-          isAdmin: req.body.isAdmin || false,
+        userId: req.body.userId,
+        isAdmin: req.body.isAdmin || false,
       };
 
       // Check if user is already in the group
@@ -332,8 +304,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(401).json({ message: "Unauthorized" });
 
     try {
-        const requestData = {
-          ...req.body,
+      const requestData = {
+        ...req.body,
         creatorId: req.user!.id,
       };
 
@@ -366,15 +338,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(401).json({ message: "Unauthorized" });
 
     try {
-        const requestId = parseInt(req.params.requestId);
-
-        if (isNaN(requestId)) {
-            return res.status(400).json({ message: "Invalid request ID" });
-        }
       const requestId = parseInt(req.params.requestId);
 
-        const request = await storage.getRequest(requestId);
-        if (!request) {
+      if (isNaN(requestId)) {
+        return res.status(400).json({ message: "Invalid request ID" });
+      }
+
+      const request = await storage.getRequest(requestId);
+      if (!request) {
         return res.status(404).json({ message: "Request not found" });
       }
 
@@ -385,9 +356,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res
           .status(403)
           .json({ message: "Not authorized to update this request" });
-        } 
-        
-        const updateData = { status: "finished" };
+      }
+
+      const updateData = { status: "finished" };
 
       const updatedRequest = await storage.updateRequestComplete(requestId, updateData);
 
@@ -411,8 +382,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
   }
-
-  return httpServer;
 }
 
 const getUsers = async () => {
@@ -479,15 +448,15 @@ function addWikiRoutes(app: Express) {
       const user = req.user as User;
       if (!user || user.isAdmin !== 1) {
         return res.status(403).json({ message: "Admin privileges required" });
-        }
+      }
 
-        const entryData = {
-            ...req.body,
-            creatorId: user.id,
-            lastEditorId: user.id,
-            createdAt: new Date(), // Use current date/time
-            updatedAt: new Date(), // Use current date/time
-        };
+      const entryData = {
+        ...req.body,
+        creatorId: user.id,
+        lastEditorId: user.id,
+        createdAt: new Date(), // Use current date/time
+        updatedAt: new Date(), // Use current date/time
+      };
 
       const parsedEntry = insertWikiEntrySchema.parse(entryData);
       const entry = await storage.createWikiEntry(parsedEntry);
@@ -510,23 +479,23 @@ function addWikiRoutes(app: Express) {
       const user = req.user as User;
       if (!user || user.isAdmin !== 1) {
         return res.status(403).json({ message: "Admin privileges required" });
-        }
+      }
 
       const entryId = parseInt(req.params.id);
       if (isNaN(entryId)) {
         return res.status(400).json({ message: "Invalid entry ID" });
-        }
+      }
 
       const existingEntry = await storage.getWikiEntry(entryId);
       if (!existingEntry) {
         return res.status(404).json({ message: "Wiki entry not found" });
-        }
+      }
 
-        const updateData = {
-          ...req.body,
-          lastEditorId: user.id,
-          updatedAt: new Date(), // Use current date/time
-        };
+      const updateData = {
+        ...req.body,
+        lastEditorId: user.id,
+        updatedAt: new Date(), // Use current date/time
+      };
 
       const updatedEntry = await storage.updateWikiEntry(entryId, updateData);
       res.json(updatedEntry);
@@ -547,12 +516,12 @@ function addWikiRoutes(app: Express) {
       const user = req.user as User;
       if (!user || user.isAdmin !== 1) {
         return res.status(403).json({ message: "Admin privileges required" });
-        }
+      }
 
       const entryId = parseInt(req.params.id);
       if (isNaN(entryId)) {
         return res.status(400).json({ message: "Invalid entry ID" });
-        }
+      }
 
       const existingEntry = await storage.getWikiEntry(entryId);
       if (!existingEntry) {
@@ -608,14 +577,14 @@ function addWikiRoutes(app: Express) {
       const categoryId = parseInt(req.params.id);
       if (isNaN(categoryId)) {
         return res.status(400).json({ message: "Invalid category ID" });
-        }
+      }
 
       const category = await storage.getWikiCategory(categoryId);
       if (!category) {
         return res.status(404).json({ message: "Wiki category not found" });
-        }
+      }
 
-        const entries = await storage.getWikiEntriesByCategory(category.name);
+      const entries = await storage.getWikiEntriesByCategory(category.name);
       res.json(entries);
     } catch (error) {
       res.status(500).json({ message: "Error fetching category entries" });
@@ -631,15 +600,15 @@ function addWikiRoutes(app: Express) {
       const user = req.user as User;
       if (!user || user.isAdmin !== 1) {
         return res.status(403).json({ message: "Admin privileges required" });
-        }
+      }
 
-        const categoryData = {
-          ...req.body,
-          createdAt: new Date(), // Use current date/time
-          updatedAt: new Date(), // Use current date/time
-        }
+      const categoryData = {
+        ...req.body,
+        createdAt: new Date(), // Use current date/time
+        updatedAt: new Date(), // Use current date/time
+      };
 
-        const parsedCategory = insertWikiCategorySchema.parse(categoryData);
+      const parsedCategory = insertWikiCategorySchema.parse(categoryData);
       const category = await storage.createWikiCategory(parsedCategory);
 
       res.status(201).json(category);
@@ -660,23 +629,23 @@ function addWikiRoutes(app: Express) {
       const user = req.user as User;
       if (!user || user.isAdmin !== 1) {
         return res.status(403).json({ message: "Admin privileges required" });
-        }
+      }
 
       const categoryId = parseInt(req.params.id);
       if (isNaN(categoryId)) {
         return res.status(400).json({ message: "Invalid category ID" });
-        }
+      }
 
-        const existingCategory = await storage.getWikiCategory(categoryId);
+      const existingCategory = await storage.getWikiCategory(categoryId);
       if (!existingCategory) {
         return res.status(404).json({ message: "Wiki category not found" });
       }
 
-        const updateData = {
-          ...req.body,
-          updatedAt: new Date(), // Use current date/time
-        };
-        
+      const updateData = {
+        ...req.body,
+        updatedAt: new Date(), // Use current date/time
+      };
+
       const updatedCategory = await storage.updateWikiCategory(categoryId, updateData);
       res.json(updatedCategory);
     } catch (error) {
@@ -696,14 +665,14 @@ function addWikiRoutes(app: Express) {
       const user = req.user as User;
       if (!user || user.isAdmin !== 1) {
         return res.status(403).json({ message: "Admin privileges required" });
-        }
+      }
 
       const categoryId = parseInt(req.params.id);
       if (isNaN(categoryId)) {
         return res.status(400).json({ message: "Invalid category ID" });
-        }
+      }
 
-        const existingCategory = await storage.getWikiCategory(categoryId);
+      const existingCategory = await storage.getWikiCategory(categoryId);
       if (!existingCategory) {
         return res.status(404).json({ message: "Wiki category not found" });
       }
@@ -715,8 +684,6 @@ function addWikiRoutes(app: Express) {
     }
   });
 }
-
-
 
 // Modified Zod schemas
 const insertWikiEntrySchema = baseInsertWikiEntrySchema.extend({

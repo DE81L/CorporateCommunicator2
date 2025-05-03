@@ -78,34 +78,38 @@ export const users = pgTable("users", {
 // Таблица заявок с требуемыми полями
 export const requests = pgTable("requests", {
     id: serial("id").primaryKey(),
-    // Номер заявки
-    numberOfRequest: text("number_of_request").notNull(),
-    // Дата заявки
-    dateOfRequest: date("date_of_request").notNull(),
-    // Using default values instead of nullable
-    deadline: date("deadline").default(NULL_DATE),
-    // Категория (null при отсутствии)
-    category: text("category").default(NULL_TEXT),
-    // Кабинет
+    senderId: integer("sender_id")
+        .notNull()
+        .references(() => users.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+    receiverSubdivisionId: integer("receiver_subdivision_id")
+        .notNull()
+        .references(() => subdivisions.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
     cabinet: text("cabinet").notNull(),
-    // Локальный номер
-    localNumber: text("local_number").notNull(),
-    // Комментарий
-    comment: text("comment").notNull(),
-    // Кто принял заявку
-    whoAccepted: text("who_accepted").notNull(),
-    // Состояние заявки (например, "новая", "выполнена", "в процессе", и т.д.)
-    requestStatus: text("request_status").notNull(),
-    // Подразделение (null при отсутствии)
-    subdivision: text("subdivision").default(NULL_TEXT),
-    // Оценка (от 1 до 5; null, если заявка не завершена или не оценена)
-    grade: integer("grade").default(NULL_NUMBER),
-    // Текстовый отзыв (заполняется только если grade < 5)
-    reviewText: text("review_text").default(NULL_TEXT),
-    createdAt: date("created_at").notNull(),
-    updatedAt: date("updated_at").notNull(),
-    assigneeId: integer("assignee_id").default(NULL_NUMBER),
-    creatorId: integer("creator_id").notNull(),
+    phone: text("phone").notNull(),
+    taskId: integer("task_id")
+        .notNull()
+        .references(() => tasksCatalog.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+    customTitle: text("custom_title"),
+    comment: text("comment"),
+    status: text("status").notNull(),
+    createdAt: timestamp("created_at").notNull(),
+    finishedAt: timestamp("finished_at"),
+}, (table) => {
+  return {
+    senderIdIdx: foreignKey({
+      columns: [table.senderId],
+      foreignColumns: [users.id]
+    })
+  }
 });
 // Для удобных проверок данных при вставке/обновлении
 export const messages = pgTable("messages", {
@@ -177,41 +181,5 @@ export const subdivisions = pgTable("subdivisions", {
 export const tasksCatalog = pgTable("tasks_catalog", {
     id: serial("id").primaryKey(),
     title: text("title").notNull(),
-});
-
-export const requests = pgTable("requests", {
-    id: serial("id").primaryKey(),
-    senderId: integer("sender_id")
-        .notNull()
-        .references(() => users.id, {
-            onDelete: "cascade",
-            onUpdate: "cascade",
-        }),
-    receiverSubdivisionId: integer("receiver_subdivision_id")
-        .notNull()
-        .references(() => subdivisions.id, {
-            onDelete: "cascade",
-            onUpdate: "cascade",
-        }),
-    cabinet: text("cabinet").notNull(),
-    phone: text("phone").notNull(),
-    taskId: integer("task_id")
-        .notNull()
-        .references(() => tasksCatalog.id, {
-            onDelete: "cascade",
-            onUpdate: "cascade",
-        }),
-    customTitle: text("custom_title"),
-    comment: text("comment"),
-    status: text("status").notNull(),
-    createdAt: timestamp("created_at").notNull(),
-    finishedAt: timestamp("finished_at"),
-}, (table) => {
-  return {
-    senderIdIdx: foreignKey({
-      columns: [table.senderId],
-      foreignColumns: [users.id]
-    })
-  }
 });
 
