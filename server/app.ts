@@ -8,7 +8,7 @@ import { setupVite, serveStatic, log } from './vite';
 import http from 'http';
 import dotenv from 'dotenv';
 import WebSocket, { WebSocketServer } from 'ws';
-
+ 
 // Load environment variables
 dotenv.config();
 
@@ -74,86 +74,12 @@ export async function createApp() {
   // Register API routes
   const server = http.createServer(app);
   await registerRoutes(app, server);
-
-  // WebSocket setup
-  const wss = new WebSocketServer({ server });
-  const onlineUsers = new Map<string, WebSocket>(); // Map of userId to WebSocket
-  const offlineMessages = new Map<string, any[]>(); // Map of userId to offline messages
-
-  wss.on('connection', (ws: WebSocket, request) => {
-    const userId = new URL(request.url!, `http://${request.headers.host}`).searchParams.get('userId');
-    log(`WebSocket connection from user: ${userId}`);
-
-    if (!userId) {
-      ws.close(1000, 'Missing user ID');
-      return;
-    }
-
-    onlineUsers.set(userId, ws);
-    ws.on('message', (message) => {
-      const parsedMessage = JSON.parse(message.toString());
-      log(`Received message: ${JSON.stringify(parsedMessage)}`);
-
-      if (parsedMessage.type === 'chatMessage') {
-        const recipientId = parsedMessage.recipientId;
-        const recipientWs = onlineUsers.get(recipientId);
-
-        if (recipientWs) {
-          log(`Sending message to online user: ${recipientId}`);
-          recipientWs.send(JSON.stringify(parsedMessage));
-        } else {
-          log(`Storing message for offline user: ${recipientId}`);
-          if (!offlineMessages.has(recipientId)) {
-            offlineMessages.set(recipientId, []);
-          }
-          offlineMessages.get(recipientId)!.push(parsedMessage);
-
-          // Acknowledge that the message was stored offline
-          const ackOffline = { type: 'ackOffline', messageId: parsedMessage.messageId, recipientId };
-          ws.send(JSON.stringify(ackOffline));
-        }
-      } else if (parsedMessage.type === 'ackOffline') {
-        const senderId = parsedMessage.senderId;
-        log(`Deleting offline messages for user: ${senderId}`);
-
-        offlineMessages.delete(senderId);
-        // P2P communication initiation
-        const userWs = onlineUsers.get(senderId);
-        if (userWs) {
-          log(`Initiating P2P communication for user: ${senderId}`);
-          const initP2P = { type: 'initP2P', recipientId: userId };
-          userWs.send(JSON.stringify(initP2P));
-        }
-      }
-      // Check for offline messages for this user and send them
-      else if(parsedMessage.type === "checkOffline") {
-        if (offlineMessages.has(userId)) {
-          log(`Sending offline messages to user: ${userId}`);
-          offlineMessages.get(userId)!.forEach(msg => {
-            ws.send(JSON.stringify(msg));
-          });
-          // offlineMessages.delete(userId);
-        }
-      }
-    });
-
-    ws.on('close', (code, reason) => {
-      log(`WebSocket connection closed for user: ${userId} with code: ${code}, reason: ${reason}`);
-      onlineUsers.delete(userId);
-    });
-
-    ws.on('error', (error) => {
-      log(`WebSocket error for user: ${userId} - ${error.message}`, 'error');
-      onlineUsers.delete(userId);
-      
-    });
-
-      // Check for offline messages for this user and send them
-      if (offlineMessages.has(userId)) {
-        log(`Sending offline messages to user on connect: ${userId}`);
-        ws.send(JSON.stringify({ type: 'checkOffline' }));
-      }
-  });
+  
+ 
+  
+  
+  
+  
   
   // Error handling middleware
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

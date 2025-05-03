@@ -1,5 +1,5 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
+import type { Server } from "http";
 import { storage } from "./storage";
 import { WebSocketServer, WebSocket } from "ws";
 import { hashPassword, setupAuth } from "./auth";
@@ -44,8 +44,6 @@ export type UserWithoutPassword = Omit<User, "password">;
 
 export async function registerRoutes(app: Express, server: Server): Promise<void> {
   const wss = new WebSocketServer({ noServer: true });
-
-  server.on('upgrade', (request, socket, head) => {
     wss.handleUpgrade(request, socket, head, (ws) => {
       wss.emit('connection', ws, request);
     });
