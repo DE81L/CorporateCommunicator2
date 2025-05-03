@@ -17,6 +17,7 @@ import path from 'path';
 
 // Import the schema, now assumed to be correctly typed
 import * as schema from '../shared/schema';
+import { registerRoutes } from './routes';
 
 
 // Function to start a quick server on port 5000 for Replit environment
@@ -51,6 +52,7 @@ async function startServer() {
    // Start quick server for Replit if needed
   const quickServer = startQuickServer();
   const { app, server } = await createApp();
+  await registerRoutes(app, server);
 
   // Enable CORS for requests from FRONTEND_URL or http://localhost:5173
   app.use(
