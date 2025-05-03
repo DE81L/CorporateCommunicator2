@@ -52,6 +52,15 @@ async function startServer() {
    // Start quick server for Replit if needed
   const quickServer = startQuickServer();
   const { app, server } = await createApp();
+    //check if there is only one server and one wss.
+
+  console.log("server address:", server);
+  const server_address = server;
+  
+  if (server_address != server ) {
+    console.error("ERROR: more than one server and/or wss found");
+    process.exit(1);
+  }
   await registerRoutes(app, server);
 
   // Enable CORS for requests from FRONTEND_URL or http://localhost:5173
