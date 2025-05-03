@@ -75,39 +75,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   // Мутация для входа
-
   const loginMutation = useMutation({
-        mutationFn: async (credentials: LoginCredentials) => {
-      try {
-        const res = await fetch(`${baseURL}/api/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: 'include',
-          body: JSON.stringify(credentials),
-        });
-        
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.message || 'Login failed');
-        }
-        return await res.json();
-      } catch (error) {
-         // Проверяем, является ли ошибка сетевой ошибкой
-         if (error instanceof TypeError && error.message === 'Failed to fetch') {
-          queryClient.invalidateQueries(); // Очищаем кэш при сетевой ошибке
-        }
-        throw error; // Перебрасываем ошибку дальше
-      }
-        },
-    // --- КОНЕЦ ИЗМЕНЕНИЯ ---
-    onSuccess: (loggedInUser) => {
-      // Обновляем данные пользователя в кэше React Query
-      queryClient.setQueryData(["/api/user"], loggedInUser);
+    mutationFn: async (credentials: LoginCredentials) => {
+      const res = await fetch(`${baseURL}/api/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+        body: JSON.stringify(credentials),
+      });
 
-      // Навигация должна происходить в компоненте, который вызвал login
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Login failed');
+      }
+      return await res.json();
+    },
+    onSuccess: (loggedInUser) => {
+      queryClient.setQueryData(["/api/user"], loggedInUser);
     },
     onError: (error: Error) => {
-      console.error("Login mutation failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: error.message,
+      });
     },
   });
 

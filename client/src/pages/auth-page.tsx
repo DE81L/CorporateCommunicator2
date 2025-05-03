@@ -133,7 +133,12 @@ export default function AuthPage() {
     const registerMutation = useMutation({
       mutationFn: async (data: z.infer<typeof registerSchema>) => {
         const { confirmPassword, ...payload } = data;
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)});
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        });
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.message || 'Registration failed');
@@ -141,16 +146,17 @@ export default function AuthPage() {
         return await res.json();
       },
       onSuccess: () => {
-        console.log('Registration successful!');
+        toast({ title: "Registration successful!" });
+        setActiveTab("login"); // switch to login tab after registration
       },
       onError: (error: Error) => {
         toast({
           variant: "destructive",
-          title: "Uh oh! Something went wrong.",
+          title: "Registration failed",
           description: error.message
-        })
+        });
       },
-    })
+    });
 
     const onSubmit = (data: z.infer<typeof registerSchema>) => {
      registerMutation.mutate(data);

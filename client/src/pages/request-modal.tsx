@@ -15,14 +15,16 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { Input, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Textarea } from "@/components/ui";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus } from "lucide-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useToast, useElectron } from "@/hooks";
-});
+import { useToast } from "@/hooks/use-toast";
+import { useElectron } from "@/hooks/use-electron";
 
 type FormValues = z.infer<typeof schema>;
 
@@ -30,9 +32,12 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  requests: any[];
 }
 
-export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
+export function RequestModal({ open, onOpenChange, onSuccess, requests }: Props) {
+  if (!requests || requests.length === 0) return null;
+
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const { user, subdivisions } = useElectron()

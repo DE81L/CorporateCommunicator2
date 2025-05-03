@@ -72,21 +72,11 @@ export async function createApp() {
   }
   
   // Register API routes
-  const server = await registerRoutes(app);
-  
-  // Error handling middleware
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    log(`Error: ${err.message}`, 'error');
-    res.status(err.status || 500).json({
-      error: {
-        message: err.message,
-        status: err.status || 500
-      }
-    });
-  });
+  const server = http.createServer(app);
+  await registerRoutes(app, server);
 
-    // WebSocket setup
-  const wss = new WebSocketServer({ server: server as any });
+  // WebSocket setup
+  const wss = new WebSocketServer({ server });
   const onlineUsers = new Map<string, WebSocket>(); // Map of userId to WebSocket
   const offlineMessages = new Map<string, any[]>(); // Map of userId to offline messages
 
@@ -163,6 +153,17 @@ export async function createApp() {
         log(`Sending offline messages to user on connect: ${userId}`);
         ws.send(JSON.stringify({ type: 'checkOffline' }));
       }
+  });
+  
+  // Error handling middleware
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    log(`Error: ${err.message}`, 'error');
+    res.status(err.status || 500).json({
+      error: {
+        message: err.message,
+        status: err.status || 500
+      }
+    });
   });
   
   // Only setup Vite or static files if in web mode
@@ -249,3 +250,6 @@ export async function createApp() {
   
   return { app, server };
 }
+
+const { app, server } = await createApp();
+await registerRoutes(app, server);
