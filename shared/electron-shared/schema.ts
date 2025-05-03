@@ -3,6 +3,14 @@ import { z } from "zod";
 
 // Define special null-like values
 export const NULL_DATE = new Date("1900-01-01").toISOString();
+import { pgTable, serial, text, integer, date, timestamp, foreignKey } from "drizzle-orm/pg-core";
+import { z } from "zod";
+
+// Define special null-like values
+export const NULL_DATE = new Date("1900-01-01").toISOString();
+export const NULL_TEXT = "__NULL_VALUE_7f9c2b3a4e";
+export const NULL_NUMBER = -999999;
+
 export const NULL_TEXT = "__NULL_VALUE_7f9c2b3a4e";
 export const NULL_NUMBER = -999999;
 
@@ -29,23 +37,6 @@ export const insertGroupMemberSchema = z.object({
   isAdmin: z.number().optional(), // Change from boolean to number
 });
 
-export const insertRequestSchema = z.object({
-  numberOfRequest: z.string(),
-  dateOfRequest: z.string(), // Change from date to string
-  deadline: z.string().optional(), // Change from date to string
-  category: z.string().optional(),
-  cabinet: z.string(),
-  localNumber: z.string(),
-  comment: z.string(),
-  whoAccepted: z.string(),
-  requestStatus: z.string(),
-  subdivision: z.string().optional(),
-  grade: z.number().optional(),
-  reviewText: z.string().optional(),
-  creatorId: z.number(),
-  createdAt: z.string(), // Add required fields
-  updatedAt: z.string(),
-});
 
 // Export the validation schema
 export const insertUserSchema = z.object({
@@ -85,51 +76,7 @@ export const users = pgTable("users", {
   avatarUrl: text("avatarurl").default(NULL_TEXT),
 });
 
-// Таблица заявок с требуемыми полями
-export const requests = pgTable("requests", {
-  id: serial("id").primaryKey(),
 
-  // Номер заявки
-  numberOfRequest: text("number_of_request").notNull(),
-
-  // Дата заявки
-  dateOfRequest: date("date_of_request").notNull(),
-
-  // Using default values instead of nullable
-  deadline: date("deadline").default(NULL_DATE),
-
-  // Категория (null при отсутствии)
-  category: text("category").default(NULL_TEXT),
-
-  // Кабинет
-  cabinet: text("cabinet").notNull(),
-
-  // Локальный номер
-  localNumber: text("local_number").notNull(),
-
-  // Комментарий
-  comment: text("comment").notNull(),
-
-  // Кто принял заявку
-  whoAccepted: text("who_accepted").notNull(),
-
-  // Состояние заявки (например, "новая", "выполнена", "в процессе", и т.д.)
-  requestStatus: text("request_status").notNull(),
-
-  // Подразделение (null при отсутствии)
-  subdivision: text("subdivision").default(NULL_TEXT),
-
-  // Оценка (от 1 до 5; null, если заявка не завершена или не оценена)
-  grade: integer("grade").default(NULL_NUMBER),
-
-  // Текстовый отзыв (заполняется только если grade < 5)
-  reviewText: text("review_text").default(NULL_TEXT),
-
-  createdAt: date("created_at").notNull(),
-  updatedAt: date("updated_at").notNull(),
-  assigneeId: integer("assignee_id").default(NULL_NUMBER),
-  creatorId: integer("creator_id").notNull(),
-});
 
 // Для удобных проверок данных при вставке/обновлении
 export const messages = pgTable("messages", {
@@ -152,9 +99,6 @@ export type InsertGroup = typeof groups.$inferInsert;
 export type GroupMember = typeof groupMembers.$inferSelect;
 export type InsertGroupMember = typeof groupMembers.$inferInsert;
 
-export type Request = typeof requests.$inferSelect;
-export type InsertRequest = typeof requests.$inferInsert;
-
 // Export the User type
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -165,8 +109,7 @@ export const convertHelpers = {
   fromDbBoolean: (value: number): boolean => value === 1,
   toDbDate: (date: Date): string => date.toISOString(),
   fromDbDate: (dateStr: string): Date => new Date(dateStr),
-  compareDates: (a: string, b: string): number =>
-    new Date(a).getTime() - new Date(b).getTime(),
+  compareDates: (a: string, b: string): number => new Date(a).getTime() - new Date(b).getTime(),
 };
 
 // Update isNullValue helper
@@ -229,3 +172,45 @@ export type InsertWikiCategory = typeof wikiCategories.$inferInsert;
 export interface RandomUserResponse extends Omit<User, "password"> {
   // All user fields except password
 }
+
+export const subdivisions = pgTable("subdivisions", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+});
+
+export const tasksCatalog = pgTable("tasks_catalog", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+});
+
+export const requests = pgTable(
+  "requests",
+  {
+    id: serial("id").primaryKey(),
+    senderId: integer("sender_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    receiverSubdivisionId: integer("receiver_subdivision_id")
+      .notNull()
+      .references(() => subdivisions.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    cabinet: text("cabinet").notNull(),
+    phone: text("phone").notNull(),
+    taskId: integer("task_id")
+      .notNull()
+      .references(() => tasksCatalog.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    customTitle: text("custom_title"),
+    comment: text("comment"),
+    status: text("status").notNull(),
+    createdAt: timestamp("created_at").notNull(),
+    finishedAt: timestamp("finished_at"),
+  }
+);
