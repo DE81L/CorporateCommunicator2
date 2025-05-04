@@ -72,14 +72,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   // Мутация для входа
-  const loginMutation = useMutation<
-    UserWithoutPassword,
-    Error,
-    LoginCredentials
-  >({
+  const loginMutation = useMutation<UserWithoutPassword, Error, LoginCredentials>({
     mutationFn: async (credentials) => {
-      const response = await apiClient.request("/api/login", {
+      const response: Response = await fetch("/api/login", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(credentials),
       });
       if (!response.ok) {

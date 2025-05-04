@@ -70,6 +70,16 @@ export async function createApp() {
   const server = http.createServer(app);
   await registerRoutes(app, server);
 
+  // Comment out WebSocket setup
+  // setupWebSocket(server);
+  
+  // Comment out WebSocket proxy
+  /*
+  app.use('/ws', (req, res) => {
+    // ...existing WebSocket proxy code...
+  });
+  */
+
   // Error handling middleware
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     log(`Error: ${err.message}`, 'error');

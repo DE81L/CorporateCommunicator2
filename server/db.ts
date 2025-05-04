@@ -13,9 +13,12 @@ if (!url) {
   throw new Error('POSTGRES_URL is not set');
 }
 
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL
+});
+
 const connection = postgres(url, { max: 1 });
 export const db = drizzle(connection, { schema });
-export const pool = new Pool({ connectionString: url });
 
 export async function checkDatabaseAndUser(): Promise<boolean> {
   try {
