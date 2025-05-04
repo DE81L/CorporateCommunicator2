@@ -59,9 +59,15 @@ export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
   useEffect(() => {
     if (!open) return;
     (async () => {
-      const depts = await fetch("/api/departments", { credentials: 'include' }).then(r => r.json());
-      setDepartments(depts);
-      form.reset({ ...form.getValues(), receiverDepartmentId: depts[0]?.id ?? 0 });
+      try {
+        const deptsRes = await fetch('/api/departments', { credentials:'include' });
+        if (!deptsRes.ok) throw new Error('Не удалось загрузить список подразделений');
+        const depts = await deptsRes.json();
+        setDepartments(depts);
+        form.reset({ ...form.getValues(), receiverDepartmentId: depts[0]?.id ?? 0 });
+      } catch(e) {
+        console.error(e)
+      }
     })();
   }, [open]);
 

@@ -1,7 +1,7 @@
 import { Toaster } from 'react-hot-toast';
 import AuthPage from './pages/auth-page';
 import HomePage from "./pages/home-page";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
 import { WindowFrameHeader } from "./components/ui/window-frame";
 import { useElectron } from "./hooks/use-electron";
@@ -36,9 +36,10 @@ function AppContent() {
   );
 }
 
+import { queryClient } from '@/lib/queryClient';
+
 export default function App() {
-  const queryClient = new QueryClient();
-  return (
+    return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AppContent />

@@ -1,3 +1,16 @@
+import { QueryClient } from '@tanstack/react-query';
+import { createApiClient } from './api-client';
+
+const api = createApiClient(true); // твой helper, умеющий ставить cookies
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      queryFn: ({ queryKey }) => api.request(queryKey[0] as string),
+      staleTime: 5 * 60 * 1000,
+    },
+  },
+});
 import { QueryClient } from "@tanstack/react-query";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";

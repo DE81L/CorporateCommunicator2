@@ -52,10 +52,10 @@ export function useWebSocket(): WebSocketHook {
     if (!user) {
       return;
     }
-    const apiUrl = import.meta.env.VITE_API_URL || window.location.origin;
-    const base = apiUrl.replace(/^http/, "ws") + "/ws";
-    const url = `${base}?userId=${user.id}`
-    console.log(url)
+    const apiUrl = import.meta.env.VITE_API_URL || location.origin;   // http://localhost:3000
+    const wsBase = apiUrl.replace(/^http/, 'ws');                     // ws://localhost:3000
+    const url = `${wsBase}/ws?userId=${user.id}`;
+    console.log(url);
 
     socket.current = new WebSocket(url);
     socket.current.addEventListener("open", () => {

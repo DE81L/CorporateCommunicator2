@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { setupAuth } from "./auth";
 import { insertRequestSchema } from "../shared/electron-shared/schema";
 import { storage } from "./storage";
+import { pool } from "./db";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<void> {
@@ -91,5 +92,14 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok" });
   });
+
+  const departmentsRouter = Router();
+
+  departmentsRouter.get('/', async (_, res) => {
+    const { rows } = await pool.query('SELECT id, name FROM departments ORDER BY name');
+    res.json(rows);
+  });
+
+  app.use('/api/departments', departmentsRouter);
 }
 

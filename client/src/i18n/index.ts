@@ -21,6 +21,7 @@ i18n
   .init({
     initImmediate: false,
     resources,
+    supportedLngs: ['ru','ru-RU','en'],
     fallbackLng: 'ru',
     interpolation: {
       escapeValue: false
