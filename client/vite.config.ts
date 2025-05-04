@@ -11,6 +11,20 @@ export default defineConfig({
       "@shared": path.resolve(__dirname, "../shared/electron-shared"),
     },
   },
+  server: {
+    port: 5173,
+    strictPort: true,
+    proxy: {
+      '/api': {
+        target: process.env.VITE_API_URL || 'http://localhost:3000',
+        changeOrigin: true
+      },
+      '/ws': {
+        target: 'ws://localhost:3000',
+        ws: true
+      }
+    }
+  },
   build: {
     outDir: "../dist/client"
   }

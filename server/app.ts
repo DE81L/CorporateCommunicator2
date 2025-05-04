@@ -8,6 +8,7 @@ import { setupVite, serveStatic, log } from './vite';
 import http from 'http';
 import dotenv from 'dotenv';
 import WebSocket, { WebSocketServer } from 'ws';
+import { adminRouter, admin } from './admin';
 
 // Load environment variables
 dotenv.config();
@@ -27,6 +28,9 @@ export async function createApp() {
 
   log(`Environment: ${isElectron ? 'Electron' : 'Web'}`);
   if (isReplit) log('Running in Replit environment'); // This is environment detection log
+
+  // Mount AdminJS before other middleware
+  app.use(admin.options.rootPath, adminRouter);
 
   // Basic middleware
   app.use(express.json());

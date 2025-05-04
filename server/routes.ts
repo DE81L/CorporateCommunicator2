@@ -5,10 +5,9 @@ import { storage } from "./storage";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<void> {
-  // Set up authentication routes (login, register, logout)  
   setupAuth(app);
 
-  // Request endpoints
+  // Core API routes
   app.post("/api/requests", async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -76,19 +75,9 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  app.get("/api/subdivisions", async (req: Request, res: Response) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    try {
-      const subs = await storage.listSubdivisions();
-      return res.json(subs);
-    } catch (error) {
-      console.error("Error fetching subdivisions:", error);
-      return res.status(500).json({ message: "Error fetching subdivisions" });
-    }
+  // Basic system routes
+  app.get("/api/health", (_req, res) => {
+    res.json({ status: "ok" });
   });
-
-  // All other routes (WebSocket, chat, wiki, etc.) have been removed
 }
 

@@ -14,14 +14,13 @@ rm -f client/src/ui/*.tsx
 rm -f test.html
 
 # Remove duplicate config files
-rm -f tailwind.config.js vite.config.ts vite.config.mjs.d.ts
+rm -f tailwind.config.js
+rm -f vite.config.ts
+rm -f vite.config.mjs.d.ts
+rm -f server/register.ts # Not needed with new tsx version
 
 # Keep only the essential configs:
-# - vite.config.mjs (root)
 # - client/vite.config.ts 
 # - client/tailwind.config.js
 
 echo "Cleaned up duplicate config files"
-
-# Remove old launch config
-rm -f .vscode/launch.json

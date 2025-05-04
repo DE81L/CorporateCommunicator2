@@ -43,14 +43,9 @@ if (process.env.USER_DATA_DIR) {
 }
 
 function createWindow() {
-  console.log('Creating Electron window...');
-  console.log('Environment variables:', {
-    NODE_ENV: process.env.NODE_ENV,
-    ELECTRON: process.env.ELECTRON,
-    isDev: isDev
-  });
+  console.log('Creating Electron windows...');
 
-  // Create the browser window
+  // Main window
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -67,6 +62,19 @@ function createWindow() {
     icon: path.join(__dirname, '../generated-icon.png'),
   });
 
+  // Showcase/min window
+  const showcase = new BrowserWindow({
+    width: 480,
+    height: 320,
+    parent: mainWindow,
+    title: 'CC • Showcase',
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
+    }
+  });
+
   console.log(i18n.t('startingApp'));
 
   // Load the app
@@ -76,8 +84,8 @@ function createWindow() {
 
   console.log('Loading URL:', startUrl);
 
-    
   mainWindow.loadURL(startUrl);
+  showcase.loadURL(`${startUrl}#demo`);
 
   // Add debugging logs
   mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
@@ -111,7 +119,7 @@ function createWindow() {
     console.log(i18n.t('windowCreated'));
   });
 
-  console.log('Electron window created successfully');
+  console.log('Electron windows created successfully');
 }
 
 function createTray() {

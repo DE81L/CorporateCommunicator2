@@ -47,6 +47,7 @@ export interface IStorage {
   getRequest(id: number): Promise<schema.Request | undefined>;
   createRequest(request: schema.InsertRequest): Promise<schema.Request>;
   updateRequestStatus(id: number, status: string): Promise<schema.Request>;
+  getUserRequests(userId: number): Promise<schema.Request[]>;
 
   // ─── Wiki ────────────────────────────────────────────────────────────────
   getWikiEntry(id: number): Promise<schema.WikiEntry | undefined>;
@@ -214,6 +215,10 @@ export class PgStorage implements IStorage {
       .where(eq(schema.requests.id, id))
       .returning();
     return req;
+  }
+
+  async getUserRequests(userId: number) {
+    return db.select().from(schema.requests).where(eq(schema.requests.senderId, userId));
   }
 
   /* ───────────── Wiki ────────────────── */

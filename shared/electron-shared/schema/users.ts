@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { departments } from './departments';
 
@@ -14,6 +14,7 @@ export const users = pgTable("users", {
   departmentId: integer('department_id').references(() => departments.id),
   jobTitle: text('job_title'),
   language: text('language').default('en'),
+  isAdmin: boolean('is_admin').default(false).notNull(),
 });
 
 export type User = typeof users.$inferSelect;
