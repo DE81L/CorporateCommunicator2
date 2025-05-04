@@ -30,10 +30,13 @@
     "db:generate": "drizzle-kit generate",
     "db:seed": "ts-node scripts/seed-departments.ts",
     "check:server": "tsc --project tsconfig.build.json --noEmit",
-    "dev:showcase": "concurrently -k -n \"api,clientA,clientB\" \"npm:dev:api\" \"wait-on tcp:3000 && cross-env ELECTRON=true USER_DATA_DIR=./userdataA electron electron/main.cjs --no-sandbox\" \"wait-on tcp:3000 && cross-env ELECTRON=true USER_DATA_DIR=./userdataB electron electron/main.cjs --no-sandbox\""
+    "dev:showcase": "concurrently -k -n \"api,clientA,clientB\" \"npm:dev:api\" \"wait-on tcp:3000 && cross-env ELECTRON=true USER_DATA_DIR=./userdataA electron electron/main.cjs --no-sandbox\" \"wait-on tcp:3000 && cross-env ELECTRON=true USER_DATA_DIR=./userdataB electron electron/main.cjs --no-sandbox\"",
+    "postinstall": "cd node_modules/adminjs-drizzle && npm run build"
   },
   "dependencies": {
     "-": "^0.0.1",
+    "@adminjs/express": "^6.1.0",
+    "@adminjs/upload": "^4.0.2",
     "@hookform/resolvers": "^3.9.1",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@neondatabase/serverless": "^0.10.4",
@@ -69,9 +72,6 @@
     "@tanstack/react-table": "^8.21.3",
     "@types/uuid": "^10.0.0",
     "adminjs": "^7.5.2",
-    "@adminjs/express": "^6.1.0",
-    "@adminjs/upload": "^4.0.2",
-    "@adminjs/drizzle": "github:makuko/adminjs-drizzle#main",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
@@ -138,6 +138,7 @@
     "@vitejs/plugin-react": "^4.3.2",
     "@vitejs/plugin-react-swc": "^3.8.1",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "dotenv-cli": "^8.0.0",
     "dotenv-safe": "^9.1.0",
@@ -151,7 +152,6 @@
     "typescript": "^5.3.3",
     "vite": "^6.0.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "concurrently": "^9.1.2",
     "wait-on": "^8.0.3"
   },
   "optionalDependencies": {

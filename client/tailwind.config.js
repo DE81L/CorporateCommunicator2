@@ -1,6 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
+<<<<<<< HEAD
+=======
+    "../shared/**/*.{js,ts,tsx}",
+>>>>>>> b09551c (smth)
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
@@ -14,4 +18,8 @@ export default {
     },
   },
   plugins: [],
+<<<<<<< HEAD
 }
+=======
+};
+>>>>>>> b09551c (smth)

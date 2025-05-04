@@ -1,11 +1,12 @@
 import AdminJS from 'adminjs'
-import { DrizzleAdapter } from '@adminjs/drizzle'
+import { Database, Resource } from 'adminjs-drizzle/pg'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { pool } from './db'
 import { departments, users } from '@shared/schema'
 import AdminJSExpress from '@adminjs/express'
 
-AdminJS.registerAdapter(DrizzleAdapter)
+// Register the Drizzle adapter
+AdminJS.registerAdapter({ Database, Resource })
 
 const db = drizzle(pool)
 
