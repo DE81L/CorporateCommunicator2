@@ -13,11 +13,14 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -28,7 +31,15 @@ import { useState, useEffect } from "react";
 import { insertRequestSchema } from "@shared/schema";
 import { z } from "zod";
 
-type RequestFormValues = z.infer<typeof insertRequestSchema>;
+interface RequestFormValues {
+  receiverDepartmentId: number;
+  taskId: number;
+  cabinet: string;
+  phone: string;
+  isUrgent: boolean;
+  deadline: string;
+  comment: string;
+}
 
 interface Props {
   requests?: any[];
@@ -37,20 +48,20 @@ interface Props {
   onSuccess: () => void;
 }
 
-export default function RequestModal({ open, onOpenChange, onSuccess, requests = [] }: Props) {
+export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { api } = useElectron();
 
-  const [subdivisions, setSubdivisions] = useState<{ id: number; name: string }[]>([]);
+  const [departments, setDepartments] = useState<{ id: number; name: string }[]>([]);
 
   useEffect(() => {
     if (!open) return;
     (async () => {
-      const subs = await fetch("/api/subdivisions", { credentials: 'include' }).then(r => r.json());
-      setSubdivisions(subs);
-      form.reset({ ...form.getValues(), receiverSubdivisionId: subs[0]?.id ?? 0 });
+      const depts = await fetch("/api/departments", { credentials: 'include' }).then(r => r.json());
+      setDepartments(depts);
+      form.reset({ ...form.getValues(), receiverDepartmentId: depts[0]?.id ?? 0 });
     })();
   }, [open]);
 
@@ -64,13 +75,13 @@ export default function RequestModal({ open, onOpenChange, onSuccess, requests =
   const form = useForm<RequestFormValues>({
     resolver: zodResolver(insertRequestSchema),
     defaultValues: {
-      receiverSubdivisionId: subdivisions[0]?.id ?? 0,
-      taskId: taskOptions[0]?.id ?? 0,
-      phone: user?.phone ?? '',
+      receiverDepartmentId: 0,
+      taskId: 0,
       cabinet: '',
-      customTitle: '',
-      comment: '',
-    },
+      phone: '',
+      isUrgent: false,
+      comment: ''
+    }
   });
 
   const createRequest = useMutation({
@@ -104,7 +115,7 @@ export default function RequestModal({ open, onOpenChange, onSuccess, requests =
       }),
   });
 
-  const isOtherSelected = form.watch("taskId") === 4;
+  const isUrgent = form.watch("isUrgent");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -114,88 +125,131 @@ export default function RequestModal({ open, onOpenChange, onSuccess, requests =
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit((data) => createRequest.mutate(data))}
-            className="space-y-4"
-          >
-            <FormField control={form.control} name="receiverSubdivisionId" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Получатель</FormLabel>
-                <Select onValueChange={(val) => field.onChange(+val)} defaultValue={String(field.value)}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите подразделение" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectGroup>
-                      {subdivisions.length
-                        ? subdivisions.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)
-                        : <div className="px-2 py-1 text-xs text-muted-foreground">Нет подразделений</div>
-                      }
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="phone" render={() => (
-              <FormItem>
-                <FormLabel>Номер телефона</FormLabel>
-                <FormControl>
-                  <Input value={user?.phone} disabled />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="cabinet" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Кабинет (опционально)</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="301-А" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="taskId" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Задача</FormLabel>
-                <Select onValueChange={(val) => field.onChange(+val)} defaultValue={String(field.value)}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите задачу" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectGroup>
-                      {taskOptions.map(t => <SelectItem key={t.id} value={t.id.toString()}>{t.name}</SelectItem>)}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )} />
-            {isOtherSelected && (
-              <FormField control={form.control} name="customTitle" render={({ field }) => (
+          <form onSubmit={form.handleSubmit((data) => createRequest.mutate(data))} 
+                className="space-y-4">
+            <FormField
+              control={form.control}
+              name="receiverDepartmentId"
+              render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Название задачи</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Введите название задачи" />
-                  </FormControl>
+                  <FormLabel>Подразделение</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value.toString()}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите подразделение" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {departments.map((department) => (
+                        <SelectItem key={department.id} value={department.id.toString()}>
+                          {department.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Подразделение, которому направлена заявка.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
-              )} />
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="taskId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Задача</FormLabel>
+                  <Select onValueChange={(val: string) => field.onChange(+val)}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите задачу" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                        {taskOptions.map(t => (
+                          <SelectItem key={t.id} value={t.id.toString()}>
+                            {t.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="cabinet"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Кабинет (опционально)</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="301-А" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Номер телефона</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Введите номер телефона" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="isUrgent"
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-2">
+                  <FormControl>
+                    <Checkbox 
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormLabel>Срочная заявка</FormLabel>
+                </FormItem>
+              )}
+            />
+
+            {isUrgent && (
+              <FormField
+                control={form.control}
+                name="deadline"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Дедлайн</FormLabel>
+                    <FormControl>
+                      <DateTimePicker {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             )}
-             <FormField control={form.control} name="comment" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Комментарий</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="Добавьте комментарий" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-          <DialogFooter>
+
+            <FormField
+              control={form.control}
+              name="comment"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Комментарий</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Добавьте комментарий" {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
               <Button
                 type="submit"
                 disabled={createRequest.isPending}
@@ -215,7 +269,7 @@ export default function RequestModal({ open, onOpenChange, onSuccess, requests =
               </Button>
             </DialogFooter>
           </form>
-        </Form> 
+        </Form>
       </DialogContent>
     </Dialog>
   );

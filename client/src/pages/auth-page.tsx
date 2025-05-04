@@ -22,13 +22,13 @@ const loginSchema = z.object({
 
 const registerSchema = z.object({
   username: z.string().min(1, "Username is required"),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  firstName: z.string().min(1, "First name is required"), // Already camelCase
+  lastName: z.string().min(1, "Last name is required"),   // Already camelCase
   email: z.string().email("Invalid email"),
   password: z.string().min(6, "Password too short"),
   confirmPassword: z.string(),
 }).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords must match",
+  message: "Passwords must match", 
   path: ["confirmPassword"],
 });
 
@@ -46,7 +46,7 @@ export default function AuthPage() {
       </div>
       <div className="flex justify-center bg-gray-50 py-4 border-b w-full">
         <div className='w-full max-w-md'>
-          <Tabs defaultValue={activeTab} onValueChange={v => setActiveTab(v as any)} className='w-full'>
+          <Tabs defaultValue={activeTab} onValueChange={(v: "login" | "register") => setActiveTab(v)} className='w-full'>
               <Card>
               <TabsList className="space-x-4 bg-white w-full flex">
                 <TabsTrigger value="login" className='text-gray-500 hover:text-gray-900 bg-white data-[state=active]:bg-white data-[state=active]:text-black flex-1'>{t('auth.login')}</TabsTrigger>

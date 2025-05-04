@@ -9,11 +9,22 @@ import { getRequests } from "@/api/requests";
 
 export interface Request {
   id: number;
-  numberOfRequest: string;
-  requestStatus: string;
-  cabinet: string;
+  status: 'новая' | 'в работе' | 'выполнена';
+  receiverSubdivisionId: number;
+  subdivision?: { id: number; name: string };
+  taskId: number;
+  task?: { id: number; name: string; category: string };
+  cabinet?: string;
+  phone?: string;
+  isUrgent: boolean;
   deadline?: string;
+  comment?: string;
+  whoAccepted?: { id: number; firstName: string; lastName: string };
+  takenAt?: string;
   grade?: number;
+  reviewText?: string;
+  finishedAt?: string;
+  createdAt: string;
 }
 
 export default function RequestsSection() {
@@ -30,22 +41,39 @@ export default function RequestsSection() {
   useEffect(() => { load(); }, []);
 
   const columns: ColumnDef<Request>[] = [
-    { accessorKey: "numberOfRequest", header: "№ заявки" },
     {
-      accessorKey: "requestStatus",
+      accessorKey: "status",
       header: "Статус",
       cell: ({ getValue }) => {
-        const val = getValue<string>();
-        const color =
-          val === "выполнена" ? "completed" :
-          val === "в работе"   ? "inProgress" :
-          val === "новая"      ? "pending" : "secondary";
-        return <Badge variant={color as any}>{val}</Badge>;
+        const status = getValue<string>();
+        return (
+          <Badge 
+            variant={
+              status === "выполнена" ? "success" :
+              status === "в работе" ? "warning" : 
+              "default"
+            }
+          >
+            {status}
+          </Badge>
+        );
       }
     },
-    { accessorKey: "cabinet",   header: "Кабинет" },
-    { accessorKey: "deadline",  header: "Дедлайн" },
-    { accessorKey: "grade",     header: "Оценка" },
+    {
+      accessorKey: "isUrgent",
+      header: "Срочность",
+      cell: ({ row }) => 
+        row.original.isUrgent && 
+        <Badge variant="destructive">Срочно</Badge>
+    },
+    {
+      accessorKey: "task",
+      header: "Задача",
+      cell: ({ row }) => row.original.task?.name
+    },
+    { accessorKey: "cabinet", header: "Кабинет" },
+    { accessorKey: "deadline", header: "Дедлайн" },
+    { accessorKey: "grade", header: "Оценка" },
   ];
 
   return (

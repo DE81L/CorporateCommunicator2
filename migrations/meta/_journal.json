@@ -15,6 +15,13 @@
       "when": 1746375893500,
       "tag": "0001_elite_betty_brant",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1746387742159,
+      "tag": "0002_lush_deadpool",
+      "breakpoints": true
     }
   ]
 }

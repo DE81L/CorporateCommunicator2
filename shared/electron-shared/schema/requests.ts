@@ -1,6 +1,6 @@
-import { pgTable, serial, integer, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, timestamp, boolean } from "drizzle-orm/pg-core";
 import { z } from "zod";
-import { users } from "./users";
+import { users, departments } from "./users"; // <-- Import departments
 
 export const subdivisions = pgTable("subdivisions", {
   id: serial("id").primaryKey(),
@@ -9,39 +9,41 @@ export const subdivisions = pgTable("subdivisions", {
 
 export const tasksCatalog = pgTable("tasks_catalog", {
   id: serial("id").primaryKey(),
-  title: text("title").notNull()
+  name: text("name").notNull(),
+  category: text("category").notNull()
 });
 
 export const requests = pgTable("requests", {
   id: serial("id").primaryKey(),
   senderId: integer("sender_id").references(() => users.id).notNull(),
-  receiverSubdivisionId: integer("receiver_subdivision_id")
-    .references(() => subdivisions.id)
+  receiverDepartmentId: integer("receiver_department_id") // <-- Changed name
+    .references(() => departments.id)
     .notNull(),
-  cabinet: text("cabinet").notNull(),
-  phone: text("phone").notNull(),
-  taskId: integer("task_id").references(() => tasksCatalog.id).notNull(),
-  customTitle: text("custom_title"),
+  cabinet: text("cabinet"),
+  phone: text("phone"),
+  isUrgent: boolean("is_urgent").default(false),
+  deadline: timestamp("deadline"),
   comment: text("comment"),
+  whoAccepted: integer("who_accepted").references(() => users.id),
+  takenAt: timestamp("taken_at"),
+  grade: integer("grade"),
+  reviewText: text("review_text"),
+  finishedAt: timestamp("finished_at"),
   status: text("status").default("новая").notNull(),
-  createdAt: timestamp("created_at").notNull(),
-  finishedAt: timestamp("finished_at")
+  createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
 export const insertRequestSchema = z.object({
-  receiverSubdivisionId: z.number(),
+  receiverDepartmentId: z.number(), // <-- Changed name
   taskId: z.number(),
-  phone: z.string(),
-  cabinet: z.string(),
-  customTitle: z.string().optional(),
+  cabinet: z.string().optional(),
+  phone: z.string().optional(),
+  isUrgent: z.boolean().default(false),
+  deadline: z.string().optional(),
   comment: z.string().optional(),
-  numberOfRequest: z.string().optional(),
-  requestStatus: z.string().optional(),
+  status: z.string().default("новая"),
   grade: z.number().optional(),
-  reviewText: z.string().optional(),
-  creatorId: z.number(),
-  createdAt: z.string(),
-  updatedAt: z.string()
+  reviewText: z.string().optional()
 });
 
 export type Request = typeof requests.$inferSelect;

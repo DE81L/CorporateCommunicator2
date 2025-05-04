@@ -15,6 +15,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     try {
       const requestData = {
         ...req.body,
+        senderId: req.user!.id,
         creatorId: req.user!.id,
         dateOfRequest: new Date(),
         createdAt: new Date(), 
@@ -73,6 +74,18 @@ export async function registerRoutes(app: Express): Promise<void> {
       console.error("Error completing request:", error);
       return res.status(500).json({ message: "Error completing request" });
     }
+  });
+
+  app.get("/api/subdivisions", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const subs = await storage.listSubdivisions();
+    res.json(subs);
+  });
+
+  app.get("/api/tasks", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const tasks = await storage.listTasks();
+    res.json(tasks);
   });
 
   // Basic system routes

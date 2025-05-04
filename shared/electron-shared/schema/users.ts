@@ -7,8 +7,8 @@ export const users = pgTable("users", {
   username: text("username").notNull(),
   email: text("email").notNull(),
   password: text("password").notNull(),
-  firstName: text("firstname").notNull(),
-  lastName: text("lastname").notNull(),
+  firstName: text("first_name").notNull(),  // Updated column name
+  lastName: text("last_name").notNull(),    // Updated column name
   isOnline: integer("isonline").default(0),
   avatarUrl: text("avatarurl"),
   departmentId: integer('department_id').references(() => departments.id),
@@ -27,3 +27,5 @@ export const insertUserSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
 });
+export { departments };
+

@@ -17,7 +17,7 @@ async function checkDb() {
     // Check for the "lastname" column in the "users" table
     try {
       console.log('Checking for the "lastname" column...');
-      await sql`SELECT lastname FROM users LIMIT 1`;
+      await sql`SELECT last_name FROM users LIMIT 1`;
       console.log('✅ "lastname" column exists in "users" table.');
     } catch (error: any) {
       console.error('❌ Error: "lastname" column does not exist in "users" table.', error.message);
