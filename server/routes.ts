@@ -7,7 +7,6 @@ import { z } from "zod";
 export async function registerRoutes(app: Express): Promise<void> {
   setupAuth(app);
 
-  // Core API routes
   app.post("/api/requests", async (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Unauthorized" });
