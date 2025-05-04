@@ -1,14 +1,14 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import path from 'path';
-import { connectToDb } from './db'; // Remove .cjs if present
+import { connectToDb } from './db';
 import { registerRoutes } from './routes';
 import { setupAuth } from './auth';
 import { setupVite, serveStatic, log } from './vite';
 import http from 'http';
 import dotenv from 'dotenv';
 import WebSocket, { WebSocketServer } from 'ws';
- 
+
 // Load environment variables
 dotenv.config();
 
@@ -25,34 +25,30 @@ export async function createApp() {
     })
   );
 
-
-  
   log(`Environment: ${isElectron ? 'Electron' : 'Web'}`);
   if (isReplit) log('Running in Replit environment'); // This is environment detection log
-  
+
   // Basic middleware
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  
+
   // Connect to database - will use environment variables to distinguish between Electron and Replit
   try {
     await connectToDb();
     log('✅ Database connection verified');
   } catch (err) {
     log(`Failed to connect to database: ${err instanceof Error ? err.message : String(err)}`, 'error');
-    
   }
-  
+
   // Setup authentication
   setupAuth(app);
-  
+
   // Environment-specific setup
   if (isElectron) {
     // Electron-specific setup
     log('Setting up for Electron environment'); // This is environment detection log
     // Electron-specific routes or configuration here
     app.get('/api/environment', (req, res) => {
-       
       res.json({
         environment: 'electron',
         version: process.env.npm_package_version || 'unknown'
@@ -63,24 +59,17 @@ export async function createApp() {
     log('Setting up for Web/Replit environment'); // This is environment detection log
     // Web-specific routes or configuration here
     app.get('/api/environment', (req, res) => {
-      // removed log
       res.json({
         environment: isReplit ? 'replit' : 'web',
         version: process.env.npm_package_version || 'unknown'
       });
     });
   }
-  
+
   // Register API routes
   const server = http.createServer(app);
   await registerRoutes(app, server);
-  
- 
-  
-  
-  
-  
-  
+
   // Error handling middleware
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     log(`Error: ${err.message}`, 'error');
@@ -91,7 +80,7 @@ export async function createApp() {
       }
     });
   });
-  
+
   // Only setup Vite or static files if in web mode
   if (!isElectron) {
     // Force development mode in Replit or if NODE_ENV is development
@@ -102,7 +91,7 @@ export async function createApp() {
         await setupVite(app, server);
       } catch (err) {
         log(`Vite setup error: ${err instanceof Error ? err.message : String(err)}`, 'error'); // This is error handling log
-        
+
         // Provide a basic route for development
         app.get('*', (req, res) => {
           log(`Entering function: GET * (Development)`);
@@ -110,7 +99,7 @@ export async function createApp() {
             // Let API requests pass through
             return res.status(404).json({ error: 'API endpoint not found' });
           }
-          
+
           // Simple HTML for all other routes in development
           res.send(`
             <html>
@@ -140,7 +129,7 @@ export async function createApp() {
         serveStatic(app);
       } catch (err) {
         log(`Static serving error: ${err instanceof Error ? err.message : String(err)}`, 'error'); // This is error handling log
-        
+
         // Handle the error when static files aren't available
         app.get('*', (req, res) => {
           log(`Entering function: GET * (Production)`);
@@ -148,7 +137,7 @@ export async function createApp() {
             // Let API requests pass through
             return res.status(404).json({ error: 'API endpoint not found' });
           }
-          
+
           res.status(500).send(`
             <html>
               <head>
@@ -173,9 +162,7 @@ export async function createApp() {
       }
     }
   }
-  
+
+  log('Created express app');
   return { app, server };
 }
-
-const { app, server } = await createApp();
-await registerRoutes(app, server);

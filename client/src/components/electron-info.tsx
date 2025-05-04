@@ -24,7 +24,11 @@ interface SystemInfo {
   };
 }
 
-export default function ElectronInfo() {
+interface ElectronInfoProps {
+  compact?: boolean;
+}
+
+export default function ElectronInfo({ compact = false }: ElectronInfoProps) {
   const { isElectron, api } = useElectron();
   const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,9 +43,7 @@ export default function ElectronInfo() {
       fetchAppVersion();
       checkOnlineStatus();
 
-      // Set up a timer to check online status periodically
       const interval = setInterval(checkOnlineStatus, 30000);
-
       return () => clearInterval(interval);
     }
   }, [isElectron, api]);
@@ -64,7 +66,7 @@ export default function ElectronInfo() {
     if (!api?.app) return;
 
     try {
-      const version = await api.app.getVersion();
+      const version = (await api.app.getVersion()) as string;
       setAppVersion(version);
     } catch (error) {
       console.error("Failed to fetch app version:", error);
@@ -99,11 +101,13 @@ export default function ElectronInfo() {
 
   return (
     <Card>
-      <CardHeader className="bg-gray-50 border-b border-gray-200 px-4 py-3">
+      {!compact && (
+        <CardHeader className="bg-gray-50 border-b border-gray-200 px-4 py-3">
           <CardTitle className="text-base font-medium">
-          {t("profile.title")}
-        </CardTitle>
-      </CardHeader>
+            {t("profile.title")}
+          </CardTitle>
+        </CardHeader>
+      )}
       <CardContent className="space-y-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -214,7 +218,7 @@ export default function ElectronInfo() {
             </div>
 
             <div className="pl-6 space-y-2 text-sm">
-              <div className="flex items-center justify-between" >
+              <div className="flex items-center justify-between">
                 <span>{t("system_info.connection_status")}:</span>
                 <Badge variant="outline">Active</Badge>
               </div>

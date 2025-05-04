@@ -35,6 +35,18 @@ export function useWebSocket(): WebSocketHook {
   const [connectionStatus, setConnectionStatus] = useState<string>("connecting")
   const [readyState, setReadyState] = useState<number>(-1);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const heartbeatInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const cleanup = () => {
+    if (reconnectTimer.current) {
+      clearTimeout(reconnectTimer.current);
+      reconnectTimer.current = null;
+    }
+    if (heartbeatInterval.current) {
+      clearInterval(heartbeatInterval.current);
+      heartbeatInterval.current = null;
+    }
+  };
 
   const openSocket = useCallback(() => {
     if (!user) {
@@ -53,6 +65,11 @@ export function useWebSocket(): WebSocketHook {
       socket.current?.send(JSON.stringify({ type: "auth", userId: user.id }));
       // immediately request offline messages
       socket.current?.send(JSON.stringify({ type: "getOffline", userId: user.id }));
+
+      // Setup heartbeat
+      heartbeatInterval.current = setInterval(() => {
+        socket.current?.send(JSON.stringify({ type: 'ping' }));
+      }, 15000);
     });
 
     socket.current.addEventListener("message", (event: MessageEvent) => {
@@ -93,6 +110,7 @@ export function useWebSocket(): WebSocketHook {
       setConnectionStatus("Closed");
       setReadyState(socket.current?.readyState ?? -1);
       console.log("WebSocket connection closed:", event);
+      cleanup();
       if(import.meta.env.DEV){
         reconnectTimer.current = setTimeout(() => openSocket(), 3000);
       }
@@ -106,11 +124,10 @@ export function useWebSocket(): WebSocketHook {
         socket.current?.close();
       });
 
-      return () => socket.current?.close();
-      reconnectTimer.current && clearTimeout(reconnectTimer.current);
-      if (socket.current) {
-        socket.current.close();
-      }
+      return () => {
+        cleanup();
+        socket.current?.close();
+      };
   }, [user, openSocket]);
 
   const sendMessage = useCallback((message: string, chatId: number) => {

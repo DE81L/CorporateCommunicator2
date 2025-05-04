@@ -1,2 +1,11 @@
 dist/
 node_modules
+*.log
+server/**/*.js
+
+# Generated JS files in shared folders
+shared/**/*.js
+shared/electron-shared/**/*.js
+
+shared/**/*.js
+dist-electron/**/*.js

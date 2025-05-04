@@ -4,7 +4,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, RefreshCw } from "lucide-react";
-import { RequestModal } from "./request-modal";
+import RequestModal from "./request-modal";
 import { getRequests } from "@/api/requests";
 
 export interface Request {

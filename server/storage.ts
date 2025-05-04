@@ -5,8 +5,8 @@ import session from 'express-session';
 import createMemoryStore from 'memorystore';
 import { Store } from 'express-session';
 
-import * as schema from '../shared/electron-shared/schema'; 
-import { db } from './db';
+import * as schema from "../shared/electron-shared/schema";
+import { db, pool } from './db';
 
 const MemoryStore = createMemoryStore(session);
 
@@ -28,6 +28,9 @@ export interface IStorage {
   getDirectMessages(senderId: number, receiverId: number): Promise<schema.Message[]>;
   createMessage(message: schema.InsertMessage): Promise<schema.Message>;
   deleteMessage(id: number): Promise<void>;
+  markDelivered(messageId: number): Promise<void>;
+  markDeliveredBulk(messageIds: number[]): Promise<void>;
+  getUndelivered(userId: number): Promise<schema.Message[]>;
 
   // ─── Groups ───────────────────────────────────────────────────────────────
   getGroup(id: number): Promise<schema.Group | undefined>;
@@ -49,6 +52,10 @@ export interface IStorage {
   getWikiEntry(id: number): Promise<schema.WikiEntry | undefined>;
   createWikiEntry(entry: schema.InsertWikiEntry): Promise<schema.WikiEntry>;
   updateWikiEntry(id: number, entry: Partial<schema.WikiEntry>): Promise<schema.WikiEntry>;
+
+  // ─── Subdivisions ────────────────────────────────────────────────────────
+  listSubdivisions(): Promise<any[]>;
+  getSubdivision(id: number): Promise<any | null>;
 
   /* session store for express-session */
   sessionStore: Store;
@@ -119,6 +126,27 @@ export class PgStorage implements IStorage {
 
   deleteMessage(id: number) {
     return db.delete(schema.messages).where(eq(schema.messages.id, id));
+  }
+
+  async markDelivered(messageId: number) {
+    return db.update(schema.messages)
+      .set({ status: 'delivered' })
+      .where(eq(schema.messages.id, messageId));
+  }
+
+  async markDeliveredBulk(messageIds: number[]) {
+    return db.update(schema.messages)
+      .set({ status: 'delivered' })
+      .where(inArray(schema.messages.id, messageIds));
+  }
+
+  async getUndelivered(userId: number) {
+    return db.select()
+      .from(schema.messages)
+      .where(and(
+        eq(schema.messages.receiverId, userId),
+        eq(schema.messages.status, 'pending')
+      ));
   }
 
   /* ───────────── Groups ──────────────── */
@@ -208,6 +236,38 @@ export class PgStorage implements IStorage {
       .where(eq(schema.wikiEntries.id, id))
       .returning();
     return e;
+  }
+
+  /* ───────────── Subdivisions ────────── */
+
+  async listSubdivisions() {
+    const result = await pool.query(`
+      SELECT 
+        id,
+        name,
+        description,
+        parent_id as "parentId",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+      FROM subdivisions
+      ORDER BY name ASC
+    `);
+    return result.rows;
+  }
+
+  async getSubdivision(id: number) {
+    const result = await pool.query(`
+      SELECT 
+        id,
+        name,
+        description,
+        parent_id as "parentId",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+      FROM subdivisions 
+      WHERE id = $1
+    `, [id]);
+    return result.rows[0] || null;
   }
 }
 

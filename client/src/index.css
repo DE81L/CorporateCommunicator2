@@ -26,6 +26,11 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+
+  /* Electron window frame compensation */
+  body.electron {
+    padding-top: 36px;
+  }
 }
 
 ::-webkit-scrollbar {

@@ -31,6 +31,17 @@ process.env.ELECTRON = 'true';
 let mainWindow;
 let tray;
 
+// Disable hardware media key handling to remove DevTools warning
+app.commandLine.appendSwitch('disable-features', 'HardwareMediaKeyHandling');
+
+if (process.env.USER_DATA_DIR) {
+  const path = require("node:path");
+  app.setPath("userData", path.resolve(process.env.USER_DATA_DIR));
+} else if (!app.requestSingleInstanceLock()) {
+  app.quit();
+  return;
+}
+
 function createWindow() {
   console.log('Creating Electron window...');
   console.log('Environment variables:', {
@@ -42,7 +53,9 @@ function createWindow() {
   // Create the browser window
   mainWindow = new BrowserWindow({
     width: 1280,
-    height: 720,
+    height: 800,
+    frame: false,
+    titleBarStyle: 'hidden',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

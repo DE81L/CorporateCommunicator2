@@ -1,5 +1,9 @@
-import { api } from '../api';
+import type { ElectronAPI } from '@/lib/electron-types';
 
-export const useElectron = () => {
-  return api;
-};
+export function useElectron() {
+  const api = window.electron as ElectronAPI | undefined;
+  return {
+    isElectron: Boolean(api),
+    api,
+  };
+}

@@ -1,4 +1,8 @@
 export type TranslationKey =
+  | 'call.video'
+  | 'call.audio' 
+  | 'call.in_progress'
+  | 'common.cancel'
   | 'profile.call'
   | 'profile.videoCall'
   | 'messages.enterMessage'

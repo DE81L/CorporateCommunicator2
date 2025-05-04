@@ -4,38 +4,35 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import {
   MessageSquareIcon,
-  UsersIcon,
-  MegaphoneIcon,
   ClipboardCheckIcon,
   ContactIcon,
   SettingsIcon,
   XIcon,
-  WifiIcon,WifiOffIcon,
+  WifiIcon,
+  WifiOffIcon,
   LucideIcon,
   BookOpenIcon,
   LogOutIcon,
-
-  
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { type SectionType } from "@/types/sections";
 import {
-    DropdownMenu,
-    DropdownMenuTrigger,
-    DropdownMenuContent,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuItem
-
-  } from "@/components/ui/dropdown-menu"
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface SidebarProps {
   activeSection: SectionType;
   setActiveSection: (section: SectionType) => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  connectionStatus: "connecting" | "online" | "offline" | "disconnected";
+  connectionStatus: string;
 }
 
 export default function Sidebar({
@@ -48,7 +45,7 @@ export default function Sidebar({
   const { user, logout } = useAuth(); // Use useAuth here
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
-  
+
   const handleLogout = async () => {
     await logout();
     setLocation("/auth");
@@ -63,35 +60,10 @@ export default function Sidebar({
     }
   };
 
-  const navItems: Array<{
-    id: SectionType;
-    icon: LucideIcon;
-    label: string;
-    badge?: number;
-  }> = [
-    {
-      id: "messages",
-      icon: MessageSquareIcon,
-      label: t("sidebar.nav.messages"),
-    },
-    { id: "groups", icon: UsersIcon, label: t("sidebar.nav.groups") },
-    {
-      id: "announcements",
-      icon: MegaphoneIcon,
-      label: t("sidebar.nav.announcements"),
-    },
-    {
-      id: "requests",
-      icon: ClipboardCheckIcon,
-      label: t("sidebar.nav.requests"),
-      badge: 2,
-    },
+  const navItems: { id: SectionType; icon: LucideIcon; label: string; badge?: number }[] = [
+    { id: "messages", icon: MessageSquareIcon, label: t("sidebar.nav.messages") },
+    { id: "requests", icon: ClipboardCheckIcon, label: t("sidebar.nav.requests"), badge: 2 },
     { id: "contacts", icon: ContactIcon, label: t("sidebar.nav.contacts") },
-     {
-      id: "settings",
-      icon: SettingsIcon,
-      label: t("sidebar.nav.settings"),
-    },
     { id: "wiki", icon: BookOpenIcon, label: t("sidebar.nav.wiki") || "Wiki" },
   ];
 
@@ -162,11 +134,11 @@ export default function Sidebar({
             >
               <item.icon className="mr-3 h-5 w-5" />
 
-              <span>{item.label}</span> 
+              <span>{item.label}</span>
               {item.badge ? (
                 <Badge className="ml-auto" variant="destructive">
                   {item.badge}
-                </Badge> //destructive
+                </Badge>
               ) : null}
             </Button>
           ))}
@@ -176,18 +148,18 @@ export default function Sidebar({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex w-full items-center justify-start gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
-                    {user.firstName[0]}
-                    {user.lastName[0]}
-                </div>
+                <Avatar>
+                  <AvatarFallback>
+                    {(user.firstName?.[0] ?? "") + (user.lastName?.[0] ?? "")}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="flex-1 ">
-                    <p className="text-sm font-medium">
-                      {user.firstName} {user.lastName}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  <p className="text-sm font-medium">
+                    {user.firstName} {user.lastName}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
               </Button>
-             
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 bg-white border" align="start">
               <DropdownMenuLabel className="font-normal text-sm">
@@ -202,10 +174,9 @@ export default function Sidebar({
                 <SettingsIcon className="mr-2 h-4 w-4" />
                 {t("sidebar.nav.settings")}
               </DropdownMenuItem>
-              
 
               <DropdownMenuSeparator />
-             
+
               <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                 <LogOutIcon className="mr-2 h-4 w-4" />
                 {t("auth.logout")}
@@ -214,6 +185,6 @@ export default function Sidebar({
           </DropdownMenu>
         </div>
       </aside>
-    </> 
+    </>
   );
 }

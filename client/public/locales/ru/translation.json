@@ -1,7 +1,47 @@
 {
   "sidebar": {
     "nav": {
-      "contacts": "Контакты"
+      "messages": "Сообщения",
+      "groups": "Группы",
+      "announcements": "Объявления",
+      "requests": "Заявки",
+      "contacts": "Контакты",
+      "settings": "Настройки",
+      "wiki": "Wiki"
     }
+  },
+  "common": {
+    "refresh": "Обновить",
+    "appName": "Корпоративный Мессенджер",
+    "cancel": "Отмена"
+  },
+  "profile": {
+    "online": "Онлайн",
+    "offline": "Оффлайн",
+    "status": "Статус",
+    "title": "Система"
+  },
+  "system_info": {
+    "platform": "Платформа",
+    "architecture": "Архитектура",
+    "version": "Версия Node",
+    "total_memory": "Оперативная память",
+    "local_storage": "Локальное хранилище",
+    "connection_status": "Состояние соединения"
+  },
+  "auth": {
+    "logout": "Выйти"
+  },
+  "settings": {
+    "general": "Общие",
+    "account": "Учетная запись",
+    "privacy": "Конфиденциальность",
+    "notifications": "Уведомления",
+    "appearance": "Внешний вид",
+    "language": "Язык",
+    "theme": "Тема",
+    "lightMode": "Светлая",
+    "darkMode": "Темная",
+    "system": "Системная"
   }
 }

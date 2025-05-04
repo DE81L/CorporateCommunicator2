@@ -1,31 +1,21 @@
 import dotenv from 'dotenv';
-import pg from 'pg';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import { sql } from 'drizzle-orm';
+import * as pg from 'pg';
+const { Pool } = pg;
 import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import * as schema from '../shared/electron-shared/schema';
 
 // Load environment variables
 dotenv.config();
 
-// Environment detectiona
-const isElectron = process.env.ELECTRON === 'true';
-const isReplit = process.env.REPLIT_DB_URL !== undefined;
-
-/**
- * Configure database connection based on environment
- */
-
-const url = process.env.POSTGRES_URL;
+const url = process.env.POSTGRES_URL!;
 if (!url) {
   throw new Error('POSTGRES_URL is not set');
 }
-const { Pool } = pg;
-export const pool = new Pool({ connectionString: url, });
-
 
 const connection = postgres(url, { max: 1 });
 export const db = drizzle(connection, { schema });
+export const pool = new Pool({ connectionString: url });
 
 export async function checkDatabaseAndUser(): Promise<boolean> {
   try {
@@ -35,8 +25,6 @@ export async function checkDatabaseAndUser(): Promise<boolean> {
     return true; // Indicate success if the connection is established
   } catch (error) {
     console.error('Database connection or check failed:', error);
-
-
     return false;
   }
 }
@@ -47,14 +35,14 @@ export async function checkDatabaseAndUser(): Promise<boolean> {
 export async function checkColumnExists(
   tableName: string,
   columnName: string,
-): Promise<boolean>{
+): Promise<boolean> {
   console.log(`Checking if column '${columnName}' exists in table '${tableName}'`);
   try {
     const rows = await db.execute(sql`
       SELECT column_name
       FROM information_schema.columns
       WHERE table_name = ${tableName} AND column_name = ${columnName};
-    `) as { exists:number }[];
+    `) as { exists: number }[];
     return rows.length > 0;
   } catch (error) {
     console.error(`Error checking column existence:`, error);
@@ -85,32 +73,25 @@ export async function query(text: string, params?: any[]) {
 export async function connectToDb(): Promise<void> {
   console.log("Function 'connectToDb' called");
   try {
-    // Test connection
-    const client = await pool.connect();
-    const result = await client.query('SELECT NOW()');
-    client.release();
-
+    const result = await pool.query('SELECT NOW()');
     console.log('✅ Connected to PostgreSQL database');
     console.log(`Database time: ${result.rows[0].now}`);
-    
-   
-    
+
     // Log environment-specific database info
-    if (isElectron) {
+    if (process.env.ELECTRON === 'true') {
       console.log('Using local database configuration for Electron');
-    } else if (isReplit) {      
+    } else if (process.env.REPLIT_DB_URL !== undefined) {
       console.log('Using Replit database configuration');
     } else {
       console.log('Using standard web database configuration');
     }
-    
+
     return;
-    } catch (err) {
+  } catch (err) {
     console.error('Database connection error:', err);
     throw new Error(`Failed to connect to database: ${err instanceof Error ? err.message : String(err)}`);
   }
 }
-
 
 /**
  * Helper function to generate incremental IDs for in-memory collections

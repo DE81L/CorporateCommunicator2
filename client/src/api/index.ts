@@ -1,25 +1,21 @@
-import * as clientAPI from '../apiClient';
+import * as clientAPI from "../apiClient";
+import type { ElectronAPI } from "@/lib/electron-types";
 
-declare global {
-  interface Window {
-    electron?: {
-      api?: any;
-    };
-  }
-}
+export type { ElectronAPI };
 
-const isElectron = window.navigator.userAgent.includes("Electron");
+export const isElectron = Boolean(window.electron);
+
+// Get direct reference to electron API
+const eapi = window.electron;
 
 export const api = {
-  getSystemInfo: () => {
-    return isElectron && window.electron?.api?.system
-      ? window.electron.api.system.getSystemInfo()
-      : clientAPI.getSystemInfo();
+  app: {
+    minimize: () => eapi?.app?.minimize?.(),
+    maximize: () => eapi?.app?.maximize?.(),
+    quit: () => eapi?.app?.quit?.(),
   },
-  getAppVersion: () => {
-    return isElectron && window.electron?.api?.app
-      ? window.electron.api.app.getAppVersion()
-      : clientAPI.getAppVersion();
+  system: {
+    getSystemInfo: () => eapi?.system?.getSystemInfo?.(),
+    isOnline: () => eapi?.system?.isOnline?.(),
   },
-  // Add other API functions here, handling both Electron and client implementations
 };

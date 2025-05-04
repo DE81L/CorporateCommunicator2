@@ -11,6 +11,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast"; // Предполагается использование shadcn/ui toast
 import { useTranslations } from '@/hooks/use-translations'; // Предполагается использование переводов
+import { createApiClient } from "@/lib/api-client"; // Новый API клиент
 
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -29,6 +30,8 @@ export interface UserWithoutPassword {
   email: string | null;
   firstName: string | null;
   lastName: string | null;
+  phone?: string;
+  isAdmin?: number;
   isOnline: boolean | number; // Учитывая возможное представление в БД
   avatarUrl: string | null;
   // Добавьте другие поля пользователя, если они есть
@@ -49,25 +52,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const { t } = useTranslations(); // Хук для переводов
   const { toast } = useToast();
+  const apiClient = createApiClient(); // Новый API клиент
 
   // Запрос для получения текущего пользователя при загрузке приложения
   const { data: user, isLoading: isLoadingUser } = useQuery<UserWithoutPassword | null>({
     queryKey: ["/api/user"], // Используем ключ, который будет обновляться при логине/логауте
     queryFn: async () => {
       try {
-        const res = await fetch("/api/user"); // Эндпоинт для проверки сессии/токена
-         if (res.status === 401) {
+        return await apiClient.request("/api/user");
+      } catch (error) {
+        if (error instanceof Error && error.message.includes("401")) {
           return null; // Не авторизован
         }
-        if (!res.ok) {
-          throw new Error("Failed to fetch user data");
-        }
-        const userData = await res.json();
-        // Убедимся, что возвращаем null, если пользователя нет, а не пустой объект или ошибку
-        return userData && userData.id ? userData : null;
-      } catch (error) {
-        console.error("Error fetching initial user:", error);
-        return null; // Возвращаем null при ошибке
+        throw error;
       }
     },
     staleTime: 5 * 60 * 1000, // Кэшировать данные пользователя на 5 минут
@@ -75,28 +72,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   // Мутация для входа
-  const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginCredentials) => {
-      const res = await fetch(`${baseURL}/api/login`, {
+  const loginMutation = useMutation<
+    UserWithoutPassword,
+    Error,
+    LoginCredentials
+  >({
+    mutationFn: async (credentials) => {
+      const response = await apiClient.request("/api/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: 'include',
         body: JSON.stringify(credentials),
       });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Login failed');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
       }
-      return await res.json();
+      return response.json();
     },
-    onSuccess: (loggedInUser) => {
-      queryClient.setQueryData(["/api/user"], loggedInUser);
+    onSuccess: (user) => {
+      queryClient.setQueryData(["/api/user"], user);
     },
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        title: "Login failed",
+        title: t('auth.loginFailed'),
         description: error.message,
       });
     },
@@ -105,21 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Мутация для выхода
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      // Здесь можно оставить реальный запрос на выход, если он есть,
-      // или просто очистить состояние на клиенте
-          try {
-        const res = await fetch('/api/logout', {
-           method: 'POST',
-           credentials: 'include',
-           });
-        if (!res.ok && res.status !== 401) { // Игнорируем 401, если пользователь уже не авторизован
-          console.warn("Logout API call failed:", res.statusText);
-          // Можно не выбрасывать ошибку, чтобы выход на клиенте все равно произошел
-        }
-      } catch (error) {
-         console.error("Error during logout API call:", error);
-         // Все равно продолжаем выход на клиенте
-      }
+      return await apiClient.request("/api/logout", { method: "POST" });
     },
     onSuccess: () => {
       // Очищаем данные пользователя в кэше
@@ -128,11 +112,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       queryClient.invalidateQueries(); // Инвалидировать все запросы для чистого состояния
       // Навигация на страницу входа обычно происходит в компоненте/роутере
     },
-     onError: (error: Error) => {
+    onError: (error: Error) => {
       console.error("Logout mutation failed:", error);
-       // Даже если API выхода не сработал, лучше очистить локальное состояние
-       queryClient.setQueryData(["/api/user"], null);
-       queryClient.invalidateQueries();
+      // Даже если API выхода не сработал, лучше очистить локальное состояние
+      queryClient.setQueryData(["/api/user"], null);
+      queryClient.invalidateQueries();
     },
   });
 

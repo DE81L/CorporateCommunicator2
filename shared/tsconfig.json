@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     "target": "es2020",
-    "module": "esnext",
+    "module": "ESNext",
     "lib": ["es2020"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "outDir": "./dist",
+    "outDir": "../dist/shared",
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "node",

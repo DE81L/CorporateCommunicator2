@@ -3,7 +3,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -19,51 +18,58 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus } from "lucide-react";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { useElectron } from "@/hooks/use-electron";
+import { useState, useEffect } from "react";
+import { insertRequestSchema } from "@shared/schema";
+import { z } from "zod";
 
-type FormValues = z.infer<typeof schema>;
+type RequestFormValues = z.infer<typeof insertRequestSchema>;
 
 interface Props {
+  requests?: any[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
-  requests: any[];
 }
 
-export function RequestModal({ open, onOpenChange, onSuccess, requests }: Props) {
-  if (!requests || requests.length === 0) return null;
+export default function RequestModal({ open, onOpenChange, onSuccess, requests = [] }: Props) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { api } = useElectron();
 
-  const { toast } = useToast()
-  const queryClient = useQueryClient()
-  const { user, subdivisions } = useElectron()
+  const [subdivisions, setSubdivisions] = useState<{ id: number; name: string }[]>([]);
+
+  useEffect(() => {
+    if (!open) return;
+    (async () => {
+      const subs = await fetch("/api/subdivisions", { credentials: 'include' }).then(r => r.json());
+      setSubdivisions(subs);
+      form.reset({ ...form.getValues(), receiverSubdivisionId: subs[0]?.id ?? 0 });
+    })();
+  }, [open]);
 
   const taskOptions = [
-    { id: "1", name: "Не работает принтер" },
-    { id: "2", name: "Нет интернета" },
-    { id: "3", name: "Не работает проектор" },
-    { id: "4", name: "другое" },
-  ]
-
-  const requestSchema = z.object({
-    receiverSubdivisionId: z.coerce.number(),
-    cabinet: z.string().optional(),
-    taskId: z.string().min(1, "Выберите задачу"),
-    customTitle: z.string().optional(),
-    comment: z.string().optional(),
-  });
-
-  type RequestFormValues = z.infer<typeof requestSchema>;
+    { id: 1, name: "Не работает принтер" },
+    { id: 2, name: "Нет интернета" },
+    { id: 3, name: "Не работает проектор" },
+    { id: 4, name: "другое" },
+  ];
 
   const form = useForm<RequestFormValues>({
-    resolver: zodResolver(requestSchema),
+    resolver: zodResolver(insertRequestSchema),
     defaultValues: {
       receiverSubdivisionId: subdivisions[0]?.id ?? 0,
-      taskId: taskOptions[0]?.id ?? "",
+      taskId: taskOptions[0]?.id ?? 0,
+      phone: user?.phone ?? '',
+      cabinet: '',
+      customTitle: '',
+      comment: '',
     },
   });
 
@@ -71,12 +77,13 @@ export function RequestModal({ open, onOpenChange, onSuccess, requests }: Props)
     mutationFn: async (data: RequestFormValues) => {
       const payload = {
         ...data,
+        creatorId: user?.id,
         numberOfRequest: crypto.randomUUID().slice(0, 8),
-        requestStatus: 'новая',
-        grade: null, // Initialize grade
+        requestStatus: "новая",
+        grade: null,
       };
       const res = await fetch("/api/requests", {
-        method: "POST", // create a new request
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -97,7 +104,7 @@ export function RequestModal({ open, onOpenChange, onSuccess, requests }: Props)
       }),
   });
 
-  const isOtherSelected = form.watch("taskId") === "4";
+  const isOtherSelected = form.watch("taskId") === 4;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -114,7 +121,7 @@ export function RequestModal({ open, onOpenChange, onSuccess, requests }: Props)
             <FormField control={form.control} name="receiverSubdivisionId" render={({ field }) => (
               <FormItem>
                 <FormLabel>Получатель</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value.toString()}>
+                <Select onValueChange={(val) => field.onChange(+val)} defaultValue={String(field.value)}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите подразделение" />
@@ -122,7 +129,10 @@ export function RequestModal({ open, onOpenChange, onSuccess, requests }: Props)
                   </FormControl>
                   <SelectContent>
                     <SelectGroup>
-                      {subdivisions.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}
+                      {subdivisions.length
+                        ? subdivisions.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)
+                        : <div className="px-2 py-1 text-xs text-muted-foreground">Нет подразделений</div>
+                      }
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -150,7 +160,7 @@ export function RequestModal({ open, onOpenChange, onSuccess, requests }: Props)
             <FormField control={form.control} name="taskId" render={({ field }) => (
               <FormItem>
                 <FormLabel>Задача</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={(val) => field.onChange(+val)} defaultValue={String(field.value)}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите задачу" />
@@ -158,7 +168,7 @@ export function RequestModal({ open, onOpenChange, onSuccess, requests }: Props)
                   </FormControl>
                   <SelectContent>
                     <SelectGroup>
-                      {taskOptions.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                      {taskOptions.map(t => <SelectItem key={t.id} value={t.id.toString()}>{t.name}</SelectItem>)}
                     </SelectGroup>
                   </SelectContent>
                 </Select>

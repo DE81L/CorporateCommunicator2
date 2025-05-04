@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslations } from '@/lib/i18n/translations.ts';
+import { useTranslations } from '@/hooks/use-translations';
 import {
   Card,
   CardContent,
@@ -27,21 +27,12 @@ import { Button } from '@/components/ui/button';
 import { Bell, Moon, Sun, Globe, User, Lock, Settings as SettingsIcon } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
-  const { t, language, setLanguage } = useTranslations();
+  const { t, currentLanguage, changeLanguage } = useTranslations();
   const { toast } = useToast();
   const [theme, setTheme] = React.useState<'light' | 'dark' | 'system'>('system');
   const [emailNotifications, setEmailNotifications] = React.useState(true);
   const [pushNotifications, setPushNotifications] = React.useState(true);
   const [desktopNotifications, setDesktopNotifications] = React.useState(true);
-
-  const handleLanguageChange = (value: string) => {
-    setLanguage(value as 'ru' | 'en');
-    toast({
-      title: t('settings.changesApplied'),
-      description: t('settings.language') + ': ' + (value === 'ru' ? 'Русский' : 'English'),
-      duration: 2000,
-    });
-  };
 
   const handleThemeChange = (value: 'light' | 'dark' | 'system') => {
     setTheme(value);
@@ -170,8 +161,8 @@ const SettingsPage: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="language">{t('settings.language')}</Label>
                   <Select
-                    value={language}
-                    onValueChange={handleLanguageChange}
+                    value={currentLanguage}
+                    onValueChange={changeLanguage}
                   >
                     <SelectTrigger id="language" className="flex items-center gap-2">
                       <Globe className="h-4 w-4" />

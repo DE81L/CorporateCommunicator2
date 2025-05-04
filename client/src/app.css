@@ -1,0 +1,7 @@
+.viewport-h {
+  height: min(100vh, 100dvh);
+}
+
+.chat-width {
+  max-width: var(--chat-width, 420px);
+}

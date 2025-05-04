@@ -1,16 +1,12 @@
-import { type Config } from 'drizzle-kit';
+import { defineConfig } from 'drizzle-kit';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-if (!process.env.POSTGRES_URL) {
-  throw new Error('POSTGRES_URL is not set');
-}
-
-export default {
-    schema: './shared/schema.ts',
-        out: './drizzle',
-        dialect: 'postgresql',
-        dbCredentials: {
-            url: process.env.POSTGRES_URL!,
-        }
-} satisfies Config;
+export default defineConfig({
+  schema: './shared/electron-shared/schema/**/*.ts',
+  out: './migrations',
+  dialect: 'postgresql',
+  dbCredentials: {
+    url: process.env.DATABASE_URL!
+  }
+});
