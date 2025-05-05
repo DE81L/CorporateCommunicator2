@@ -15,7 +15,7 @@ import {
   Video,
   Mail,
 } from "lucide-react";
-import { createApiClient } from "../lib/queryClient";
+import { apiClient } from "@/lib/api-client";
 
 interface ContactsProps {
   onStartCall: (
@@ -26,7 +26,6 @@ interface ContactsProps {
 
 export default function ContactsSection({ onStartCall }: ContactsProps) {
   const { user } = useAuth();
-  const apiClient = createApiClient(true)
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -37,7 +36,9 @@ export default function ContactsSection({ onStartCall }: ContactsProps) {
     error,
   } = useQuery<User[]>({
     queryKey: ["/api/users"],
-    queryFn: () => apiClient.request("GET", "/api/users").then((res) => res.json()),
+    queryFn: async () => {
+      return await apiClient.request("/api/users");
+    },
   });
 
   // Filter users based on search query

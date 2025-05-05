@@ -10,6 +10,7 @@ import { formatDistance } from "date-fns";
 import { ru } from "date-fns/locale";
 import { queryClient } from "@/lib/queryClient";
 import { useTranslations } from "@/hooks/use-translations";
+import { createApiClient } from "@/lib/api-client";
 
 interface Message {
   id: number;
@@ -44,16 +45,25 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { sendMessage, lastMessage } = useWebSocket();
   const { t } = useTranslations();
+  const apiClient = createApiClient();
 
   // Получение списка пользователей
   const { data: users, isLoading: isLoadingUsers } = useQuery<User[]>({
     queryKey: ["/api/users"],
+    queryFn: async () => {
+      return await apiClient.request("/api/users");
+    }
   });
 
   // Получение сообщений при выборе пользователя
   const { data: messages, isLoading: isLoadingMessages } = useQuery<Message[]>({
     queryKey: ["/api/messages", selectedUser?.id],
     enabled: !!selectedUser,
+    queryFn: async () => {
+      return await apiClient.request(
+        `/api/messages?chatWith=${selectedUser!.id}`,
+      );
+    }
   });
 
   // Прослушивание новых сообщений из WebSocket

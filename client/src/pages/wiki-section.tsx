@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
+import { createApiClient } from "@/lib/api-client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { createApiClient } from "../lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -58,6 +58,7 @@ type WikiEntryFormValues = z.infer<typeof wikiEntryFormSchema>;
 type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
 export default function WikiSection() {
+  const apiClient = createApiClient();
   const { request } = createApiClient(true);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -76,8 +77,10 @@ export default function WikiSection() {
     isLoading: isLoadingEntries,
     refetch: refetchEntries,
   } = useQuery<WikiEntry[]>({
-    queryKey: ['/api/wiki'],
+    queryKey: ['/api/wiki/entries'],
     enabled: activeTab === "entries",
+    queryFn: async () => {
+      return await apiClient.request("/api/wiki");    }
   });
 
   // Wiki categories query
@@ -85,8 +88,10 @@ export default function WikiSection() {
     data: categories = [],
     isLoading: isLoadingCategories,
     refetch: refetchCategories,
-  } = useQuery<WikiCategory[]>({
-    queryKey: ['/api/wiki/categories'],
+  } = useQuery<WikiCategory[]>({    queryKey: ['/api/wiki/categories'],
+
+    queryFn: async () => {
+      return await apiClient.request("/api/wiki/categories");    },
     enabled: true,
   });
 

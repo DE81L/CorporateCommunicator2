@@ -1,3 +1,4 @@
+import { createApiClient } from "@/lib/api-client";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
@@ -33,19 +34,16 @@ export default function AnnouncementsSection() {
   const { toast } = useToast();
   const { } = useAuth();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
-    const [announcements, setAnnouncements] = useState<any[]>([]);
+    const [announcements, setAnnouncements] = useState<any[]>([]);const apiClient = createApiClient();
 
     // Fetch announcements
   const {
     isLoading: isAnnouncementsLoading, 
     error: announcementsError,data,
   } = useQuery({queryKey: ['/api/announcements'], queryFn: async () => {
-    const response = await fetch("/api/groups?isAnnouncement=true"); 
-      if (!response.ok) {
-      throw new Error("Failed to fetch announcements");
-    }    
-    const data = await response.json();
-    return data;
+    return await apiClient.request("/api/announcements");
+
+
   }});
   
   // Create announcement mutation (creates a group with isAnnouncement=true)

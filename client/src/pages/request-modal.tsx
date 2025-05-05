@@ -26,13 +26,13 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { useElectron } from "@/hooks/use-electron";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { insertRequestSchema } from "@shared/schema";
 import { z } from "zod";
+import { createApiClient } from "@/lib/api-client";
 
 interface RequestFormValues {
-  receiverDepartmentId: number;
+  receiverDepartmentId?: number;
   taskId: number;
   cabinet: string;
   phone: string;
@@ -52,24 +52,23 @@ export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { api } = useElectron();
+  const apiClient = createApiClient();
 
-  const [departments, setDepartments] = useState<{ id: number; name: string }[]>([]);
+  const { data: departments = [], isLoading: isDepartmentsLoading, error: departmentsError } = useQuery<{ id: number; name: string }[]>({
+    queryKey: ["/api/departments"],
+    queryFn: async () => {
+      return await apiClient.request("/api/departments");
+    },
+    enabled: open
+  });
 
-  useEffect(() => {
-    if (!open) return;
-    (async () => {
-      try {
-        const deptsRes = await fetch('/api/departments', { credentials:'include' });
-        if (!deptsRes.ok) throw new Error('Не удалось загрузить список подразделений');
-        const depts = await deptsRes.json();
-        setDepartments(depts);
-        form.reset({ ...form.getValues(), receiverDepartmentId: depts[0]?.id ?? 0 });
-      } catch(e) {
-        console.error(e)
-      }
-    })();
-  }, [open]);
+  if (departments.length > 0 && form.getValues().receiverDepartmentId === undefined) {
+    form.reset({ ...form.getValues(), receiverDepartmentId: departments[0]?.id });
+  }
+
+  const [isError, setIsError] = useState<boolean>(false)
+
+
 
   const taskOptions = [
     { id: 1, name: "Не работает принтер" },
@@ -99,14 +98,10 @@ export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
         requestStatus: "новая",
         grade: null,
       };
-      const res = await fetch("/api/requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(`Ошибка API: ${res.status}`);
-      return res.json();
-    },
+       const res = await apiClient.request("POST","/api/requests", payload)
+        return res
+      },
+    
     onSuccess: () => {
       toast({ title: "Заявка создана" });
       queryClient.invalidateQueries({ queryKey: ["/api/requests"] });
@@ -122,6 +117,12 @@ export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
   });
 
   const isUrgent = form.watch("isUrgent");
+  useEffect(() => {
+    if (departmentsError) {
+      setIsError(true)
+      console.error("Failed to load departments", departmentsError)
+    }
+  }, [departmentsError])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -131,15 +132,25 @@ export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((data) => createRequest.mutate(data))} 
-                className="space-y-4">
+          <form onSubmit={form.handleSubmit((data) => createRequest.mutate(data))} className="space-y-4">
             <FormField
               control={form.control}
               name="receiverDepartmentId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Подразделение</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value.toString()}>
+                  {isDepartmentsLoading ? (
+                    <div className="flex justify-center items-center h-10">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  ) : isError ? (
+                    <div className="text-center py-2 text-red-500">
+                      Error loading departments. Please try again.
+                    </div>
+                  ) : null}
+
+                  <Select onValueChange={field.onChange} value={field.value?.toString()}>
+
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Выберите подразделение" />
@@ -217,10 +228,7 @@ export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
               render={({ field }) => (
                 <FormItem className="flex items-center gap-2">
                   <FormControl>
-                    <Checkbox 
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                   </FormControl>
                   <FormLabel>Срочная заявка</FormLabel>
                 </FormItem>
