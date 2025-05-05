@@ -12,10 +12,11 @@
   },
   "common": {
     "refresh": "Обновить",
-    "appName": "Корпоративный Мессенджер",
+    "contacts": "Контакты",
+     "appName": "Нексус",
     "cancel": "Отмена"
   },
-  "profile": {
+   "profile": {
     "online": "Онлайн",
     "offline": "Оффлайн",
     "status": "Статус",

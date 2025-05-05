@@ -23,6 +23,8 @@ i18n
     resources,
     supportedLngs: ['ru','ru-RU','en'],
     fallbackLng: 'ru',
+    returnNull: false,
+    returnEmptyString: false,
     interpolation: {
       escapeValue: false
     },

@@ -19,7 +19,7 @@ async function startServer() {
   
   const { app, server } = await createApp();
   const hub: WebSocketHub = setupWebSocket(server);
-  await registerRoutes(app, hub);
+  await registerRoutes(app);
 
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
   

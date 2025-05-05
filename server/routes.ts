@@ -1,8 +1,8 @@
-import type { Express, Request, Response } from "express";
+import { Router, type Express, Request, Response } from "express";
 import { setupAuth } from "./auth";
 import { insertRequestSchema } from "../shared/electron-shared/schema";
 import { storage } from "./storage";
-import { pool } from "./db";
+import { pool } from "./db";               // нужен для SELECT ниже
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<void> {
@@ -93,13 +93,15 @@ export async function registerRoutes(app: Express): Promise<void> {
     res.json({ status: "ok" });
   });
 
+  // ─── Departments ─────────────────────────────────────────────────────────
   const departmentsRouter = Router();
 
-  departmentsRouter.get('/', async (_, res) => {
-    const { rows } = await pool.query('SELECT id, name FROM departments ORDER BY name');
+  departmentsRouter.get("/", async (_req, res) => {
+    const { rows } = await pool.query(
+      "SELECT id, name FROM departments ORDER BY name",
+    );
     res.json(rows);
   });
 
-  app.use('/api/departments', departmentsRouter);
+  app.use("/api/departments", departmentsRouter);
 }
-
