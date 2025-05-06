@@ -16,6 +16,7 @@ import {
   Mail,
 } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
+// Remove the line: const apiClient = createApiClient();
 
 interface ContactsProps {
   onStartCall: (

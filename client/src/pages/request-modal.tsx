@@ -23,13 +23,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { insertRequestSchema } from "@shared/schema";
 import { z } from "zod";
 import { createApiClient } from "@/lib/api-client";
+
+export type Department = {
+  id: number;
+  name: string;
+};
 
 interface RequestFormValues {
   receiverDepartmentId?: number;
@@ -62,13 +67,7 @@ export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
     enabled: open
   });
 
-  if (departments.length > 0 && form.getValues().receiverDepartmentId === undefined) {
-    form.reset({ ...form.getValues(), receiverDepartmentId: departments[0]?.id });
-  }
-
-  const [isError, setIsError] = useState<boolean>(false)
-
-
+  const [isError, setIsError] = useState<boolean>(false);
 
   const taskOptions = [
     { id: 1, name: "Не работает принтер" },
@@ -89,6 +88,19 @@ export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
     }
   });
 
+  useEffect(() => {
+    if (departments.length && form.getValues().receiverDepartmentId === undefined) {
+      form.reset({ ...form.getValues(), receiverDepartmentId: departments[0].id });
+    }
+  }, [departments]);
+
+  useEffect(() => {
+    if (departmentsError) {
+      setIsError(true);
+      console.error("Failed to load departments", departmentsError);
+    }
+  }, [departmentsError]);
+
   const createRequest = useMutation({
     mutationFn: async (data: RequestFormValues) => {
       const payload = {
@@ -98,10 +110,9 @@ export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
         requestStatus: "новая",
         grade: null,
       };
-       const res = await apiClient.request("POST","/api/requests", payload)
-        return res
-      },
-    
+      const res = await apiClient.request("POST", "/api/requests", payload);
+      return res;
+    },
     onSuccess: () => {
       toast({ title: "Заявка создана" });
       queryClient.invalidateQueries({ queryKey: ["/api/requests"] });
@@ -117,12 +128,6 @@ export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
   });
 
   const isUrgent = form.watch("isUrgent");
-  useEffect(() => {
-    if (departmentsError) {
-      setIsError(true)
-      console.error("Failed to load departments", departmentsError)
-    }
-  }, [departmentsError])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -150,14 +155,13 @@ export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
                   ) : null}
 
                   <Select onValueChange={field.onChange} value={field.value?.toString()}>
-
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Выберите подразделение" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {departments.map((department) => (
+                      {departments.map((department: { id: number; name: string }) => (
                         <SelectItem key={department.id} value={department.id.toString()}>
                           {department.name}
                         </SelectItem>
@@ -185,11 +189,11 @@ export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                        {taskOptions.map(t => (
-                          <SelectItem key={t.id} value={t.id.toString()}>
-                            {t.name}
-                          </SelectItem>
-                        ))}
+                      {taskOptions.map((t) => (
+                        <SelectItem key={t.id} value={t.id.toString()}>
+                          {t.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </FormItem>
@@ -243,7 +247,10 @@ export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
                   <FormItem>
                     <FormLabel>Дедлайн</FormLabel>
                     <FormControl>
-                      <DateTimePicker {...field} />
+                      <DateTimePicker
+                        {...field}
+                        value={field.value ? new Date(field.value) : undefined}
+                      />
                     </FormControl>
                   </FormItem>
                 )}

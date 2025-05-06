@@ -49,9 +49,9 @@ export default function RequestsSection() {
         return (
           <Badge 
             variant={
-              status === "выполнена" ? "success" :
-              status === "в работе" ? "warning" : 
-              "default"
+              status === "выполнена" ? "completed" :
+              status === "в работе" ? "inProgress" : 
+              "pending"
             }
           >
             {status}

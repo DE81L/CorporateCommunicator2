@@ -50,12 +50,9 @@ export default function GroupsSection() {
     data: groups = [],
     isLoading: isLoadingGroups,
     error: groupsError,
-    setData: setGroups
   } = useQuery<Group[]>({
     queryKey: ["/api/groups"],
-    queryFn: async () => {
-      return await apiClient.request("/api/groups");
-    },
+    queryFn: () => apiClient.request("/api/groups"),
   });
   // Fetch all users for adding to groups
   useQuery<User[]>({
@@ -66,9 +63,8 @@ export default function GroupsSection() {
   });
   // Create group mutation
   const createGroupMutation = useMutation({
-    mutationFn: async (data: CreateGroupFormValues) => {
-      return await apiClient.request("POST", "/api/groups", data);
-    },
+    mutationFn: (data: CreateGroupFormValues) =>
+      apiClient.request("POST", "/api/groups", data),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
       setIsCreateGroupDialogOpen(false);
@@ -76,7 +72,7 @@ export default function GroupsSection() {
         title: "Group created",
         description: "Your new group has been created successfully.",
       });
-    }, 
+    },
     onError: (error: Error) => {
       toast({
         title: "Failed to create group",
@@ -86,32 +82,31 @@ export default function GroupsSection() {
     },
   });
   const updateGroupMutation = useMutation({
-    mutationFn: async ({id, data}: {id: number, data: Partial<Group>}) => {
-      return await apiClient.request('PUT', `/api/groups/${id}`, data);
+    mutationFn: async ({ id, data }: { id: number; data: Partial<Group> }) => {
+      return await apiClient.request("PUT", `/api/groups/${id}`, data);
     },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
+    },
   });
   const deleteGroupMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiClient.request('DELETE', `/api/groups/${id}`);
+      return await apiClient.request("DELETE", `/api/groups/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
-    }
+      queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
+    },
   });
   const createGroup = async (data: CreateGroupFormValues) => {
+    await apiClient.request("POST", "/api/groups", data);
     createGroupMutation.mutate(data);
   };
   const updateGroup = async (id: number, data: Partial<Group>) => {
-    updateGroupMutation.mutate({id,data})
+    updateGroupMutation.mutate({ id, data });
   };
   const deleteGroup = async (id: number) => {
-      deleteGroupMutation.mutate(id);
-      });
-    }
-  });
+    deleteGroupMutation.mutate(id);
+  };
   const form = useForm<CreateGroupFormValues>({
     resolver: zodResolver(createGroupSchema),
     defaultValues: {
@@ -125,7 +120,6 @@ export default function GroupsSection() {
     createGroup(data);
   };
   return (
-    
     <div className="flex-1 overflow-auto p-6">
       <div className="mb-6 flex justify-between items-center">
         <h2 className="text-xl font-semibold">Groups</h2>
@@ -239,7 +233,7 @@ export default function GroupsSection() {
               <div
                 className={`h-24 flex items-center justify-center ${
                   group.isAnnouncement ? "bg-secondary-100" : "bg-primary-100"
-                  }`}
+                }`}
               >
                 <Users
                   className={`h-12 w-12 ${
@@ -259,13 +253,12 @@ export default function GroupsSection() {
 
                 <div className="mt-4 flex justify-between items-center">
                   <div className="flex -space-x-2">
-                    
                     <Avatar className="h-6 w-6 border border-white">
                       <AvatarFallback className="text-xs bg-blue-100">
                         A
                       </AvatarFallback>
                     </Avatar>
-                     <Avatar className="h-6 w-6 border border-white">
+                    <Avatar className="h-6 w-6 border border-white">
                       <AvatarFallback className="text-xs bg-green-100">
                         B
                       </AvatarFallback>
@@ -295,9 +288,12 @@ export default function GroupsSection() {
                     }
                   >
                     Update
-                    </Button>
-                  <Button variant="destructive" className="p-0 h-auto" onClick={() => deleteGroup(group.id)}>
-                  
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="p-0 h-auto"
+                    onClick={() => deleteGroup(group.id)}
+                  >
                     Delete
                   </Button>
                 </div>

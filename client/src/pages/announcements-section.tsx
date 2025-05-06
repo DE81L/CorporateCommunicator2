@@ -1,10 +1,10 @@
 import { createApiClient } from "@/lib/api-client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "../hooks/use-toast";
-import { useForm, } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   Form,
@@ -33,54 +33,48 @@ type CreateAnnouncementFormValues = z.infer<typeof createAnnouncementSchema>;
 export default function AnnouncementsSection() {
   const { toast } = useToast();
   const { } = useAuth();
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
-    const [announcements, setAnnouncements] = useState<any[]>([]);const apiClient = createApiClient();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
+  const apiClient = createApiClient();
 
-    // Fetch announcements
-  const {
-    isLoading: isAnnouncementsLoading, 
-    error: announcementsError,data,
-  } = useQuery({queryKey: ['/api/announcements'], queryFn: async () => {
-    return await apiClient.request("/api/announcements");
-
-
-  }});
+  // Fetch announcements
+  const { data: announcements = [], isLoading: isAnnouncementsLoading, error: announcementsError } = 
+    useQuery<any[]>({
+      queryKey: ['/api/announcements'], 
+      queryFn: () => apiClient.request('/api/announcements'),
+      initialData: []
+    });
   
   // Create announcement mutation (creates a group with isAnnouncement=true)
-    const createAnnouncementMutation = useMutation({
-      
-      mutationFn: async (data: CreateAnnouncementFormValues) => {
-        
-          await fetch("/api/groups", {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          });
-          return null
-      },
-      
-      onSuccess: () => { 
-        queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
-        setIsCreateDialogOpen(false);
-        toast({
-          title: "Announcement created",
-          description: "Your announcement has been posted successfully.",
-        });
-      },
-      onError: (error: Error): void => {
-        toast({
-          title: "Failed to create announcement",
-          description: error.message,
-          variant: "destructive",
-        });
-      },
-      
-      onSettled: () => {
-        queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
-      }
-    });
+  const createAnnouncementMutation = useMutation({
+    mutationFn: async (data: CreateAnnouncementFormValues) => {
+      await fetch("/api/groups", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      return null;
+    },
+    onSuccess: () => { 
+      queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
+      setIsCreateDialogOpen(false);
+      toast({
+        title: "Announcement created",
+        description: "Your announcement has been posted successfully.",
+      });
+    },
+    onError: (error: Error): void => {
+      toast({
+        title: "Failed to create announcement",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
+    }
+  });
 
   const form = useForm<CreateAnnouncementFormValues>({
     resolver: zodResolver(createAnnouncementSchema),
@@ -95,15 +89,9 @@ export default function AnnouncementsSection() {
     createAnnouncementMutation.mutate(data);
   };
 
-  useEffect(()=> {
-    if(data){
-      setAnnouncements(data);
-    }
-  },[data])
   if (announcementsError) {
-      console.error("Error fetching announcements:", announcementsError);
+    console.error("Error fetching announcements:", announcementsError);
   }
-  
 
   // Mock function to get department name for demo
   const getDepartmentName = (id: number) => {

@@ -104,7 +104,7 @@ export default function WikiSection() {
     queryKey: ['/api/wiki/categories', activeCategoryId, 'entries'],
     queryFn: () => {
       if (!activeCategoryId) return Promise.resolve([] as WikiEntry[]);
-      return request('GET', `/api/wiki/categories/${activeCategoryId}/entries`).then((res) => res.json());
+      return request<any[]>('GET', `/api/wiki/categories/${activeCategoryId}/entries`).then((res) => res.json());
     },
     enabled: !!activeCategoryId,
   });
