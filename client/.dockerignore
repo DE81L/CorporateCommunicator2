@@ -1,0 +1,21 @@
+# Dependencies
+**/node_modules
+**/dist
+
+# Environment and logs
+**/.env
+**/*.log
+
+# Version control
+.git
+**/.gitignore
+
+# Docker files
+**/Dockerfile
+docker-compose.yml
+**/.dockerignore
+
+# Development files
+**/.vscode
+**/.idea
+**/coverage

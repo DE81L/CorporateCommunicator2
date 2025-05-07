@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mess
+
+  supabase:
+    image: supabase/postgres:15.8.1.044
+    restart: always
+    env_file: .env
+    volumes:
+      - supa_db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: mess
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    depends_on:
+      - supabase
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@supabase:5432/mess
+      VITE_API_URL: http://server:3000
+    ports:
+      - "3000:3000"
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    depends_on:
+      - server
+    ports:
+      - "5173:80"
+
+volumes:
+  db_data:
+  supa_db:
