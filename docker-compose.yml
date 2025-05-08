@@ -1,49 +1,46 @@
 version: '3.8'
 services:
-  db:
-    image: postgres:15
+  postgres:
+    image: supabase/postgres:15.2.0
     restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
     volumes:
       - db_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: mess
-
-  supabase:
-    image: supabase/postgres:15.8.1.044
-    restart: always
-    env_file: .env
-    volumes:
-      - supa_db:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: mess
+      - '5432:5432'
 
-  server:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    depends_on:
-      - supabase
+  gotrue:
+    image: supabase/gotrue:latest
+    depends_on: ['postgres']
     environment:
-      DATABASE_URL: postgres://postgres:postgres@supabase:5432/mess
-      VITE_API_URL: http://server:3000
+      GOTRUE_DB_DRIVER: 'postgres'
+      GOTRUE_DB_DATABASE_URL: 'postgres://postgres:postgres@postgres:5432/postgres'
+      GOTRUE_SITE_URL: 'http://localhost:5173'
     ports:
-      - "3000:3000"
+      - '9999:9999'
 
-  client:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-    depends_on:
-      - server
+  rest:
+    image: supabase/postgrest:latest
+    depends_on: ['postgres']
+    environment:
+      PGRST_DB_URI: 'postgres://postgres:postgres@postgres:5432/postgres'
+      PGRST_DB_SCHEMA: 'public'
+      PGRST_DB_ANON_ROLE: 'anon'
     ports:
-      - "5173:80"
+      - '3000:3000'
+
+  realtime:
+    image: supabase/realtime:latest
+    depends_on: ['postgres']
+    environment:
+      DB_HOST: postgres
+      DB_NAME: postgres
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      PORT: 4000
+    ports:
+      - '4000:4000'
 
 volumes:
   db_data:
-  supa_db:
