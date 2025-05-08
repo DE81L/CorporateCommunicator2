@@ -9,6 +9,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "src"),
       "@shared": path.resolve(__dirname, "../shared/electron-shared"),
+      "/^shared\/electron-shared\/schema\/.*$/": path.resolve(__dirname, "src/shims/empty.ts")
     },
   },
   server: {
