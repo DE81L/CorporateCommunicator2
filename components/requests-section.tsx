@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import RequestModal from "@/pages/request-modal";
 
 export default function RequestsSection() {

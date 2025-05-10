@@ -1,32 +1,23 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import morgan from 'morgan';
+import cors from 'cors';
 import { connectDb } from './db';
 import router from './routes';
-import cors from 'cors';
+import { log } from '../util/logger';
+import { logger } from './config/logging';
 
-async function createApp() {
-  const app = express();
-  
-  app.use(cors());
-  app.use(express.json());
-  app.use('/api', router);
-  
-  await connectDb();
-  console.log('✓ DB connected');
-  
-  app.get('/', (_req: Request, res: Response) => {
-    res.send('✅ Server is running');
+export const app = express();
+
+export async function createApp() {
+  // Request logging
+  app.use(morgan('dev'));
+
+  // Debug logging middleware
+  app.use((req, _res, next) => {
+    logger.http(`${req.method} ${req.url}`);
+    next();
   });
 
-  return app;
+  // Basic middleware
+  app.use
 }
-
-if (require.main === module) {
-  createApp().then(app => {
-    const port = Number(process.env.PORT) || 3000;
-    app.listen(port, () => {
-      console.log(`🚀 Server listening on http://localhost:${port}`);
-    });
-  });
-}
-
-export { createApp };
