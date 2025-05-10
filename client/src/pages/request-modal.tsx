@@ -54,7 +54,7 @@ interface Props {
   onSuccess: () => void;
 }
 
-export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
+export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -296,3 +296,5 @@ export default function RequestModal({ open, onOpenChange, onSuccess }: Props) {
     </Dialog>
   );
 }
+
+export default RequestModal;

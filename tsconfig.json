@@ -7,7 +7,12 @@
     "strict": true,
     "rootDir": "./",
     "outDir": "./build",
-    "skipLibCheck": true
+    "baseUrl": ".",
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["client/src/*"],
+      "@shared/*": ["shared/electron-shared/*"]
+    }
   },
   "include": ["server/**/*", "shared/**/*"],
   "exclude": ["node_modules", "dist"]

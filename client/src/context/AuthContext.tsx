@@ -21,14 +21,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    api.get<User>('/api/auth/me')
-      .then(setUser)
+    api.get('/api/auth/me').then((u: any) => setUser(u))
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false));
   }, []);
 
   const login = async (email: string, password: string) => {
-    const user = await api.post<User>('/api/auth/login', { email, password });
+    const user = await api.post('/api/auth/login', { email, password }) as any;
     setUser(user);
   };
 

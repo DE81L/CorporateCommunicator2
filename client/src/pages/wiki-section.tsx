@@ -59,7 +59,7 @@ type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
 export default function WikiSection() {
   const apiClient = createApiClient();
-  const { request } = createApiClient(true);
+  const { request } = apiClient;
   const { user } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("entries");
@@ -104,7 +104,7 @@ export default function WikiSection() {
     queryKey: ['/api/wiki/categories', activeCategoryId, 'entries'],
     queryFn: () => {
       if (!activeCategoryId) return Promise.resolve([] as WikiEntry[]);
-      return request<any[]>('GET', `/api/wiki/categories/${activeCategoryId}/entries`).then((res) => res.json());
+      return request<any[]>(`/api/wiki/categories/${activeCategoryId}/entries`);
     },
     enabled: !!activeCategoryId,
   });

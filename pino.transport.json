@@ -1,0 +1,11 @@
+{
+  "targets": [
+    {
+      "target": "pino/file",
+      "options": {
+        "destination": "logs/app-rotation-%Y-%m-%d.log",
+        "mkdir": true
+      }
+    }
+  ]
+}

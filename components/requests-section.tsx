@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import RequestModal from "@/pages/request-modal";
+import RequestModal from "../pages/request-modal";
 
 export default function RequestsSection() {
   const [open, setOpen] = useState(false);
