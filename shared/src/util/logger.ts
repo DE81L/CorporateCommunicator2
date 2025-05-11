@@ -25,3 +25,13 @@ export function logCall<T extends (...args: any[]) => any>(fn: T, name = fn.name
     }
   }) as T;
 }
+
+export const withTimer = <T extends (...args: any[]) => unknown>(
+  fn: T
+): ReturnType<T> => {
+  const start = performance.now();
+  // @ts-expect-error – either sync or async, let the caller await if needed
+  const result = fn();
+  logger.info(`took ${performance.now() - start}ms`);
+  return result as ReturnType<T>;
+};
