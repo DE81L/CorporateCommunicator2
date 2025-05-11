@@ -1,2 +1,8 @@
 ignoredBuiltDependencies:
   - electron
+
+packages:
+  - "client"
+  - "server"
+  - "electron"
+  - "shared"

@@ -11,10 +11,13 @@
     "skipLibCheck": true,
     "paths": {
       "@/*": ["client/src/*"],
-      "@shared/*": ["shared/*"]
+      "@shared/*": ["shared/src/*"]
     },
     "experimentalDecorators": true
   },
   "include": ["server/**/*", "shared/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    { "path": "./shared" }
+  ]
 }
