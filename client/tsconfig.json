@@ -1,19 +1,32 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
+    "target": "ES2020",
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",
+    "noEmit": true,
+    "module": "ESNext",
+    "strict": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"],
-      "@shared/*": ["../shared/*"]
-    },
-    "moduleResolution": "bundler",
-    "types": ["vite/client"],
-    "typeRoots": ["./src/types", "./node_modules/@types"],
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "noImplicitAny": false
+    "allowImportingTsExtensions": true,
+    "moduleResolution": "bundler",
+    "types": ["node", "vite/client"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@shared/*": ["../shared/src/*"]
+    },
+    "useDefineForClassFields": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "outDir": "dist",
+    "baseUrl": "./"
   },
-  "include": ["src/**/*", "../shared/src/**/*"],
-  "exclude": ["../shared/electron-shared/**/*.ts"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "build", "dist", "**/*.test.ts"]
 }

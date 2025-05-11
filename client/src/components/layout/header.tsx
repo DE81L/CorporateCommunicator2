@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/use-auth"; // Import useAuth from hooks
 import {NotificationsPane} from "../NotificationsPane";

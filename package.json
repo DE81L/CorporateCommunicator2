@@ -2,12 +2,17 @@
   "name": "ccnew",
   "private": true,
   "type": "module",
-  "workspaces": ["client", "server", "electron", "shared"],
+  "workspaces": [
+    "client",
+    "server",
+    "electron",
+    "shared"
+  ],
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "dev:server": "pnpm --prefix server run dev",
+    "dev:server": "cross-env DB_DISABLED=true ts-node-dev --respawn --project server/tsconfig.server.json -r tsconfig-paths/register server/app.ts",
     "dev:client": "pnpm --prefix client run dev",
     "dev:electron": "pnpm --prefix electron run dev",
     "dev": "pnpm run check-deps && concurrently -k --names \"srv,cli,el\" \"pnpm --filter server run dev\" \"pnpm --filter client run dev\" \"pnpm --filter electron run dev\"",
@@ -16,8 +21,8 @@
     "ts-report": "pnpm run type-check --pretty false --noEmit > ts-report.log",
     "log-check": "node scripts/analyse-log.js",
     "build": "pnpm -r run build",
-    "check-deps": "node tools/check-workspaces.js",
-    "postinstall": "node tools/check-workspaces.js"
+    "check-deps": "node tools/check-workspaces.cjs",
+    "postinstall": "node tools/check-workspaces.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -59,13 +64,17 @@
     "dayjs": "^1.11.10",
     "debug": "latest",
     "drizzle-orm": "latest",
+    "electron": "30.0.3",
+    "electron-builder": "^24.9.1",
     "embla-carousel-react": "^8.6.0",
     "express": "latest",
+    "glob": "^10.3.10",
     "i18next": "^25.1.2",
     "i18next-browser-languagedetector": "^8.1.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.509.0",
     "morgan": "latest",
+    "passport": "^0.7.0",
     "path-to-regexp": "1.7.0",
     "pg": "latest",
     "pino-http": "^10.4.0",
@@ -79,11 +88,11 @@
     "recharts": "^2.15.3",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.2.0",
+    "tslog": "4.9.3",
     "tsx": "^4.19.4",
     "vaul": "^1.1.2",
     "wouter": "^3.7.0",
-    "zod": "^3.23.8",
-    "electron": "30.0.3"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/cors": "latest",
@@ -95,19 +104,25 @@
     "@types/react": "18.3.1",
     "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "^4.4.1",
-    "concurrently": "9.1.2",
+    "autoprefixer": "^10.4.17",
+    "concurrently": "^7.6.0",
     "cross-env": "^7.0.3",
     "electron": "^36.2.0",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",
     "postcss": "^8.4.35",
-    "autoprefixer": "^10.4.17",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
+    "tsconfig": "6.0.0",
     "tsconfig-paths": "4.2.0",
-    "typescript": "^5.4.5",
+    "typescript": "^5.3.3",
     "vite": "^6.3.5",
-    "vite-tsconfig-paths": "5.1.4"
+    "vite-tsconfig-paths": "^4.2.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "tsconfig": "6.0.0"
+    }
   }
 }

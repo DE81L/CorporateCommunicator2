@@ -1,0 +1,20 @@
+{
+  "name": "@project/server",
+  "version": "1.0.0",
+  "dependencies": {
+    "@project/shared": "workspace:*"
+  },
+  "scripts": {
+    "dev": "cross-env TS_NODE_DEBUG=1 TS_NODE_DEV_DEBUG=1 DEBUG=tsconfig-paths* nodemon",
+    "debug-config": "ts-node -r tsconfig-paths/register debug-config.ts",
+    "dev:trace": "cross-env NODE_OPTIONS='--trace-warnings' pnpm dev",
+    "dev:fast": "nodemon --watch 'src/**/*.ts' --exec 'ts-node --transpile-only -r tsconfig-paths/register' src/index.ts",
+    "build": "tsc -b"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "cross-env": "^7.0.3"
+  }
+}

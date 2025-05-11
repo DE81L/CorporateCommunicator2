@@ -1,12 +1,9 @@
 {
-  "name": "@ccnew/shared",
-  "version": "0.0.0",
+  "name": "@shared",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -b"
-  },
-  "dependencies": {
-    "tslog": "4.9.3"
+    "build": "tsc"
   }
 }

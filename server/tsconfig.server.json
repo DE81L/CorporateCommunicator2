@@ -1,16 +1,13 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
+    "module": "NodeNext", 
     "moduleResolution": "NodeNext",
-    "rootDir": "src",
     "outDir": "dist",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@shared/*": ["../shared/*"]
+      "@shared/*": ["../shared/src/*"]
     }
   },
-  "include": ["src/**/*", "../shared/src/**/*"],
-  "exclude": ["dist"]
+  "include": ["src"]
 }

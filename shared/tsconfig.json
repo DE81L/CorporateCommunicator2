@@ -2,7 +2,7 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "rootDir": ".",
+    "rootDir": "src",
     "outDir": "dist",
     "target": "es2020",
     "module": "ESNext",
@@ -11,13 +11,10 @@
     "declarationMap": true,
     "sourceMap": true,
     "moduleResolution": "node",
-    "types": ["node"]
+    "types": ["node"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   },
-  "include": [
-    "src/**/*",
-    "electron-shared/**/*",
-    "types/**/*",
-    "utils/**/*"
-  ],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

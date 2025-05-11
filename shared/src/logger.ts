@@ -1,12 +1,8 @@
-import pino from "pino";
+import { Logger } from 'tslog';
 
-export const logger = pino({
-  level: process.env.LOG_LEVEL ?? "info",
-  transport: {
-    target: "pino-pretty",
-    options: { colorize: true }
-  }
-});
+export const logger = new Logger({ name: 'app' });
+// if you still want a "http" helper:
+(logger as any).http = logger.info.bind(logger);
 
 export function logCall<T extends (...args: any[]) => any>(
   fn: T,

@@ -45,7 +45,7 @@ export default function ContactsSection({ onStartCall }: ContactsProps) {
   // Filter users based on search query
   const filteredUsers = users?.filter(
     (u) =>
-      u.id !== user?.id && // Exclude current user
+      String(u.id) !== String(user?.id) && // Exclude current user
       (u.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         u.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -126,7 +126,7 @@ export default function ContactsSection({ onStartCall }: ContactsProps) {
                       {contact.firstName} {contact.lastName}
                     </h3>
                     <p className="text-sm text-gray-500">
-                      {getJobTitle(contact.id)}
+                      {getJobTitle(Number(contact.id))}
                     </p>
                   </div>
                 </div>
