@@ -6,8 +6,9 @@ const app = express();
 
 app.use('/api', apiRouter);
 
-app.use('*', (_req: Request, res: Response, _next: NextFunction) =>
-  res.status(404).json({ error: 'Not found' })
-);
+// catch all unmatched routes
+app.all('*', (_req: Request, res: Response) => {
+  res.status(404).json({ error: 'Not found' });
+});
 
 export default app;
