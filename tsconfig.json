@@ -11,8 +11,9 @@
     "skipLibCheck": true,
     "paths": {
       "@/*": ["client/src/*"],
-      "@shared/*": ["shared/electron-shared/*"]
-    }
+      "@shared/*": ["shared/*"]
+    },
+    "experimentalDecorators": true
   },
   "include": ["server/**/*", "shared/**/*"],
   "exclude": ["node_modules", "dist"]

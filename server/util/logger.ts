@@ -1,15 +1,10 @@
-import pino from 'pino';
+import pino from 'pino'
+import pretty from 'pino-pretty'
 
-export const logger = pino({
-  level: 'trace',
-  customLevels: { http: 25 },
-  useOnlyCustomLevels: false,
-  ...(process.env.NODE_ENV === 'development'
-    ? {
-        transport: {
-          target: 'pino-pretty',
-          options: { colorize: true }
-        }
-      }
-    : {})
-});
+const transport =
+  process.env.NODE_ENV === 'production'
+    ? undefined
+    : pretty({ colorize: true, translateTime: 'HH:MM:ss', ignore: 'pid,hostname' })
+
+export const logger = pino(transport)
+export const log = logger.info.bind(logger)
