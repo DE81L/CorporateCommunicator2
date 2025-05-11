@@ -3,6 +3,7 @@ import 'ts-node/register/transpile-only';
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { logger } from "../shared/src/util/logger.js";
+import { checkWorkspace } from '../shared/src/util/logger';
 
 const WORKSPACES = ["server", "client", "electron", "shared"];
 let ok = true;

@@ -4,13 +4,13 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "rootDir": "../",
-    "outDir": "./dist",
+    "rootDir": "src",
+    "outDir": "dist",
     "paths": {
       "@/*": ["src/*"],
       "@shared/*": ["../shared/*"]
     }
   },
-  "include": ["src/**/*", "../shared/**/*"],
+  "include": ["src/**/*", "../shared/src/**/*"],
   "exclude": ["dist"]
 }

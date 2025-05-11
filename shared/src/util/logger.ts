@@ -1,7 +1,7 @@
 import { Logger, ISettingsParam } from 'tslog';
 
 const settings: ISettingsParam<unknown> = {
-  minLevel: 'info',
+  minLevel: 3,
 };
 
 export const logger = new Logger(settings);
