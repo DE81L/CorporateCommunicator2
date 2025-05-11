@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import 'ts-node/register/transpile-only';
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { logger } from "../shared/src/util/logger.js";
