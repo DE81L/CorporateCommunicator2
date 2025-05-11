@@ -1,6 +1,7 @@
 {
   "name": "ccnew",
   "private": true,
+  "workspaces": ["client", "server", "electron", "shared"],
   "engines": {
     "node": ">=20"
   },
@@ -13,7 +14,9 @@
     "type-check": "tsc -p client/tsconfig.json && tsc -p server/tsconfig.server.json",
     "ts-report": "pnpm run type-check --pretty false --noEmit > ts-report.log",
     "log-check": "node scripts/analyse-log.js",
-    "build": "vite build --config client/vite.config.ts"
+    "build": "vite build --config client/vite.config.ts",
+    "check-deps": "node tools/check-workspaces.js",
+    "postinstall": "npm run check-deps"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -62,11 +65,12 @@
     "input-otp": "^1.4.2",
     "lucide-react": "^0.509.0",
     "morgan": "latest",
+    "path-to-regexp": "1.7.0",
     "pg": "latest",
     "pino-http": "^10.4.0",
-    "react": "^18.2.0",
+    "react": "18.3.1",
     "react-day-picker": "^9.6.7",
-    "react-dom": "^19.1.0",
+    "react-dom": "18.3.1",
     "react-hook-form": "^7.52.0",
     "react-hot-toast": "^2.5.2",
     "react-i18next": "^15.5.1",
@@ -86,8 +90,8 @@
     "@types/morgan": "latest",
     "@types/node": "^22.15.17",
     "@types/pg": "latest",
-    "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "18.3.1",
+    "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "^4.4.1",
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",

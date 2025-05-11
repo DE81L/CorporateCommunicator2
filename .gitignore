@@ -1,6 +1,9 @@
-dist/
-node_modules
+/dist
+/out
 *.log
+.vite
+.ignored
+node_modules
 server/**/*.js
 *.ignored_node_modules
 
