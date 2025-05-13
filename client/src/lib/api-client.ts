@@ -1,34 +1,51 @@
 import { z } from 'zod';
 
-const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
-
-/**
- * Thin wrapper around fetch that does:
- * – absolute URL building
- * – cookie‑forwarding
- * – optional Zod validation
- */
-export function createApiClient() {
-  function normalizeArgs(args: any[]) {
-    if (args.length === 1 || (args.length === 2 && typeof args[1] !== 'string')) {
-      return ['GET', args[0] as string, args[1]];
+export async function handleResponse<T>(response: Response): Promise<T | undefined> {
+  if (!response.ok) {
+    let errorMessage = `Request failed with status ${response.status}`;
+    try {
+      const errorData = await response.text();
+      if (errorData) {
+        const parsed = JSON.parse(errorData);
+        errorMessage = parsed.message || errorMessage;
+      }
+    } catch {
+      // If parsing fails, use the default error message
     }
-    return [args[0], args[1], args[2]] as [string, string, any];
+    throw new Error(errorMessage);
   }
 
-  async function request<T = unknown>(...raw: any[]): Promise<T> {
-    const [method, path, body] = normalizeArgs(raw);
-    const res = await fetch(path.startsWith('http') ? path : `${BASE}${path}`, {
-      method,
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    return res.json() as Promise<T>;
+  if (response.status === 204) {
+    return undefined;
   }
 
-  return { request };
+  const contentType = response.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return response.json();
+  }
+
+  return undefined;
+}
+
+export function createApiClient(withCredentials = false) {
+  const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+  return {
+    request: async <T>(endpoint: string, options: RequestInit = {}): Promise<T | undefined> => {
+      const url = endpoint.startsWith('http') ? endpoint : `${baseURL}${endpoint}`;
+      
+      const response = await fetch(url, {
+        ...options,
+        credentials: withCredentials ? 'include' : 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
+
+      return handleResponse<T>(response);
+    }
+  };
 }
 
 export const apiClient = createApiClient();
-export default apiClient;

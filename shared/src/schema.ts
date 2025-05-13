@@ -23,6 +23,23 @@ export interface Group {
 }
 
 export const insertRequestSchema = z.object({
-  userId: z.number(),
-  payload: z.any(),
+  receiverDepartmentId: z.number(),
+  taskId: z.number(),
+  cabinet: z.string().optional(),
+  phone: z.string().optional(),
+  isUrgent: z.boolean().default(false),
+  deadline: z.string().optional(),
+  comment: z.string().optional(),
+  status: z.string().default("новая"),
+  grade: z.number().optional(),
+  reviewText: z.string().optional()
 });
+
+export type InsertRequestInput = z.infer<typeof insertRequestSchema>;
+
+export const loginSchema = z.object({
+  username: z.string().min(1, "Username or email is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export type LoginCredentials = z.infer<typeof loginSchema>;

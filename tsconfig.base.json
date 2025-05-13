@@ -1,16 +1,23 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "moduleResolution": "Node",
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["shared/src/*"]
+      "@shared/*": ["shared/src/*"],
+      "@shared/types/*": ["shared/types/*"]
     },
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "target": "ES2022",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "moduleResolution": "node",
+    "allowJs": true,
     "skipLibCheck": true,
-    "strict": true
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx"
   }
 }

@@ -7,19 +7,13 @@
     "noEmit": true,
     "module": "ESNext",
     "strict": true,
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
-    "types": [
-      "vite/client"
-    ],
+    "types": ["vite/client"],
     "useDefineForClassFields": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -29,15 +23,9 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "@shared/*": [
-        "../shared/src/*"
-      ],
-      "@shared/types/*": [
-        "../shared/types/*"
-      ]
+      "@/*": ["src/*"],
+      "@shared/*": ["../shared/src/*"],
+      "@shared/types/*": ["../shared/types/*"]
     }
   },
   "include": [
@@ -48,10 +36,5 @@
     "src/**/*.tsx",
     "src/**/*.json"
   ],
-  "exclude": [
-    "node_modules",
-    "build",
-    "dist",
-    "**/*.test.ts"
-  ]
+  "exclude": ["node_modules", "build", "dist", "**/*.test.ts"]
 }

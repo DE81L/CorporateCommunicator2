@@ -3,20 +3,14 @@
   "compilerOptions": {
     "module": "ESNext",
     "target": "ES2022",
-    "types": [
-      "vite/client",
-    ],
+    "types": ["vite/client"],
     "outDir": "dist",
     "skipLibCheck": true,
     "moduleResolution": "Node",
     "baseUrl": ".",
     "paths": {
-      "@shared/*": [
-        "../shared/src/*"
-      ],
-      "@shared/types/*": [
-        "../shared/types/*"
-      ]
+      "@shared/*": ["../shared/src/*"],
+      "@shared/types/*": ["../shared/types/*"]
     }
   },
   "include": [

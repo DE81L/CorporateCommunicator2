@@ -1,5 +1,5 @@
 import { Client } from 'pg';
-import { log } from '@shared/logger';
+import { logger } from '@shared/logger';
 
 let client: Client | null = null;
 
@@ -10,9 +10,9 @@ export async function connectDb(): Promise<void> {
       ssl: process.env.NODE_ENV === 'production'
     });
     await client.connect();
-    log('✓ Database connected');
+    logger.info('✓ Database connected');
   } catch (error) {
-    log('⚠️ Database connection failed:', error);
+    logger.info('⚠️ Database connection failed:', error);
     client = null;
     throw error;
   }

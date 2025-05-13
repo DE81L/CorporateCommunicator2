@@ -2,7 +2,9 @@
   "name": "@project/server",
   "version": "1.0.0",
   "dependencies": {
-    "@project/shared": "workspace:*"
+    "@project/shared": "workspace:*",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
   },
   "scripts": {
     "dev": "cross-env TS_NODE_DEBUG=1 TS_NODE_DEV_DEBUG=1 DEBUG=tsconfig-paths* nodemon",
