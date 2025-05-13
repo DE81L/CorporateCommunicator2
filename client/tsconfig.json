@@ -7,17 +7,13 @@
     "noEmit": true,
     "module": "ESNext",
     "strict": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
-    "types": ["node", "vite/client"],
-    "paths": {
-      "@/*": ["./src/*"],
-      "@shared/*": ["../shared/src/*"]
-    },
+    "types": ["vite/client"],
     "useDefineForClassFields": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -25,7 +21,12 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "outDir": "dist",
-    "baseUrl": "./"
+    "baseUrl": ".",
+    "rootDir": "src",
+    "paths": {
+      "@/*": ["src/*"],
+      "@shared/*": ["../shared/src/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "build", "dist", "**/*.test.ts"]

@@ -1,28 +1,21 @@
 {
   "name": "ccnew",
   "private": true,
-  "type": "module",
-  "workspaces": [
-    "client",
-    "server",
-    "electron",
-    "shared"
-  ],
-  "engines": {
-    "node": ">=20"
-  },
   "scripts": {
-    "dev:server": "cross-env DB_DISABLED=true ts-node-dev --respawn --project server/tsconfig.server.json -r tsconfig-paths/register server/app.ts",
-    "dev:client": "pnpm --prefix client run dev",
-    "dev:electron": "pnpm --prefix electron run dev",
-    "dev": "pnpm run check-deps && concurrently -k --names \"srv,cli,el\" \"pnpm --filter server run dev\" \"pnpm --filter client run dev\" \"pnpm --filter electron run dev\"",
-    "dev:debug": "cross-env NODE_OPTIONS=\"--inspect=9229\" pnpm run dev",
-    "type-check": "tsc -p client/tsconfig.json && tsc -p server/tsconfig.server.json",
-    "ts-report": "pnpm run type-check --pretty false --noEmit > ts-report.log",
-    "log-check": "node scripts/analyse-log.js",
     "build": "pnpm -r run build",
     "check-deps": "node tools/check-workspaces.cjs",
-    "postinstall": "node tools/check-workspaces.cjs"
+    "dev": "concurrently -k -n server,client,electron -c green,blue,magenta \"pnpm run dev:server\" \"pnpm run dev:client\" \"pnpm run dev:electron\"",
+    "dev:client": "pnpm --filter client run dev",
+    "dev:debug": "cross-env NODE_OPTIONS=\"--inspect=9229\" pnpm run dev",
+    "dev:electron": "wait-on tcp:5173 && pnpm --filter electron run dev",
+    "dev:server": "pnpm --filter server run dev",
+    "log-check": "node scripts/analyse-log.js",
+    "postinstall": "node tools/check-workspaces.cjs",
+    "ts-report": "pnpm run type-check --pretty false --noEmit > ts-report.log",
+    "type-check": "tsc -p client/tsconfig.json && tsc -p server/tsconfig.server.json"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -86,6 +79,7 @@
     "react-i18next": "^15.5.1",
     "react-resizable-panels": "^3.0.1",
     "recharts": "^2.15.3",
+    "rimraf": "^6.0.1",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.2.0",
     "tslog": "4.9.3",
@@ -99,30 +93,34 @@
     "@types/debug": "latest",
     "@types/express": "latest",
     "@types/morgan": "latest",
-    "@types/node": "^22.15.17",
+    "@types/node": "latest",
     "@types/pg": "latest",
     "@types/react": "18.3.1",
     "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "^4.4.1",
     "autoprefixer": "^10.4.17",
-    "concurrently": "^7.6.0",
+    "concurrently": "latest",
     "cross-env": "^7.0.3",
-    "electron": "^36.2.0",
+    "electron": "^25.0.0",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "tsconfig": "6.0.0",
-    "tsconfig-paths": "4.2.0",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3",
     "vite": "^6.3.5",
     "vite-tsconfig-paths": "^4.2.1"
   },
+  "type": "module",
+  "workspaces": [
+    "client",
+    "electron",
+    "server",
+    "shared"
+  ],
   "pnpm": {
-    "overrides": {
-      "tsconfig": "6.0.0"
-    }
+    "overrides": {}
   }
 }
