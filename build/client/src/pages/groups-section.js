@@ -41,7 +41,10 @@ function GroupsSection() {
     });
     // Create group mutation
     const createGroupMutation = (0, react_query_1.useMutation)({
-        mutationFn: (data) => apiClient.request("POST", "/api/groups", data),
+        mutationFn: (data) => apiClient.request("/api/groups", {
+                                                  method: "POST",
+                                                  body: JSON.stringify(data)
+                                                }),
         onSuccess: async () => {
             queryClient_1.queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
             setIsCreateGroupDialogOpen(false);
@@ -75,7 +78,10 @@ function GroupsSection() {
         },
     });
     const createGroup = async (data) => {
-        await apiClient.request("POST", "/api/groups", data);
+        await apiClient.request("/api/groups", {
+                                  method: "POST",
+                                  body: JSON.stringify(data)
+                                });
         createGroupMutation.mutate(data);
     };
     const updateGroup = async (id, data) => {

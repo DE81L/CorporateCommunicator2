@@ -1,16 +1,21 @@
-import "dotenv/config";
-import { resolve } from 'path';
+import './config/env';
 import { createApp } from './app';
-import { logger } from "@shared/logger";
+import { connectDb } from './db';
+import { config } from './config/env';
+import { logger } from '@shared/logger';
 
-const PORT = Number(process.env.PORT) || 3000;
-const app = createApp();
+async function main() {
+  try {
+    await connectDb();
+    
+    const app = createApp();
+    app.listen(config.port, () => {
+      logger.info(`🚀 API ready → http://localhost:${config.port}`);
+    });
+  } catch (error) {
+    logger.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
 
-app.use((req, _res, next) => {
-  logger.info(`${req.method} ${req.url}`);
-  next();
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀  API ready → http://localhost:${PORT}`);
-});
+main();

@@ -1,24 +1,28 @@
 import express from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import { log } from './util/logger.js'; 
 
-const API_TARGET = 'http://localhost:3000';  // ваш бэкенд
-const PORT = 4000;                          // порт для теста прокси
+const API_TARGET = 'http://localhost:3000';
+const PORT = 4000;
 
 const app = express();
 
-// Логируем каждый входящий запрос
 app.use((req, res, next) => {
-  console.log(`[PROXY] ${req.method} ${req.url}`);
+  log(`[PROXY] ${req.method} ${req.url}`);
   next();
 });
 
-// Настраиваем прокси для /api
 app.use(
   '/api',
   createProxyMiddleware({
     target: API_TARGET,
     changeOrigin: true,
-    logLevel: 'debug',      // подробный лог работы прокси
+    onProxyReq(proxyReq, req, res) {
+      log(`[PROXY → BACKEND] ${req.method} ${req.originalUrl}`);
+    },
+    onProxyRes(proxyRes, req, res) {
+      log(`[BACKEND → PROXY] ${req.method} ${req.originalUrl} → ${proxyRes.statusCode}`);
+    },
     onError(err, req, res) {
       console.error('[PROXY ERROR]', err);
       res.status(500).send('Proxy error');

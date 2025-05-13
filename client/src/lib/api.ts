@@ -34,3 +34,20 @@ export const apiClient = {
     });
   }
 };
+
+export async function apiFetch(
+  path: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const url = `${import.meta.env.VITE_API_URL}/${path}`;
+  console.log('[CLIENT → PROXY]', options.method ?? 'GET', url, options);
+  const res = await fetch(url, options);
+  let payload: any;
+  try {
+    payload = await res.clone().json();
+  } catch {
+    payload = await res.text();
+  }
+  console.log('[PROXY → CLIENT]', res.status, payload);
+  return res;
+}

@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "@project/server",
   "version": "1.0.0",
   "dependencies": {
@@ -20,3 +20,4 @@
     "cross-env": "^7.0.3"
   }
 }
+

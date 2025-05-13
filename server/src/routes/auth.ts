@@ -1,55 +1,40 @@
-import { Router, Request, Response } from "express";
-import { logger } from "../util/logger";
-import { z } from "zod";
+import { Router } from 'express';
+import { login, register } from '../lib/api/auth';
+import { logger } from '@shared/logger';
 
-const authRouter = Router();
+const router = Router();
 
-// Define request body schema
-const loginSchema = z.object({
-  username: z.string(),
-  password: z.string()
-});
-
-type LoginRequest = z.infer<typeof loginSchema>;
-
-authRouter.post("/login", (req: Request, res: Response) => {
+router.post('/login', async (req, res) => {
   try {
-    const result = loginSchema.safeParse(req.body);
+    const { usernameOrEmail, password } = req.body;
+    const user = await login(usernameOrEmail, password);
     
-    if (!result.success) {
-      return res.status(400).json({ 
-        message: "Invalid credentials format",
-        errors: result.error.errors 
-      });
-    }
-
-    const { username, password } = result.data;
-    logger.info(`Stub login for user ${username}`);
-    
-    // Return user data
-    return res.json({
-      id: 1,
-      username,
-      email: `${username}@example.com`,
-      firstName: "Demo",
-      lastName: "User",
-      isOnline: true,
-      isAdmin: 1,
-      avatarUrl: null,
-    });
+    // Set session
+    (req.session as any).userId = user.id;
+    res.json(user);
   } catch (error) {
     logger.error('Login error:', error);
-    return res.status(500).json({ message: "Internal server error" });
+    res.status(401).json({ error: 'Invalid credentials' });
   }
 });
 
-authRouter.post("/logout", (_req, res) => {
+router.post('/register', async (req, res) => {
   try {
-    res.status(204).end();
+    const user = await register(req.body);
+    res.status(201).json(user);
   } catch (error) {
-    logger.error('Logout error:', error);
-    res.status(500).json({ message: "Failed to logout" });
+    logger.error('Registration error:', error);
+    res.status(400).json({ error: 'Registration failed' });
   }
 });
 
-export default authRouter;
+router.get('/user', async (req, res) => {
+  const userId = (req.session as any).userId;
+  if (!userId) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+  // ... get user data
+  res.json({ id: userId });
+});
+
+export default router;
