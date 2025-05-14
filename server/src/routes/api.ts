@@ -3,7 +3,7 @@ import 'express-session';
 
 import { Router, Request, Response } from 'express';
 import { login, register } from '../lib/api/auth';
-import { client } from '../lib/db';
+import { client } from '../db';
 import { logger } from '../util/logger';
 import { isAuthenticated } from '../middleware/auth';
 
@@ -52,7 +52,7 @@ router.patch(
       if (isonline !== 0 && isonline !== 1) {
         return res.status(400).json({ error: 'Invalid isonline value' });
       }
-      await client.query(
+      await client!.query(
         `UPDATE users SET isonline = $1 WHERE id = $2`,
         [isonline, userId]
       );
@@ -90,7 +90,7 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const userId = (req.session as any).userId as number;
-      const result = await client.query(
+      const result = await client!.query(
         `SELECT id,
                 username,
                 email,
@@ -107,7 +107,7 @@ router.get(
       res.status(500).json({ error: 'Server error' });
     }
   }
-});
+);
 
 router.get("/health", (_req, res) => res.json({ status: "ok" }));
 router.get("/hello", (_req, res) => res.json({ message: "👋" }));
