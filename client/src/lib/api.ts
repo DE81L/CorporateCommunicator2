@@ -39,7 +39,8 @@ export async function apiFetch(
   path: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  const url = `${import.meta.env.VITE_API_URL}/${path}`;
+  const BASE = import.meta.env.VITE_API_URL.replace(//+$/, "");
+  const url = `${BASE}/${path}`;
   console.log('[CLIENT → PROXY]', options.method ?? 'GET', url, options);
   const res = await fetch(url, options);
   let payload: any;
