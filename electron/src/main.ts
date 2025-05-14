@@ -7,7 +7,8 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 
 let mainWindow: Electron.BrowserWindow | null = null;
 function createMainWindow() {
-  mainWindow = new BrowserWindow({ 
+  // создаём окно и запоминаем его в локальной переменной
+  const win = new BrowserWindow({
     width: 1280,
     height: 800,
     webPreferences: {
@@ -17,16 +18,19 @@ function createMainWindow() {
     },
   });
 
-  // dev‑vs‑prod загрузка
+  // обновляем глобальную ссылку — нам нужен доступ из других мест (activate)
+  mainWindow = win;
+
+  // dev-vs-prod загрузка
   if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
-    mainWindow.webContents.openDevTools();
+    win.loadURL(process.env.VITE_DEV_SERVER_URL);
+    win.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    win.loadFile(path.join(__dirname, './renderer/index.html'));
   }
 
-  // подписки – только ПОСЛЕ создания окна
-  mainWindow.on('closed', () => {
+  // подписка на событие закрытия
+  win.on('closed', () => {
     mainWindow = null;
   });
 }
