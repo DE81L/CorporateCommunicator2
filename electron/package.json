@@ -1,5 +1,5 @@
 ﻿{
-  "name": "app-electron",
+  "name": "electron",
   "type": "module",
   "exports": {
     ".": "./dist/main.js"
@@ -12,7 +12,7 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "electron": "34.5.5"
+    "electron": "36.2.0" 
   },
   "devDependencies": {
     "ts-node-dev": "^2.0.0",
