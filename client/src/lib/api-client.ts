@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 export async function handleResponse<T>(response: Response): Promise<T | undefined> {
   if (!response.ok) {
     let errorMessage = `Request failed with status ${response.status}`;
@@ -10,7 +8,7 @@ export async function handleResponse<T>(response: Response): Promise<T | undefin
         errorMessage = parsed.message || errorMessage;
       }
     } catch {
-      // If parsing fails, use the default error message
+      // Если парсинг не удался — оставляем default
     }
     throw new Error(errorMessage);
   }
@@ -27,22 +25,23 @@ export async function handleResponse<T>(response: Response): Promise<T | undefin
   return undefined;
 }
 
-export function createApiClient(withCredentials = false) {
+export function createApiClient(withCredentials = true) {
   const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   return {
     request: async <T>(endpoint: string, options: RequestInit = {}): Promise<T | null> => {
-      // формируем полный URL
       const fullUrl = `${baseURL}${endpoint}`;
-      // добавляем credentials, если требуется (например, для cookie-сессий)
-      const fetchOptions: RequestInit = withCredentials
-        ? { ...options, credentials: 'include' }
-        : options;
-      const response = await fetch(fullUrl, fetchOptions); 
+      // Включаем credentials: include по умолчанию
+      const fetchOptions: RequestInit = {
+        ...options,
+        credentials: 'include',
+      };
+      const response = await fetch(fullUrl, fetchOptions);
       const data = await handleResponse<T>(response);
       return (data === undefined ? null : data) as T;
     }
   };
 }
 
+// Экспортируем экземпляр с включёнными куки
 export const apiClient = createApiClient();

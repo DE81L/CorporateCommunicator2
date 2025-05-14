@@ -1,43 +1,49 @@
+/// <reference path="../types/express-session.d.ts" />
+import 'express-session';
+
 import { Router, Request, Response } from 'express';
+import { login, register } from '../lib/api/auth';
 import { logger } from '../util/logger';
-import { client } from '../db';
+import { isAuthenticated } from '../middleware/auth';
 
-// Поверх всех API-эндпоинтов проверяем сессию
-// (если вы вынесли isAuthenticated в middleware, можно заменить на router.use(isAuthenticated))
+const router = Router();
 
-const router: Router = Router();
-// общая проверка
-router.use((req: Request, res: Response, next) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ error: 'Not authenticated' });
-  }
-  next();
-});
-
-router.get('/health', (_req, res) => {
-  logger.debug('GET /health');
-  res.json({ status: 'ok' });
-});
-
-router.get('/hello', (_req, res) => {
-  res.json({ message: 'Hello from API' });
-});
-
-
-router.get('/user', async (req: Request, res: Response) => {
+router.post('/login', async (req: Request, res: Response) => {
   try {
-    const result = await client!.query(
-      `SELECT id, username, email FROM users WHERE id = $1`,
-      [req.session.userId]
-    );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
+    const { usernameOrEmail, password } = req.body;
+    const user = await login(usernameOrEmail, password);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
-    res.json(result.rows[0]);
+    req.session.userId   = user.id;
+    req.session.username = user.username;
+    await new Promise<void>((resolve, reject) =>
+      req.session.save(err => err ? reject(err) : resolve())
+    );
+    res.json({ id: user.id });
   } catch (error) {
-    logger.error('GET /user failed:', error);
-    res.status(500).json({ message: 'Failed to fetch user' });
+    logger.error('Login error:', error);
+    res.status(401).json({ message: (error as Error).message });
   }
 });
 
- export default router;
+router.post('/register', async (req: Request, res: Response) => {
+  try {
+    const newUser = await register(req.body);
+    req.session.userId   = newUser.id;
+    req.session.username = newUser.username;
+    await new Promise<void>((resolve, reject) =>
+      req.session.save(err => err ? reject(err) : resolve())
+    );
+    res.json({ id: newUser.id });
+  } catch (error) {
+    logger.error('Register failed:', error);
+    res.status(500).json({ error: 'Registration error' });
+  }
+});
+
+router.get('/user', isAuthenticated, (req: Request, res: Response) => {
+  res.json({ id: req.session.userId, username: req.session.username });
+});
+
+export default router;

@@ -1,40 +1,31 @@
+// client/src/hooks/use-auth.tsx
 import {
   createContext,
   useContext,
   ReactNode,
-  useState,
-  useEffect,
   useCallback,
 } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { useToast } from "@/hooks/use-toast"; // Предполагается использование shadcn/ui toast
-import { useTranslations } from '@/hooks/use-translations'; // Предполагается использование переводов
-import { createApiClient } from "@/lib/api-client"; // Новый API клиент
+import { useToast } from "@/hooks/use-toast";
+import { useTranslations } from '@/hooks/use-translations';
+import { createApiClient } from "@/lib/api-client";
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
-// Схема валидации для формы входа
 const loginSchema = z.object({
   username: z.string().min(1, "Username or email is required"),
   password: z.string().min(1, "Password is required"),
 });
-
 export type LoginCredentials = z.infer<typeof loginSchema>;
 
-// Тип пользователя (без пароля)
 export interface UserWithoutPassword {
   id: number;
   username: string;
   email: string | null;
   firstName: string | null;
   lastName: string | null;
-  phone?: string;
   isAdmin?: number;
-  isOnline: boolean | number; // Учитывая возможное представление в БД
+  isOnline: boolean | number;
   avatarUrl: string | null;
-  // Добавьте другие поля пользователя, если они есть
 }
 
 export interface AuthContextType {
@@ -50,40 +41,44 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
-  const { t } = useTranslations(); // Хук для переводов
+  const { t } = useTranslations();
   const { toast } = useToast();
-  const apiClient = createApiClient(); // Новый API клиент
+  const apiClient = createApiClient();
 
-  // Запрос для получения текущего пользователя при загрузке приложения
+  // 1) Загружаем текущего пользователя при старте
   const { data: user, isLoading: isLoadingUser } = useQuery<UserWithoutPassword | null>({
-    queryKey: ["/api/user"], // Используем ключ, который будет обновляться при логине/логауте
+    queryKey: ["/api/user"],
     queryFn: async () => {
       try {
         return await apiClient.request("/api/user");
       } catch (error) {
         if (error instanceof Error && error.message.includes("401")) {
-          return null; // Не авторизован
+          return null;
         }
         throw error;
       }
     },
-    staleTime: 5 * 60 * 1000, // Кэшировать данные пользователя на 5 минут
-    retry: 1, // Попробовать перезапросить 1 раз при ошибке
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
-  // Мутация для входа
+  // 2) Login—мутация: теперь отправляем правильное поле и сохраняем куку
   const loginMutation = useMutation<UserWithoutPassword, Error, LoginCredentials>({
     mutationFn: async (credentials) => {
-      const response: Response = await fetch("/api/login", {
+      // Собираем именно то, что ждёт сервер: { usernameOrEmail, password }
+      const response = await fetch("/api/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(credentials),
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include', // сохраняем Set-Cookie от сервера
+        body: JSON.stringify({
+          usernameOrEmail: credentials.username,
+          password: credentials.password
+        }),
       });
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
+        const err = await response.json();
+        // сервер отдаёт { error: 'Invalid credentials' }
+        throw new Error(err.error || 'Login failed');
       }
       return response.json();
     },
@@ -99,46 +94,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  // Мутация для выхода
+  // 3) Logout—мутация (оставляем как было)
   const logoutMutation = useMutation({
-    mutationFn: async () => {
-      return await apiClient.request("/api/logout", { method: "POST" });
-    },
+    mutationFn: () => apiClient.request("/api/logout", { method: "POST" }),
     onSuccess: () => {
-      // Очищаем данные пользователя в кэше
       queryClient.setQueryData(["/api/user"], null);
-      // Можно также сбросить другие связанные кэши, если необходимо
-      queryClient.invalidateQueries(); // Инвалидировать все запросы для чистого состояния
-      // Навигация на страницу входа обычно происходит в компоненте/роутере
+      queryClient.invalidateQueries();
     },
     onError: (error: Error) => {
-      console.error("Logout mutation failed:", error);
-      // Даже если API выхода не сработал, лучше очистить локальное состояние
+      console.error("Logout failed:", error);
       queryClient.setQueryData(["/api/user"], null);
       queryClient.invalidateQueries();
     },
   });
 
-  // Функции, которые будут доступны через контекст
-  const login = useCallback(async (credentials: LoginCredentials): Promise<UserWithoutPassword> => {
-    // Валидация перед вызовом мутации
-    const validatedCredentials = loginSchema.parse(credentials);
-    return await loginMutation.mutateAsync(validatedCredentials);
-  }, [loginMutation, loginSchema]); // Добавлена зависимость loginSchema
+  const login = useCallback(
+    (credentials: LoginCredentials) =>
+      loginMutation.mutateAsync(loginSchema.parse(credentials)),
+    [loginMutation]
+  );
 
-  const logout = useCallback(async () => {
-    await logoutMutation.mutateAsync();
-  }, [logoutMutation]);
+  const logout = useCallback(() => logoutMutation.mutateAsync(), [logoutMutation]);
 
   return (
     <AuthContext.Provider
       value={{
-        user: user ?? null, // Убедимся, что передаем null, если user undefined
+        user: user ?? null,
         login,
         logout,
-        isLoading: isLoadingUser, // Статус загрузки начального пользователя
-        isLoggingIn: loginMutation.isPending, // Используем isPending из TanStack Query v5+
-        isLoggingOut: logoutMutation.isPending, // Используем isPending из TanStack Query v5+
+        isLoading: isLoadingUser,
+        isLoggingIn: loginMutation.isPending,
+        isLoggingOut: logoutMutation.isPending,
       }}
     >
       {children}
@@ -146,7 +132,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Хук для использования контекста аутентификации
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
@@ -154,8 +139,3 @@ export function useAuth() {
   }
   return context;
 }
-
-// // Типы User и InsertUser, если они используются только здесь
-// export type User = z.infer<typeof UserSchema>;
-// export type InsertUser = z.infer<typeof InsertUserSchema>;
-// // Переместите или удалите, если они определены глобально
