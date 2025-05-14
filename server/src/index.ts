@@ -2,7 +2,10 @@ import './config/env';
 import { createApp } from './app';
 import { connectDb } from './db';
 import { config } from './config/env';
-import { logger } from '@shared/logger';
+import { logger } from './util/logger';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 async function main() {
   try {

@@ -14,7 +14,7 @@ export function createApp(): Express {
   
   const app: Express = express();
   app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',  // лучше хранить в .env
+  secret: process.env.SESSION_SECRET || 'f2180c718607200894500f77a90df7f26d4c4cc5f514ededf6adb9ffe8f372323155500f68e7bee2dd8339fbc42cea8217074792c62ba0027c12f142e6e6affa',  // лучше хранить в .env
   resave: false,
   saveUninitialized: false,
   cookie: { 
@@ -23,7 +23,7 @@ export function createApp(): Express {
     sameSite: 'lax'       // или 'strict'/'none' по необходимости
   }
 }));
-  app.use(pinoHttp({ logger })); 
+  app.use(pinoHttp({ logger: logger as any })); 
   app.use(morgan('dev'));
   app.use(express.json());
   app.use(cors({
