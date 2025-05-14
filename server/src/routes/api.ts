@@ -3,8 +3,10 @@ import 'express-session';
 
 import { Router, Request, Response } from 'express';
 import { login, register } from '../lib/api/auth';
+import { client } from '../lib/db';
 import { logger } from '../util/logger';
 import { isAuthenticated } from '../middleware/auth';
+
 
 const router = Router();
 
@@ -39,6 +41,33 @@ router.post("/login", async (req: Request, res: Response) => {
   }
 });
 
+// Обновление онлайн-статуса текущего пользователя
+router.patch(
+  '/users/status',
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    try {
+      const { isonline } = req.body as { isonline: 0 | 1 };
+      const userId = (req.session as any).userId as number;
+      if (isonline !== 0 && isonline !== 1) {
+        return res.status(400).json({ error: 'Invalid isonline value' });
+      }
+      await client.query(
+        `UPDATE users SET isonline = $1 WHERE id = $2`,
+        [isonline, userId]
+      );
+      res.json({ success: true });
+    } catch (err) {
+      console.error('Status update error:', err);
+      res.status(500).json({ error: 'Server error' });
+    }
+  }
+);
+
+router.get('/user', isAuthenticated, (req: Request, res: Response) => {
+  res.json({ id: req.session.userId, username: req.session.username });
+});
+
 router.post('/register', async (req: Request, res: Response) => {
   try {
     const newUser = await register(req.body);
@@ -54,8 +83,30 @@ router.post('/register', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/user', isAuthenticated, (req: Request, res: Response) => {
-  res.json({ id: req.session.userId, username: req.session.username });
+// Список контактов (все пользователи, кроме себя)
+router.get(
+  '/contacts',
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    try {
+      const userId = (req.session as any).userId as number;
+      const result = await client.query(
+        `SELECT id,
+                username,
+                email,
+                first_name  AS "firstName",
+                last_name   AS "lastName",
+                isonline
+           FROM users
+          WHERE id <> $1`,
+        [userId]
+      );
+      res.json(result.rows);
+    } catch (err) {
+      console.error('Get contacts error:', err);
+      res.status(500).json({ error: 'Server error' });
+    }
+  }
 });
 
 router.get("/health", (_req, res) => res.json({ status: "ok" }));
