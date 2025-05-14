@@ -8,22 +8,34 @@ import { isAuthenticated } from '../middleware/auth';
 
 const router = Router();
 
-router.post('/login', async (req: Request, res: Response) => {
+router.post("/login", async (req: Request, res: Response) => {
   try {
-    const { usernameOrEmail, password } = req.body;
-    const user = await login(usernameOrEmail, password);
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    // клиент может прислать username | email | usernameOrEmail
+    const {
+      username,
+      email,
+      usernameOrEmail,
+      password,
+    }: {
+      username?: string;
+      email?: string;
+      usernameOrEmail?: string;
+      password: string;
+    } = req.body;
+
+    const loginId = usernameOrEmail || username || email;
+    if (!loginId || !password) {
+      return res.status(400).json({ error: "Missing credentials" });
     }
-    req.session.userId   = user.id;
+
+    const user = await login(loginId, password);
+    req.session.userId = user.id;
     req.session.username = user.username;
-    await new Promise<void>((resolve, reject) =>
-      req.session.save(err => err ? reject(err) : resolve())
-    );
-    res.json({ id: user.id });
-  } catch (error) {
-    logger.error('Login error:', error);
-    res.status(401).json({ message: (error as Error).message });
+    await new Promise<void>((r, e) => req.session.save(err => (err ? e(err) : r())));
+    res.json(user);
+  } catch (err) {
+    logger.error("Login error:", err);
+    res.status(401).json({ error: "Invalid credentials" });
   }
 });
 
@@ -45,5 +57,8 @@ router.post('/register', async (req: Request, res: Response) => {
 router.get('/user', isAuthenticated, (req: Request, res: Response) => {
   res.json({ id: req.session.userId, username: req.session.username });
 });
+
+router.get("/health", (_req, res) => res.json({ status: "ok" }));
+router.get("/hello", (_req, res) => res.json({ message: "👋" }));
 
 export default router;

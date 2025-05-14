@@ -15,6 +15,8 @@
     "build:shared": "tsc -p shared/tsconfig.json",
     "build:electron": "pnpm --filter ccnew-electron run build",
     "dev:proxy": "node ./proxy.mjs",
+    "rehash-passwords": "node ./scripts/rehash-passwords.cjs",
+    "seed:dev": "node ./scripts/seed-dev-users.cjs",
     "type-check": "pnpm run build:shared && tsc -p client/tsconfig.json && tsc -p ./tsconfig.server.json"
   },
   "engines": {
@@ -60,6 +62,7 @@
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.10",
     "debug": "latest",
+    "dotenv": "^16.5.0",
     "drizzle-orm": "latest",
     "electron": "36.2.0",
     "embla-carousel-react": "^8.6.0",
@@ -112,7 +115,6 @@
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "ts-node-dev": "^2.0.0",
-
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
