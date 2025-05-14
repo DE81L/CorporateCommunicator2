@@ -1,6 +1,9 @@
 import 'express-session';
+
 declare module 'express-session' {
   interface SessionData {
-    userId: number;  // наше пользовательское поле
+    // эти поля мы устанавливаем при входе в систему:
+    userId: number;
+    username: string;
   }
 }

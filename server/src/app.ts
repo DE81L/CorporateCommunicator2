@@ -6,6 +6,7 @@ import apiRouter from './routes/api';
 import authRouter from './routes/auth';
 import pinoHttp from 'pino-http';
 import session from 'express-session';
+import { isAuthenticated } from './middleware/auth';
 
 
 
@@ -37,8 +38,9 @@ export function createApp(): Express {
     });
     next();
   });
-  app.use('/api', apiRouter);
+
   app.use('/api', authRouter);
+  app.use('/api', isAuthenticated, apiRouter);
   
   // catch all unmatched routes
   app.all('*', (_req: Request, res: Response) => {

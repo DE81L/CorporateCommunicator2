@@ -3,7 +3,12 @@
   "compilerOptions": {
     "module": "CommonJS",
     "rootDir": ".",
-    "outDir": "./dist/server"
+    "outDir": "./dist/server",
+    "typeRoots": ["./server/src/types", "./node_modules/@types"]
   },
-  "include": ["server/src", "shared/src"]
+  "include": [
+    "server/src",
+    "shared/src",
+    "server/src/types"
+  ]
 }

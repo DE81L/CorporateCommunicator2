@@ -5,7 +5,6 @@ export type { ElectronAPI };
 
 export const isElectron = Boolean(window.electron);
 
-// Get direct reference to electron API
 const eapi = window.electron;
 
 export const api = {

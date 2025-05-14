@@ -1,10 +1,13 @@
-import { app, BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
+import { createRequire } from 'module';
+import type { IpcMainEvent } from 'electron';
 import path from 'node:path';
 
-let mainWindow: BrowserWindow | null = null;
+const require = createRequire(import.meta.url);
+const { app, BrowserWindow, ipcMain } = require('electron');
 
+let mainWindow: Electron.BrowserWindow | null = null;
 function createMainWindow() {
-  mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({ 
     width: 1280,
     height: 800,
     webPreferences: {

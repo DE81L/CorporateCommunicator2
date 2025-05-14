@@ -1,9 +1,6 @@
-﻿{
-  "name": "electron",
+{
+  "name": "ccnew-electron",
   "type": "module",
-  "exports": {
-    ".": "./dist/main.js"
-  },
   "version": "1.0.0",
   "private": true,
   "main": "dist/main.js",
