@@ -92,6 +92,7 @@ export default function AuthPage() {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
               <FormField
+                control={form.control}
                 name="username"
                 render={({ field }) => (
                   <FormItem>

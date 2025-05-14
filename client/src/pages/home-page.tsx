@@ -2,7 +2,7 @@ import { useState } from "react";
 import Header from "@/components/layout/header";
 import Sidebar from "@/components/layout/sidebar";
 import MessagesSection from "@/pages/messages-section";
-import GroupsSection from "@/pages/groups-section";
+import { GroupsSection } from "@/pages/groups-section";
 import AnnouncementsSection from "@/pages/announcements-section";
 import RequestsSection from "@/pages/requests-section";
 import ContactsSection from "@/pages/contacts-section";
@@ -58,7 +58,7 @@ export default function HomePage() {
             <MessagesSection onStartCall={handleStartCall} />
           )}
 
-          {activeSection === "groups" && <GroupsSection />}
+          {activeSection === "groups" && <GroupsSection groupId={0} />}
 
           {activeSection === "announcements" && <AnnouncementsSection />}
 

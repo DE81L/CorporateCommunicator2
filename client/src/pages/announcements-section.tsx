@@ -38,24 +38,20 @@ export default function AnnouncementsSection() {
 
   // Fetch announcements
   const { data: announcements = [], isLoading: isAnnouncementsLoading, error: announcementsError } = 
-    useQuery<any[]>({
-      queryKey: ['/api/announcements'], 
-      queryFn: () => apiClient.request('/api/announcements'),
-      initialData: []
+    useQuery<any[], Error>({
+      queryKey: ['announcements'],
+      queryFn: async (): Promise<any[]> => {
+        const result = (await apiClient.request<any[]>('/api/announcements')) ?? [];
+        return result;
+      },
     });
   
   // Create announcement mutation (creates a group with isAnnouncement=true)
   const createAnnouncementMutation = useMutation({
     mutationFn: async (data: CreateAnnouncementFormValues) => {
-      await fetch("/api/groups", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-      return null;
-    },
+        await fetch("/api/groups", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      },
+
     onSuccess: () => { 
       queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
       setIsCreateDialogOpen(false);

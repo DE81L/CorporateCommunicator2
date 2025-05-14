@@ -37,20 +37,22 @@ export default function ContactsSection({ onStartCall }: ContactsProps) {
     error,
   } = useQuery<User[]>({
     queryKey: ["/api/users"],
-    queryFn: async () => {
-      return await apiClient.request("/api/users");
+    queryFn: async (): Promise<User[]> => {
+      const users = (await apiClient.request<User[]>('/api/contacts')) ?? [];
+      return users;
     },
   });
 
   // Filter users based on search query
-  const filteredUsers = users?.filter(
-    (u) =>
-      String(u.id) !== String(user?.id) && // Exclude current user
-      (u.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchQuery.toLowerCase())),
-  );
+  const filteredUsers = ((users ?? []) as User[]).filter((u: User) =>
+  String(u.id) !== String(user?.id) &&
+  (
+    u.firstName.toLowerCase().includes(searchQuery) ||
+    u.lastName.toLowerCase().includes(searchQuery) ||
+    u.username.toLowerCase().includes(searchQuery) ||
+    u.email.toLowerCase().includes(searchQuery)
+  )
+);
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
@@ -80,9 +82,8 @@ export default function ContactsSection({ onStartCall }: ContactsProps) {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               placeholder="Search contacts..."
-              className="pl-10"
             />
           </div>
           <Button className="flex items-center">
@@ -102,7 +103,7 @@ export default function ContactsSection({ onStartCall }: ContactsProps) {
         </div>
       ) : filteredUsers && filteredUsers.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredUsers.map((contact) => (
+          {filteredUsers.map((contact: User) => (
             <Card
               key={contact.id}
               className="hover:shadow-md transition-shadow"

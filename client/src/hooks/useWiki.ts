@@ -1,22 +1,7 @@
+import type { WikiEntry, InsertWikiEntry } from '@shared/schema/wiki';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "./use-toast";
 
-export interface WikiEntry {
-  id: number;
-  title: string;
-  content: string;
-  category?: string | null;
-  creatorId: number;
-  createdAt: string;
-  updatedAt: string;
-  lastEditorId: number;
-}
-
-export interface InsertWikiEntry {
-  title: string;
-  content: string;
-  category?: string | null;
-}
 
 const API_BASE = "/api/wiki";
 

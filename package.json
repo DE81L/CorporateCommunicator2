@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "ccnew",
   "private": true,
   "scripts": {
@@ -7,10 +7,10 @@
     "dev": "concurrently -k -n server,client,electron -c green,blue,magenta \"pnpm run dev:server\" \"pnpm run dev:client\" \"pnpm run dev:electron\"",
     "dev:client": "pnpm --filter client run dev",
     "dev:debug": "cross-env NODE_OPTIONS=\"--inspect=9229\" pnpm run dev",
-    "dev:electron": "pnpm --filter ccnew-electron run dev",
+    "dev:electron": "pnpm --filter electron run dev",
     "dev:server": "pnpm --filter server run dev",
     "log-check": "node scripts/analyse-log.js",
-    "postinstall": "pnpm --filter ccnew-electron exec electron --version",
+    "postinstall": "pnpm --filter electron exec electron --version",
     "ts-report": "pnpm run type-check --pretty false --noEmit > ts-report.log",
     "build:shared": "tsc -p shared/tsconfig.json",
     "dev:proxy": "node ./proxy.mjs",
@@ -110,8 +110,8 @@
     "pino-pretty": "^13.0.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
-    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
+
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",

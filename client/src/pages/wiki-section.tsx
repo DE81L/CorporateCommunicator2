@@ -1,3 +1,4 @@
+import { getWikiEntries } from '../api/wiki';
 import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
@@ -14,31 +15,11 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { WikiEntry, WikiCategory } from '@shared/schema/wiki';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Loader2, PlusCircle, Search, ChevronRight, Edit, Trash2 } from "lucide-react";
 
-// Wiki entry type
-interface WikiEntry {
-  id: number;
-  title: string;
-  content: string;
-  creatorId: number;
-  createdAt: string;
-  updatedAt: string;
-  lastEditorId: number;
-  category: string | null;
-}
-
-// Wiki category type
-interface WikiCategory {
-  id: number;
-  name: string;
-  description: string | null;
-  parentId: number | null;
-  createdAt: string;
-  updatedAt: string;
-}
 
 // Form schema for wiki entries
 const wikiEntryFormSchema = z.object({
@@ -79,8 +60,7 @@ export default function WikiSection() {
   } = useQuery<WikiEntry[]>({
     queryKey: ['/api/wiki/entries'],
     enabled: activeTab === "entries",
-    queryFn: async () => {
-      return await apiClient.request("/api/wiki");    }
+    queryFn: async () => (await apiClient.request<WikiEntry[]>('/api/wiki/entries')) ?? [],
   });
 
   // Wiki categories query
@@ -90,8 +70,7 @@ export default function WikiSection() {
     refetch: refetchCategories,
   } = useQuery<WikiCategory[]>({    queryKey: ['/api/wiki/categories'],
 
-    queryFn: async () => {
-      return await apiClient.request("/api/wiki/categories");    },
+    queryFn: async () => (await apiClient.request<WikiCategory[]>('/api/wiki/categories')) ?? [],
     enabled: true,
   });
 
@@ -102,9 +81,9 @@ export default function WikiSection() {
     refetch: refetchCategoryEntries,
   } = useQuery<WikiEntry[]>({
     queryKey: ['/api/wiki/categories', activeCategoryId, 'entries'],
-    queryFn: () => {
-      if (!activeCategoryId) return Promise.resolve([] as WikiEntry[]);
-      return request<any[]>(`/api/wiki/categories/${activeCategoryId}/entries`);
+    queryFn: async (): Promise<WikiEntry[]> => {
+      const data = await getWikiEntries();
+      return data ?? [];
     },
     enabled: !!activeCategoryId,
   });
@@ -119,7 +98,7 @@ export default function WikiSection() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      return request('POST', '/api/wiki', payload);
+      return request("/api/wiki", { method: "POST", body: JSON.stringify(payload) });
     },
     onSuccess: () => {
       toast({
@@ -156,7 +135,7 @@ export default function WikiSection() {
         lastEditorId: user?.id,
         updatedAt: new Date().toISOString(),
       };
-      return request('PUT', `/api/wiki/${id}`, payload);
+      return request(`/api/wiki/${id}`, { method: "PUT", body: JSON.stringify(payload) });
     },
     onSuccess: () => {
       toast({
@@ -183,7 +162,7 @@ export default function WikiSection() {
   // Delete wiki entry mutation
   const deleteEntryMutation = useMutation({
     mutationFn: (id: number) => {
-      return request('DELETE', `/api/wiki/${id}`);
+      return request(`/api/wiki/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
       toast({
@@ -208,12 +187,8 @@ export default function WikiSection() {
   // Create category mutation
   const createCategoryMutation = useMutation({
     mutationFn: (data: CategoryFormValues) => {
-      const payload = {
-        ...data,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      return request('POST', '/api/wiki/categories', payload);
+      const payload = { ...data, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+      return request("/api/wiki/categories", { method: "POST", body: JSON.stringify(payload) });
     },
     onSuccess: () => {
       toast({
@@ -242,11 +217,8 @@ export default function WikiSection() {
   const updateCategoryMutation = useMutation({
     mutationFn: (data: CategoryFormValues & { id: number }) => {
       const { id, ...rest } = data;
-      const payload = {
-        ...rest,
-        updatedAt: new Date().toISOString(),
-      };
-      return request('PUT', `/api/wiki/categories/${id}`, payload);
+      const payload = { ...rest, updatedAt: new Date().toISOString() };
+      return request(`/api/wiki/categories/${id}`, { method: "PUT", body: JSON.stringify(payload) });
     },
     onSuccess: () => {
       toast({
@@ -270,7 +242,7 @@ export default function WikiSection() {
   // Delete category mutation
   const deleteCategoryMutation = useMutation({
     mutationFn: (id: number) => {
-      return request('DELETE', `/api/wiki/categories/${id}`);
+      return request(`/api/wiki/categories/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
       toast({
@@ -318,7 +290,7 @@ export default function WikiSection() {
     entryForm.reset({
       title: "",
       content: "",
-      category: activeCategoryId ? categories.find(c => c.id === activeCategoryId)?.name || "" : "",
+      category: activeCategoryId ? (categories as WikiCategory[]).find(c => c.id === activeCategoryId)?.name || "" : "",
     });
     setShowEntryDialog(true);
   };
@@ -418,8 +390,8 @@ export default function WikiSection() {
 
   // Filter entries based on search query
   const filteredEntries = searchQuery
-    ? (activeCategoryId ? categoryEntries : entries).filter(
-        entry =>
+    ? (activeCategoryId ? categoryEntries : (entries as WikiEntry[])).filter(
+        (entry: WikiEntry) =>
           entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           entry.content.toLowerCase().includes(searchQuery.toLowerCase())
       )
@@ -509,7 +481,7 @@ export default function WikiSection() {
             ) : (
               <ScrollArea className="h-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredEntries.map(entry => (
+                  {filteredEntries.map((entry: WikiEntry) => (
                     <Card key={entry.id} className="h-full">
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">

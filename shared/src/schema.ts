@@ -43,3 +43,4 @@ export const loginSchema = z.object({
 });
 
 export type LoginCredentials = z.infer<typeof loginSchema>;
+export * from './schema/wiki';

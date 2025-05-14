@@ -48,22 +48,20 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
   const apiClient = createApiClient();
 
   // Получение списка пользователей
-  const { data: users, isLoading: isLoadingUsers } = useQuery<User[]>({
+  const { data: users = [], isLoading: isLoadingUsers } = useQuery<User[]>({
     queryKey: ["/api/users"],
-    queryFn: async () => {
-      return await apiClient.request("/api/users");
-    }
+    queryFn: async (): Promise<User[]> => {
+      const users = (await apiClient.request<User[]>('/api/messages/users')) ?? [];
+      return users;
+    },
   });
-
-  // Получение сообщений при выборе пользователя
-  const { data: messages, isLoading: isLoadingMessages } = useQuery<Message[]>({
+  const { data: messages = [], isLoading: isLoadingMessages } = useQuery<Message[]>({
     queryKey: ["/api/messages", selectedUser?.id],
     enabled: !!selectedUser,
-    queryFn: async () => {
-      return await apiClient.request(
-        `/api/messages?chatWith=${selectedUser!.id}`,
-      );
-    }
+    queryFn: async (): Promise<Message[]> => {
+      const msgs = await apiClient.request(`/api/messages?chatWith=${selectedUser!.id}`);
+      return (Array.isArray(msgs) ? msgs : []) as Message[];
+    },
   });
 
   // Прослушивание новых сообщений из WebSocket

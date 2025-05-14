@@ -9,6 +9,7 @@ import session from 'express-session';
 
 
 
+
 export function createApp(): Express {
   
   const app: Express = express();
@@ -22,7 +23,7 @@ export function createApp(): Express {
     sameSite: 'lax'       // или 'strict'/'none' по необходимости
   }
 }));
-  app.use(pinoHttp({ logger: pino() }));
+  app.use(pinoHttp({ logger })); 
   app.use(morgan('dev'));
   app.use(express.json());
   app.use(cors({

@@ -41,9 +41,9 @@ export interface AuthContextType {
   user: UserWithoutPassword | null;
   login: (credentials: LoginCredentials) => Promise<UserWithoutPassword>;
   logout: () => Promise<void>;
-  isLoading: boolean; // Общий статус загрузки (например, при начальной проверке пользователя)
-  isLoggingIn: boolean; // Статус загрузки для операции входа
-  isLoggingOut: boolean; // Статус загрузки для операции выхода
+  isLoading: boolean;
+  isLoggingIn: boolean;
+  isLoggingOut: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

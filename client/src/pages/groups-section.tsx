@@ -39,9 +39,10 @@ const createGroupSchema = z.object({
   description: z.string().optional(),
   isAnnouncement: z.boolean().default(false),
 });
+interface GroupsSectionProps { groupId: number; }
 
 type CreateGroupFormValues = z.infer<typeof createGroupSchema>;
-export default function GroupsSection() {
+export function GroupsSection({ groupId }: GroupsSectionProps) {
   const apiClient = createApiClient();
   const { toast } = useToast();
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
@@ -49,22 +50,29 @@ export default function GroupsSection() {
   const {
     data: groups = [],
     isLoading: isLoadingGroups,
-    error: groupsError,
+    error: groupsError
   } = useQuery<Group[]>({
     queryKey: ["/api/groups"],
-    queryFn: () => apiClient.request("/api/groups"),
+    queryFn: async (): Promise<Group[]> => {
+      const groups = (await apiClient.request<Group[]>('/api/groups')) ?? [];
+      return groups;
+    },
   });
   // Fetch all users for adding to groups
   useQuery<User[]>({
     queryKey: ["/api/users"],
-    queryFn: async () => {
-      return await apiClient.request("/api/users");
-    },
+    queryFn: async (): Promise<User[]> => {
+     const users = (await apiClient.request<User[]>(`/api/groups/${groupId}/users`)) ?? [];
+     return users;
+   },
   });
   // Create group mutation
   const createGroupMutation = useMutation({
     mutationFn: (data: CreateGroupFormValues) =>
-      apiClient.request("POST", "/api/groups", data),
+      apiClient.request("/api/groups", {
+                          method: "POST",
+                          body: JSON.stringify(data)
+                        }),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
       setIsCreateGroupDialogOpen(false);
@@ -82,23 +90,31 @@ export default function GroupsSection() {
     },
   });
   const updateGroupMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: Partial<Group> }) => {
-      return await apiClient.request("PUT", `/api/groups/${id}`, data);
+     mutationFn: async ({ id, data }: { id: number; data: Partial<Group> }) => {
+      return await apiClient.request(`/api/groups/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data)
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
     },
   });
   const deleteGroupMutation = useMutation({
-    mutationFn: async (id: number) => {
-      return await apiClient.request("DELETE", `/api/groups/${id}`);
+      mutationFn: async (id: number) => {
+        return await apiClient.request(`/api/groups/${id}`, {
+          method: "DELETE"
+        });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
     },
   });
   const createGroup = async (data: CreateGroupFormValues) => {
-    await apiClient.request("POST", "/api/groups", data);
+    await apiClient.request("/api/groups", {
+                              method: "POST",
+                              body: JSON.stringify(data)
+                            });
     createGroupMutation.mutate(data);
   };
   const updateGroup = async (id: number, data: Partial<Group>) => {

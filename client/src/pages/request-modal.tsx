@@ -43,7 +43,7 @@ interface RequestFormValues {
   cabinet: string;
   phone: string;
   isUrgent: boolean;
-  deadline: string;
+  deadline?: string;
   comment: string;
 }
 
@@ -59,12 +59,12 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const apiClient = createApiClient();
-
   const { data: departments = [], isLoading: isDepartmentsLoading, error: departmentsError } = useQuery<{ id: number; name: string }[]>({
     queryKey: ["/api/departments"],
-    queryFn: async () => {
-      return await apiClient.request("/api/departments");
-    },
+      queryFn: async (): Promise<{ id:number; name:string }[]> => {
+        const depts = await apiClient.request<Department[]>('/api/departments');
+        return depts ?? [];    // never null
+      },
     enabled: open
   });
 
@@ -85,6 +85,7 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
       cabinet: '',
       phone: '',
       isUrgent: false,
+      deadline: '',
       comment: ''
     }
   });
@@ -104,14 +105,11 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
 
   const createRequest = useMutation({
     mutationFn: async (data: RequestFormValues) => {
-      const payload = {
-        ...data,
-        creatorId: user?.id,
-        numberOfRequest: crypto.randomUUID().slice(0, 8),
-        requestStatus: "новая",
-        grade: null,
-      };
-      const res = await apiClient.request("POST", "/api/requests", payload);
+        const payload = { ...data, creatorId: user?.id, /* ... */ };
+        const res = await apiClient.request("/api/requests", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
       return res;
     },
     onSuccess: () => {
@@ -155,7 +153,10 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
                     </div>
                   ) : null}
 
-                  <Select onValueChange={field.onChange} value={field.value?.toString()}>
+                  <Select
+                    onValueChange={(val: string) => field.onChange(+val)}
+                    value={field.value?.toString() || ""}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Выберите подразделение" />

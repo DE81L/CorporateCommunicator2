@@ -31,12 +31,16 @@ export function createApiClient(withCredentials = false) {
   const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   return {
-    request: async <T>(endpoint: string, options: RequestInit = {}): Promise<T> => {
-      const url = endpoint.startsWith('http') ? endpoint : `${baseURL}${endpoint}`;
-      const response = await fetch(url, { ...options, credentials: withCredentials ? 'include' : 'same-origin', headers: { 'Content-Type': 'application/json', ...options.headers } });
+    request: async <T>(endpoint: string, options: RequestInit = {}): Promise<T | null> => {
+      // формируем полный URL
+      const fullUrl = `${baseURL}${endpoint}`;
+      // добавляем credentials, если требуется (например, для cookie-сессий)
+      const fetchOptions: RequestInit = withCredentials
+        ? { ...options, credentials: 'include' }
+        : options;
+      const response = await fetch(fullUrl, fetchOptions); 
       const data = await handleResponse<T>(response);
-      return data as T; // убираем | undefined, приводим к T
-      
+      return (data === undefined ? null : data) as T;
     }
   };
 }
