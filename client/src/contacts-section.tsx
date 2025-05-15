@@ -25,7 +25,7 @@ export default function ContactsSection() {
   const { data: users, isLoading, error } = useQuery<User[]> ({
     queryKey: ['contacts'],
     queryFn: async () => {
-      const res = await apiClient.request<User[]>('/contacts', {
+      const res = await apiClient.request<User[]>('contacts', {
         credentials: 'include',
       });
       return res ?? [];

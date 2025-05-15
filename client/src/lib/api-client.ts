@@ -26,20 +26,20 @@ export async function handleResponse<T>(response: Response): Promise<T | undefin
 }
 
 export function createApiClient(withCredentials = true) {
-  const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  // Убираем '/api' из VITE_API_URL и ставим порт 4000 по умолчанию
+  const rawBase = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+  const baseURL = rawBase.replace(/\/api\/?$/, ''); // strip trailing /api if any
 
   return {
     request: async <T>(endpoint: string, options: RequestInit = {}): Promise<T | null> => {
       const fullUrl = `${baseURL}${endpoint}`;
-      // Включаем credentials: include по умолчанию
       const fetchOptions: RequestInit = {
         ...options,
         credentials: 'include',
       };
       const response = await fetch(fullUrl, fetchOptions);
-      const data = await handleResponse<T>(response);
-      return (data === undefined ? null : data) as T;
-    }
+      return (await handleResponse<T>(response)) as T;
+    },
   };
 }
 

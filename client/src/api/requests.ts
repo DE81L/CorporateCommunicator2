@@ -4,13 +4,8 @@ const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
 // Grab a list that belongs to the logged-in user.
 // We keep cookies/auth headers by passing credentials: 'include'.
-export async function getRequests(): Promise<Request[]> {
-  const res = await fetch(`${BASE}/api/requests`, { credentials: 'include' });
-  if (!res.ok) {
-    // bubble a readable error – react-query/react-error-boundary will love you
-    throw new Error(`GET /api/requests failed: ${res.status}`);
-  }
-  return res.json();
+export async function getRequests() {
+  return [];             // TODO: подключить позже
 }
 
 // Handy helper you can use elsewhere if you want to mark a request “done”.

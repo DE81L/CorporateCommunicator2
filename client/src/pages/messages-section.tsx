@@ -1,14 +1,18 @@
-// client/src/pages/messages-section.tsx
-import { useState, useEffect, useRef } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
-import { useWebSocket, WSMessage } from '@/hooks/useWebSocket';
-import { usePeerConnection } from '../hooks/usePeerConnection';
+import { useWebSocket } from '@/hooks/useWebSocket';
+import { usePeerConnection } from '@/hooks/usePeerConnection';
 import { createApiClient } from '@/lib/api-client';
-import { Send } from 'lucide-react';
-import { Input, Button, Loader2, Avatar, AvatarFallback } from '@/components/ui';
+import { Send, Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useTranslation } from 'react-i18next';
 
-interface Message {
+/* ──────────────── TYPES ──────────────── */
+
+export interface Message {
   id: number;
   senderId: number;
   receiverId?: number;
@@ -16,45 +20,68 @@ interface Message {
   timestamp: string;
 }
 
-interface User {
+export interface User {
   id: number;
   firstName: string;
   lastName: string;
+  avatarUrl?: string | null;
   isonline: 0 | 1;
 }
 
-export default function MessagesSection() {
+interface WsPacket<T = any> {
+  type: string;
+  payload: T;
+}
+
+interface Props {
+  onStartCall?: (
+    type: 'audio' | 'video',
+    recipient: { id: number; name: string },
+  ) => void;
+}
+
+/* ──────────────── COMPONENT ──────────────── */
+
+export default function MessagesSection({ onStartCall }: Props) {
   const { user } = useAuth();
   const apiClient = createApiClient();
+  const { t } = useTranslation();
   const { connectionStatus, lastRawMessage, sendRaw } = useWebSocket();
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [msgInput, setMsgInput] = useState('');
   const [incomingSignal, setIncomingSignal] = useState<any>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // REST: contacts & history
-  const { data: contacts = [] } = useQuery<User[]>({
+  /* ─────────── contacts ─────────── */
+  const {
+    data: users = [],
+    isLoading: isLoadingUsers,
+    error: usersError,
+  } = useQuery<User[]>({
     queryKey: ['contacts'],
     queryFn: async () =>
-      (await apiClient.request<User[]>('/contacts')) ?? [],
+      (await apiClient.request<User[]>('contacts')) ?? [],
   });
+
+  /* ─────────── history ─────────── */
   const {
-    data: history = [],
+    data: messages = [],
+    isLoading: isLoadingMessages,
     refetch: refetchHistory,
   } = useQuery<Message[]>({
     queryKey: ['messages', selectedUser?.id],
     enabled: !!selectedUser,
     queryFn: async () =>
-    (await apiClient.request<Message[]>(
-      `/messages?chatWith=${selectedUser!.id}`
-    )) ?? [],
+      (await apiClient.request<Message[]>(
+        `/messages?chatWith=${selectedUser!.id}`,
+      )) ?? [],
   });
 
-  // P2P-hook
+  /* ─────────── P2P ─────────── */
   const isInitiator =
-    selectedUser != null &&
-    user != null &&
-    user.id < selectedUser.id;
+    selectedUser && user ? user.id < selectedUser.id : false;
+
   const {
     status: p2pStatus,
     lastMessage: p2pMsg,
@@ -66,46 +93,38 @@ export default function MessagesSection() {
         type: 'p2p-signal',
         payload: { to: selectedUser!.id, signal },
       }),
-    incomingSignal
+    incomingSignal,
   );
 
-  // Авто-реакция на WS-события
+  /* ───── WS side‑effects ───── */
   useEffect(() => {
     if (!lastRawMessage) return;
-    const { type, payload } = lastRawMessage as WSMessage<any>;
+    const { type, payload } = lastRawMessage as WsPacket<any>;
 
-    if (type === 'user-status') {
-      // Когда выбранный контакт в сети — инициируем P2P
-      if (
-        selectedUser &&
-        payload.userId === selectedUser.id &&
-        payload.isonline === 1 &&
-        connectionStatus === 'open'
-      ) {
-        // просто ререндерит P2P-hook с isInitiator
-      }
+    if (
+      type === 'user-status' &&
+      selectedUser &&
+      payload.userId === selectedUser.id &&
+      payload.isonline === 1
+    ) {
+      // собеседник появился в сети – peer‑hook пересоздастся
     }
 
-    if (type === 'p2p-signal') {
-      // Получили сигнал от peer — передаём в usePeerConnection
-      if (payload.from === selectedUser?.id) {
-        setIncomingSignal(payload.signal);
-      }
+    if (type === 'p2p-signal' && payload.from === selectedUser?.id) {
+      setIncomingSignal(payload.signal);
     }
 
-    if (type === 'chat') {
-      // Серверное сообщение: подгружаем историю
-      if (
-        selectedUser &&
-        (payload.senderId === selectedUser.id ||
-          payload.senderId === user?.id)
-      ) {
-        refetchHistory();
-      }
+    if (
+      type === 'chat' &&
+      selectedUser &&
+      (payload.senderId === selectedUser.id ||
+        payload.senderId === user?.id)
+    ) {
+      refetchHistory();
     }
-  }, [lastRawMessage, selectedUser, connectionStatus, user, refetchHistory]);
+  }, [lastRawMessage, selectedUser, user, refetchHistory]);
 
-  // P2P-сообщения в чат
+  /* ───── P2P incoming ───── */
   useEffect(() => {
     if (
       p2pMsg &&
@@ -118,15 +137,27 @@ export default function MessagesSection() {
     }
   }, [p2pMsg, selectedUser, user, refetchHistory]);
 
-  const sendMessage = async (e: React.FormEvent) => {
+  /* ───── helpers ───── */
+  const getInitials = (f: string, l: string) =>
+    `${f[0]}${l[0]}`.toUpperCase();
+
+  const scrollBottom = () =>
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+
+  useEffect(scrollBottom, [messages]);
+
+  /* ───── send ───── */
+  const sendMessage = async (e: FormEvent) => {
     e.preventDefault();
     if (!msgInput.trim() || !selectedUser) return;
 
     if (p2pStatus === 'open') {
-      // P2P-канал
-      sendP2P({ senderId: user!.id, receiverId: selectedUser.id, content: msgInput });
+      sendP2P({
+        senderId: user!.id,
+        receiverId: selectedUser.id,
+        content: msgInput,
+      });
     } else {
-      // REST+WS fallback
       await apiClient.request<Message>('/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -139,89 +170,104 @@ export default function MessagesSection() {
 
     setMsgInput('');
     refetchHistory();
+    scrollBottom();
   };
 
-  const getInitials = (f: string, l: string) =>
-    `${f.charAt(0)}${l.charAt(0)}`.toUpperCase();
+  /* ───── UI ───── */
+  if (!user) return null;
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      {!selectedUser ? (
-        <div className="flex-1 flex flex-col items-center justify-center">
-          <div className="text-center">
-            <h3 className="font-medium mb-3">{t("nav.users")}</h3>
-            {isLoadingUsers ? (
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            ) : usersError ? (
-              <p className="text-red-500">Ошибка загрузки контактов</p>
-            ) : (
-              users.map((u) => (
-                <button
-                  key={u.id}
-                  onClick={() => setSelectedUser(u)}
-                  className="w-full flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors text-left"
-                >
-                  <Avatar className="h-10 w-10 mr-3">
-                    {u.avatarUrl ? (
-                      <img
-                        src={u.avatarUrl}
-                        alt={`${u.firstName} ${u.lastName}`}
-                      />
-                    ) : (
-                      <AvatarFallback className="bg-primary-100 text-primary-600">
-                        {getInitials(u.firstName, u.lastName)}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div>
-                    <div className="font-medium">
-                      {u.firstName} {u.lastName}
-                    </div>
-                    <p className="text-sm text-gray-500">
-                      {u.isOnline
-                        ? t("profile.online")
-                        : t("profile.offline")}
-                    </p>
+    <div className="flex h-full overflow-hidden">
+      {/* contacts */}
+      <aside className="w-64 border-r overflow-y-auto">
+        {isLoadingUsers ? (
+          <div className="p-4 flex justify-center">
+            <Loader2 className="h-5 w-5 animate-spin" />
+          </div>
+        ) : usersError ? (
+          <p className="p-4 text-red-500">Contacts error</p>
+        ) : (
+          users
+            .filter((u) => u.id !== user.id)
+            .map((u) => (
+              <button
+                key={u.id}
+                onClick={() => setSelectedUser(u)}
+                className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 ${
+                  selectedUser?.id === u.id ? 'bg-gray-100' : ''
+                }`}
+              >
+                <Avatar className="h-8 w-8">
+                  {u.avatarUrl ? (
+                    <img
+                      src={u.avatarUrl}
+                      alt=""
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <AvatarFallback>
+                      {getInitials(u.firstName, u.lastName)}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <span className="flex-1 truncate">
+                  {u.firstName} {u.lastName}
+                </span>
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    u.isonline ? 'bg-green-500' : 'bg-gray-300'
+                  }`}
+                />
+              </button>
+            ))
+        )}
+      </aside>
+
+      {/* chat */}
+      <section className="flex-1 flex flex-col">
+        {!selectedUser ? (
+          <div className="flex-1 flex items-center justify-center text-gray-400">
+            {t('messages.noChat')}
+          </div>
+        ) : (
+          <>
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {isLoadingMessages ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                messages.map((m) => (
+                  <div
+                    key={m.id}
+                    className={`max-w-xs rounded px-3 py-2 text-sm ${
+                      m.senderId === user.id
+                        ? 'ml-auto bg-primary-600 text-white'
+                        : 'mr-auto bg-gray-100'
+                    }`}
+                  >
+                    {m.content}
                   </div>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* Здесь ваш UI переписки */}
-          <div className="flex-1 overflow-auto p-4">
-            {isLoadingMessages ? (
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            ) : (
-              messages.map((m) => (
-                <div key={m.id} className="mb-2">
-                  <strong>
-                    {m.senderId === user?.id ? "Вы" : selectedUser.firstName}
-                    :
-                  </strong>{" "}
-                  {m.content}
-                </div>
-              ))
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-          <form
-            onSubmit={sendChatMessage}
-            className="p-4 border-t flex space-x-2"
-          >
-            <Input
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              placeholder={t("messages.typeHere")}
-            />
-            <Button type="submit">
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
-        </>
-      )}
+                ))
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            <form
+              onSubmit={sendMessage}
+              className="border-t p-3 flex gap-3"
+            >
+              <Input
+                className="flex-1"
+                placeholder={t('messages.enterMessage')}
+                value={msgInput}
+                onChange={(e) => setMsgInput(e.target.value)}
+              />
+              <Button type="submit" disabled={!msgInput.trim()}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </form>
+          </>
+        )}
+      </section>
     </div>
   );
 }

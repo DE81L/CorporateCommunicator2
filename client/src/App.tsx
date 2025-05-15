@@ -43,19 +43,20 @@ export default function App() {
   const [status, setStatus] = useState('Loading...');
   const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    // Check server health
-    fetch('http://localhost:3000/api/health')
-      .then(res => res.json())
-      .then(data => setStatus(data.status))
-      .catch(err => setStatus('error'));
+   const API = (import.meta.env.VITE_API_URL || 'http://localhost:4000/api').replace(/\/+$/, '');
 
-    // Get hello message
-    fetch('http://localhost:3000/api/hello')
-      .then(res => res.json())
-      .then(data => setMessage(data.message))
-      .catch(err => console.error(err));
-  }, []);
+useEffect(() => {
+  fetch(`${API}/health`)
+    .then(res => res.json())
+    .then(data => setStatus(data.status))
+    .catch(() => setStatus('error'));
+
+  fetch(`${API}/hello`)
+    .then(res => res.json())
+    .then(data => setMessage(data.message))
+    .catch(err => console.error(err));
+}, []);
+
 
   return (
     <QueryClientProvider client={queryClient}>

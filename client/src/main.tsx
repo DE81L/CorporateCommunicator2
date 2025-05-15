@@ -1,12 +1,23 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import App from "./App";
-import "./index.css"
+import { Buffer } from 'buffer/';
+import process from 'process';
+import util from 'util';
 
-const root = createRoot(document.getElementById("root")!);
+(window as any).global  = window;
+(window as any).Buffer  = Buffer;
+(window as any).process = process;
+(window as any).util    = {
+  ...util,
+  debuglog: () => () => {}, 
+  inspect: (...args: any[]) => JSON.stringify(args),
+};
 
-root.render(
+import { StrictMode } from 'react';
+import { createRoot }  from 'react-dom/client';
+import App             from './App';
+import './index.css';
+
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
-  </StrictMode>
+  </StrictMode>,
 );

@@ -2,11 +2,18 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "module": "CommonJS",
-    "outDir": "dist",
-    "rootDir": "src",
-    "incremental": true,
-    "tsBuildInfoFile": "./dist/.tsbuildinfo",
-    "typeRoots": ["./src/types", "../../node_modules/@types"],
+    "rootDir": ".",
+    "outDir": "./dist/server",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@shared/*": ["../shared/src/*"]
+    },
+    "typeRoots": ["./src/types", "../node_modules/@types"]
   },
-  "include": ["src/**/*", "src/types/**/*"]
+  "include": [
+    "src/**/*",
+    "../shared/src/**/*"
+  ],
+  "exclude": ["node_modules", "dist"]
 }

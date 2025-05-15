@@ -21,7 +21,7 @@ async function main() {
   //   app.set("session-middleware", sess);
   //
   // Здесь просто достаем без неправильного типа:
-  const sessionMiddleware = (app as any).get("session-middleware") as RequestHandler;
+  const sessionMiddleware = app.get('session-middleware') as RequestHandler;
 
   // Оборачиваем Express в HTTP-сервер
   const server = http.createServer(app);
