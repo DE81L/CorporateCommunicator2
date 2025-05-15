@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "ccnew",
   "private": true,
   "scripts": {
@@ -10,7 +10,7 @@
     "dev:electron": "pnpm --filter ccnew-electron run dev",
     "dev:server": "pnpm --filter server run dev",
     "log-check": "node scripts/analyse-log.js",
-    "postinstall": "pnpm --filter electron exec electron --version",
+    "postinstall": "pnpm --filter ccnew-electron exec electron --version",
     "ts-report": "pnpm run type-check --pretty false --noEmit > ts-report.log",
     "build:shared": "tsc -p shared/tsconfig.json",
     "build:electron": "pnpm --filter ccnew-electron run build",
@@ -134,7 +134,7 @@
   "type": "module",
   "workspaces": [
     "client",
-    "electron",
+    "packages/ccnew-electron",
     "server",
     "shared"
   ],

@@ -1,14 +1,23 @@
 {
-  "extends": "./tsconfig.base.json",
+  "extends": "../tsconfig.base.json", // Убедись, что этот путь правильный относительно tsconfig.server.json
   "compilerOptions": {
-    "module": "CommonJS",
-    "rootDir": ".",
+    "target": "ES2022",
+    "esModuleInterop": true,
+    "module": "CommonJS", // Оставляем, если сервер использует CommonJS
+    "rootDir": "./server/src", // Указываем конкретную корневую директорию для исходников сервера
     "outDir": "./dist/server",
-    "typeRoots": ["./server/src/types", "./node_modules/@types"]
+    "baseUrl": ".", // Базовый URL для разрешения путей
+    "paths": {
+      // Переопределяем или дополняем пути из tsconfig.base.json, если необходимо,
+      // но обычно наследованных путей должно быть достаточно.
+      // "@/*": ["server/src/*"], // Можно добавить специфичный для сервера алиас
+      "@shared/*": ["shared/src/*"] // Должно наследоваться из tsconfig.base.json
+    },
+    "typeRoots": ["./server/src/types", "../node_modules/@types"] // Путь к node_modules должен быть относительным
   },
   "include": [
-    "server/src",
-    "shared/src",
-    "server/src/types"
-  ]
+    "server/src/**/*" // Включаем только исходники сервера
+    // "shared/src/**/*" // Убираем shared/src, т.к. он должен разрешаться через paths
+  ],
+  "exclude": ["node_modules", "dist"]
 }

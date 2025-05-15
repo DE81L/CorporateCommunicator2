@@ -16,7 +16,8 @@ export async function handleResponse<T>(response: Response): Promise<T | undefin
   if (response.status === 204) {
     return undefined;
   }
-
+  const rawBase = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+  const baseURL = rawBase.replace(/\/api\/?$/, '');
   const contentType = response.headers.get("content-type");
   if (contentType && contentType.includes("application/json")) {
     return response.json();

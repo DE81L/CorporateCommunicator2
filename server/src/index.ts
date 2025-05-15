@@ -1,6 +1,6 @@
 // server/src/index.ts
 import "./config/env";
-import http from "http";
+import * as http from "http";
 import express, { RequestHandler } from "express";
 import { createApp } from "./app";
 import { connectDb } from "./db";

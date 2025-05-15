@@ -11,27 +11,32 @@ const connections = new Map<number, WebSocket>();
 
 export function initWebSocket(
   server: http.Server,
-  sessionMiddleware: RequestHandler
+  sessionMiddleware: RequestHandler // Тип RequestHandler из express
 ): void {
-  wss = new WebSocketServer({ noServer: true, path: '/ws' });
-
-  server.on('upgrade', (req, socket, head) => {
+  wss = new WebSocketServer({ noServer: true, path: '/ws' }); // Убедись, что path: '/ws' соответствует VITE_WS_URL
+  server.on('upgrade', (req: IncomingMessage, socket, head) => { // req здесь IncomingMessage, а не express.Request
     // Засейвить сессию в req.session
     sessionMiddleware(req as any, {} as any, () => {
-      const userId = (req as any).session?.userId as number | undefined;
+      const userId = (req as any).session?.userId as number | undefined; // Доступ к сессии
       if (!userId) {
-        logger.warn('WS upgrade без сессии — отклоняю');
+        logger.warn('WS upgrade без аутентифицированной сессии — отклоняю');
         socket.destroy();
         return;
       }
       wss.handleUpgrade(req, socket, head, (ws) => {
-        wss.emit('connection', ws, req);
+        wss.emit('connection', ws, req); // req здесь все еще IncomingMessage
       });
     });
   });
 
-  wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
-    const userId = (req as any).session.userId as number;
+   wss.on('connection', (ws: WebSocket, req: IncomingMessage) => { // req здесь IncomingMessage
+    // Нужно снова получить userId из сессии, если она была корректно привязана
+    const userId = (req as any).session?.userId as number;
+    if (!userId) {
+        logger.warn('WS connection без userId в сессии после upgrade.');
+        ws.close();
+        return;
+    }
     connections.set(userId, ws);
     logger.info(`🟢 WS connected: user ${userId}`);
 

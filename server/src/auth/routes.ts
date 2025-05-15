@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import bcrypt from 'bcrypt';
-import { client } from '../db';
+import * as bcrypt from 'bcrypt';
+import { db } from '../db';
 import { logger } from '@shared/logger';
 
 const router = Router();
@@ -25,7 +25,7 @@ router.post('/login', async (req, res) => {
   try {
     const { usernameOrEmail, password } = loginSchema.parse(req.body);
     
-    const result = await client?.query(
+    const result = await db?.query(
       `SELECT * FROM users WHERE username = $1 OR email = $1`,
       [usernameOrEmail]
     );
@@ -56,7 +56,7 @@ router.post('/register', async (req, res) => {
     const userData = registerSchema.parse(req.body);
     
     // Check existing user
-    const existingUser = await client?.query(
+    const existingUser = await db?.query(
       `SELECT * FROM users WHERE username = $1 OR email = $2`,
       [userData.username, userData.email]
     );
@@ -70,7 +70,7 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(userData.password, salt);
 
     // Create user
-    const result = await client?.query(
+    const result = await db?.query(
       `INSERT INTO users (username, email, password, first_name, last_name)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, username, email, first_name, last_name, is_admin`,

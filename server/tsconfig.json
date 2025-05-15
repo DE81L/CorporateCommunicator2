@@ -1,19 +1,28 @@
 {
-  "extends": "../tsconfig.base.json",
+  "extends": "../tsconfig.base.json",          // if you have a root/base config
   "compilerOptions": {
-    "module": "CommonJS",
-    "rootDir": ".",
-    "outDir": "./dist/server",
+    "target": "ES2020",
+    "module": "commonjs",
+    "outDir": "../dist/server",
+    "rootDir": "src",
+    "incremental": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+
+    // 1) Let TS “see” both your server/src _and_ shared/src folders:
+    "rootDirs": ["src", "../shared/src"],
+
+    // 2) Make sure paths still work:
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
       "@shared/*": ["../shared/src/*"]
-    },
-    "typeRoots": ["./src/types", "../node_modules/@types"]
+    }
   },
+
+  // 3) actually include both trees
   "include": [
     "src/**/*",
     "../shared/src/**/*"
-  ],
-  "exclude": ["node_modules", "dist"]
+  ]
 }

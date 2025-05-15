@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt';
-import { client } from '../../db';
+import { db } from '../../db';
 import { logger } from '@shared/logger';
 
 export async function login(usernameOrEmail: string, password: string) {
-  const result = await client?.query(
+  const result = await db?.query(
     `SELECT * FROM users WHERE username = $1 OR email = $1`,
     [usernameOrEmail]
   );
@@ -33,7 +33,7 @@ export async function register(userData: {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(userData.password, salt);
 
-  const result = await client?.query(
+  const result = await db?.query(
     `INSERT INTO users (username, email, password, first_name, last_name)
      VALUES ($1, $2, $3, $4, $5)
      RETURNING id, username, email, first_name, last_name`,

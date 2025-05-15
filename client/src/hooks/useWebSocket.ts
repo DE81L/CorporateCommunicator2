@@ -24,10 +24,11 @@ const WS_URL =
       const wsRef = useRef<WebSocket | null>(null);
 
       useEffect(() => {
-      setConnectionStatus('connecting');
+        setConnectionStatus('connecting');
 
-      const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:4000/ws';
-      const ws = new WebSocket(WS_URL);
+      
+      const wsUrl = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:4000/ws`; // Используем порт 4000 напрямую
+      const ws = new WebSocket(wsUrl); 
 
       ws.addEventListener('open', () => setConnectionStatus('open'));
       ws.addEventListener('message', (evt) => {
