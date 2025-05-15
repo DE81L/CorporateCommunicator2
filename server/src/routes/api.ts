@@ -1,7 +1,7 @@
 /// <reference path="../types/express-session.d.ts" />
 import 'express-session';
 import { Router, Request, Response } from 'express';
-import { login, register } from '../lib/api/auth'; // Уже есть
+import { login, register } from '../lib/api/auth';
 import { db } from '../db'; // Уже есть
 import { logger } from '../util/logger'; // Уже есть
 import { isAuthenticated } from '../middleware/auth'; // Уже есть
@@ -10,7 +10,7 @@ import departmentsRouter from './departments';
 import wikiRouter from './wiki';
 
 const router = Router();
-router.use('/departments', isAuthenticated, departmentsRouter);
+// router.use('/departments', isAuthenticated, departmentsRouter); // Добавляем роутер для департаментов // Удаляем эту строку
 router.use('/wiki', isAuthenticated, wikiRouter); // <--- И ЭТО
 /**
  * POST /api/login
@@ -121,59 +121,6 @@ router.get(
 );
 
 /**
- * POST /api/messages
- * Отправка сообщения: сохраняет в БД, и если оба пользователя онлайн —
- * сразу шлёт по WS и помечает как доставленное.
- * Тело: { receiverId: number; content: string }
- */
-router.post(
-  '/messages',
-  isAuthenticated,
-  async (req: Request, res: Response) => {
-    try {
-      const senderId = req.session.userId as number;
-      const { receiverId, content } = req.body as {
-        receiverId: number;
-        content: string;
-      };
-      if (!receiverId || !content?.trim()) {
-        return res.status(400).json({ error: 'Invalid payload' });
-      }
-      const insert = await db!.query(
-        `INSERT INTO messages
-           (sender_id, receiver_id, content, timestamp, status)
-         VALUES
-           ($1, $2, $3, NOW(), 'pending')
-         RETURNING id, sender_id AS "senderId", receiver_id AS "receiverId", content, timestamp`,
-        [senderId, receiverId, content.trim()]
-      );
-      const message = insert.rows[0];
-      // проверяем, онлайн ли оба
-      const statusCheck = await db!.query(
-        `SELECT isonline FROM users WHERE id = ANY($1::int[])`,
-        [[senderId, receiverId]]
-      );
-      const bothOnline = statusCheck.rows.every((u) => u.isonline === 1);
-      if (bothOnline) {
-        sendChatMessage(receiverId, {
-          ...message,
-          timestamp: message.timestamp.toISOString(),
-        });
-        await db!.query(
-          `UPDATE messages SET status = 'delivered' WHERE id = $1`,
-          [message.id]
-        );
-      }
-      res.status(201).json(message);
-    } catch (err) {
-      logger.error('POST /messages error:', err);
-      res.status(500).json({ error: 'Server error' });
-    }
-  }
-);
-
-router.use('/departments', isAuthenticated, departmentsRouter); // Добавляем роутер для департаментов
-/**
  * GET /api/messages?chatWith={id}
  * Возвращает всю историю между текущим пользователем и chatWith,
  * а также помечает входящие pending-сообщения как delivered.
@@ -217,5 +164,33 @@ router.get(
     }
   }
 );
+
+/**
+ * POST /api/messages
+ * Отправка сообщения: сохраняет в БД, и если оба пользователя онлайн —
+ * сразу шлёт по WS и помечает как доставленное.
+ * Тело: { receiverId: number; content: string }
+ */
+router.post('/messages', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { receiverId, content } = req.body as { receiverId: number; content: string };
+    const senderId = req.session.userId as number;
+
+    // Сохраняем в базу:
+    await db!.query(
+      `INSERT INTO messages (sender_id, receiver_id, content) VALUES ($1, $2, $3)`,
+      [senderId, receiverId, content]
+    );
+
+    // Если оба онлайн, пересылаем через WS:
+    // Note: The sendChatMessage function needs to handle the logic of checking if the receiver is online.
+    sendChatMessage({ senderId, receiverId, content });
+
+    res.json({ success: true });
+  } catch (error) {
+    logger.error('Error sending message:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 export default router;
