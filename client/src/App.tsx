@@ -43,7 +43,7 @@ export default function App() {
   const [status, setStatus] = useState('Loading...');
   const [message, setMessage] = useState('');
 
-   const API = (import.meta.env.VITE_API_URL || 'http://localhost:4000/api').replace(/\/+$/, '');
+  const API = (import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api').replace(/\/+$/, '');
 
 useEffect(() => {
   fetch(`${API}/health`)

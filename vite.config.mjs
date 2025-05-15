@@ -30,20 +30,6 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: true,
     },
     server: {
-      port: 5173,
-      strictPort: true,
-      proxy: {
-        '/api': {
-          target: env.VITE_API_URL || 'http://localhost:4000',
-          changeOrigin: true,
-          secure: false,
-        },
-         "/ws": {
-          target: "ws://localhost:4000",
-          ws: true,
-          changeOrigin: true,
-         }
-      },
       fs: {
         allow: [ path.resolve(__dirname, "shared") ]
       }

@@ -1,5 +1,5 @@
 {
-  "extends": "../tsconfig.base.json", // Убедись, что этот путь правильный относительно tsconfig.server.json
+  "extends": "./tsconfig.base.json", // Убедись, что этот путь правильный относительно tsconfig.server.json
   "compilerOptions": {
     "target": "ES2022",
     "esModuleInterop": true,

@@ -17,7 +17,7 @@
     "dev:proxy": "node ./proxy.mjs",
     "rehash-passwords": "node ./scripts/rehash-passwords.cjs",
     "seed:dev": "node ./scripts/seed-dev-users.cjs",
-    "type-check": "tsc -p client/tsconfig.json && tsc -p ./tsconfig.server.json"
+    "type-check": "tsc -p shared/tsconfig.json && tsc -p client/tsconfig.json && tsc -p ./tsconfig.server.json"
   },
   "engines": {
     "node": ">=20.0.0"

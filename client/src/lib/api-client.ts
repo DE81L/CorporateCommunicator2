@@ -17,7 +17,6 @@ export async function handleResponse<T>(response: Response): Promise<T | undefin
     return undefined;
   }
   const rawBase = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-  const baseURL = rawBase.replace(/\/api\/?$/, '');
   const contentType = response.headers.get("content-type");
   if (contentType && contentType.includes("application/json")) {
     return response.json();
@@ -26,24 +25,15 @@ export async function handleResponse<T>(response: Response): Promise<T | undefin
   return undefined;
 }
 
-export function createApiClient(withCredentials = true) {
-  // Убираем '/api' из VITE_API_URL и ставим порт 4000 по умолчанию
-  const rawBase = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-  const baseURL = rawBase.replace(/^\/+/, '');
-
+export function createApiClient() {
+  const base = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/$/, '');
   return {
-    request: async <T>(endpoint: string, options: RequestInit = {}): Promise<T | null> => {
-      const fullUrl = `${baseURL}${endpoint}`;
-      const fetchOptions: RequestInit = {
-        ...options,
-        credentials: 'include',
-      };
-      const response = await fetch(fullUrl, fetchOptions);
-      return (await handleResponse<T>(response)) as T;
+    request: async <T>(endpoint: string, opts: RequestInit = {}) => {
+      const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+      const url  = `${base}${path}`;
+      const res  = await fetch(url, { ...opts, credentials: 'include' });
+      return handleResponse<T>(res);
     },
   };
 }
-
-
-// Экспортируем экземпляр с включёнными куки
 export const apiClient = createApiClient();

@@ -8,10 +8,12 @@ import { isAuthenticated } from '../middleware/auth'; // Уже есть
 import { broadcastStatus, sendChatMessage } from '../ws'; // Уже есть
 import departmentsRouter from './departments';
 import wikiRouter from './wiki';
+import requestsRouter from './requests';
 
 const router = Router();
-// router.use('/departments', isAuthenticated, departmentsRouter); // Добавляем роутер для департаментов // Удаляем эту строку
-router.use('/wiki', isAuthenticated, wikiRouter); // <--- И ЭТО
+router.use('/departments', isAuthenticated, departmentsRouter);
+router.use('/requests', isAuthenticated, requestsRouter);
+router.use('/wiki', isAuthenticated, wikiRouter);
 /**
  * POST /api/login
  * Логин пользователя.

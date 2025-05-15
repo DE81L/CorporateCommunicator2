@@ -2,41 +2,44 @@
 import { Router } from 'express';
 // import { db } from '../db'; // или client
 import { logger } from '../util/logger';
+import { db } from '../db'; // Импортируем db из db.ts
 
 const router = Router();
 
 // GET /api/wiki/entries
 router.get('/entries', async (req, res) => {
-  try {
-    // Здесь должна быть логика получения записей wiki из БД
-    // const { rows } = await db.query('SELECT * FROM wiki_entries');
-    logger.info('Запрос /api/wiki/entries получен');
-    res.json([
-      // Пример данных
-      // { id: 1, title: 'Entry 1', content: 'Content 1', categoryId: 1, createdAt: new Date(), updatedAt: new Date(), creatorId: 1, lastEditorId: 1 },
-    ]);
-  } catch (error) {
-    logger.error('Ошибка при получении записей wiki:', error);
-    res.status(500).json({ message: 'Ошибка при получении записей wiki' });
-  }
+  const { rows } = await db!.query('SELECT * FROM wiki_entries');
+  res.json(rows);
 });
 
-// GET /api/wiki/categories
+// GET /api/wiki/categories – список категорий
 router.get('/categories', async (req, res) => {
-  try {
-    // Здесь должна быть логика получения категорий wiki из БД
-    // const { rows } = await db.query('SELECT * FROM wiki_categories');
-    logger.info('Запрос /api/wiki/categories получен');
-    res.json([
-      // Пример данных
-      // { id: 1, name: 'Category 1', description: 'Desc 1', parentId: null, createdAt: new Date(), updatedAt: new Date() },
-    ]);
-  } catch (error) {
-    logger.error('Ошибка при получении категорий wiki:', error);
-    res.status(500).json({ message: 'Ошибка при получении категорий wiki' });
-  }
+  const { rows } = await db!.query('SELECT * FROM wiki_categories');
+  res.json(rows);
 });
 
+// POST /api/wiki/entries – создать новую запись
+router.post('/entries', async (req, res) => {
+  const { title, content, categoryId } = req.body;
+  const creatorId = req.session.userId;
+  const { rows } = await db!.query(
+    'INSERT INTO wiki_entries(title, content, category_id, creator_id, created_at) VALUES($1,$2,$3,$4,NOW()) RETURNING *',
+    [title, content, categoryId, creatorId]
+  );
+  res.status(201).json(rows[0]);
+});
+
+// PUT /api/wiki/entries/:id – обновить существующую запись
+router.put('/entries/:id', async (req, res) => {
+  const entryId = +req.params.id;
+  const { title, content, categoryId } = req.body;
+  const editorId = req.session.userId;
+  const { rows } = await db!.query(
+    'UPDATE wiki_entries SET title=$1, content=$2, category_id=$3, last_editor_id=$4, updated_at=NOW() WHERE id = $5 RETURNING *',
+    [title, content, categoryId, editorId, entryId]
+  );
+  res.json(rows[0]);
+});
 // Другие маршруты для wiki (POST, PUT, DELETE) по необходимости
 
 export default router;
