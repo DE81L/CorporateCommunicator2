@@ -1,6 +1,6 @@
 import type { Request } from '@/pages/requests-section';
 
-const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api';
 
 // Grab a list that belongs to the logged-in user.
 // We keep cookies/auth headers by passing credentials: 'include'.

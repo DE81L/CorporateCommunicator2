@@ -1,10 +1,10 @@
 {
   "extends": "../tsconfig.base.json",          // if you have a root/base config
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "module": "commonjs",
     "outDir": "../dist/server",
-    "rootDir": "src",
+    "rootDir": "../",
     "incremental": true,
     "strict": true,
     "esModuleInterop": true,

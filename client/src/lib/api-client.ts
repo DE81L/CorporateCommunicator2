@@ -28,8 +28,8 @@ export async function handleResponse<T>(response: Response): Promise<T | undefin
 
 export function createApiClient(withCredentials = true) {
   // Убираем '/api' из VITE_API_URL и ставим порт 4000 по умолчанию
-  const rawBase = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-  const baseURL = rawBase.replace(/\/api\/?$/, ''); // strip trailing /api if any
+  const rawBase = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+  const baseURL = rawBase.replace(/^\/+/, '');
 
   return {
     request: async <T>(endpoint: string, options: RequestInit = {}): Promise<T | null> => {
@@ -43,6 +43,7 @@ export function createApiClient(withCredentials = true) {
     },
   };
 }
+
 
 // Экспортируем экземпляр с включёнными куки
 export const apiClient = createApiClient();

@@ -61,7 +61,7 @@ export default function MessagesSection({ onStartCall }: Props) {
   } = useQuery<User[]>({
     queryKey: ['contacts'],
     queryFn: async () =>
-      (await apiClient.request<User[]>('contacts')) ?? [],
+      (await apiClient.request<User[]>('/contacts')) ?? [],
   });
 
   /* ─────────── history ─────────── */

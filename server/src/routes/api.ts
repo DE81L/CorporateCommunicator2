@@ -101,24 +101,55 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const userId = req.session.userId as number;
-      const result = await db!.query(
-        `SELECT id,
-                username,
-                email,
-                first_name  AS "firstName",
-                last_name   AS "lastName",
-                isonline
-           FROM users
-          WHERE id <> $1`,
-        [userId]
+
+      // 1) находим всех «контактов» через messages
+      const { rows: idsRows } = await db!.query<{ contact_id: number }>(
+        `SELECT DISTINCT
+           CASE
+             WHEN sender_id   = $1 THEN receiver_id
+             WHEN receiver_id = $1 THEN sender_id
+           END AS contact_id
+         FROM messages
+        WHERE sender_id   = $1
+           OR receiver_id = $1;`,
+        [userId],
       );
-      res.json(result.rows);
+
+      const contactIds = idsRows.map(r => r.contact_id);
+      if (contactIds.length === 0) {
+        return res.json([]);         // нет переписок — возвращаем пустой массив
+      }
+
+      // 2) подтягиваем данные юзеров по списку ID
+      const { rows: contacts } = await db!.query<{
+        id: number;
+        username: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        isonline: boolean;
+      }>(
+        `SELECT
+           id,
+           username,
+           email,
+           first_name AS "firstName",
+           last_name  AS "lastName",
+           isonline
+         FROM users
+         WHERE id = ANY($1);`,
+        [contactIds],
+      );
+
+      return res.json(contacts);
     } catch (err) {
       logger.error('Get contacts error:', err);
-      res.status(500).json({ error: 'Server error' });
+      return res.status(500).json({ error: 'Server error' });
     }
   }
 );
+
+
 
 /**
  * GET /api/messages?chatWith={id}
@@ -184,7 +215,8 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
 
     // Если оба онлайн, пересылаем через WS:
     // Note: The sendChatMessage function needs to handle the logic of checking if the receiver is online.
-    sendChatMessage({ senderId, receiverId, content });
+    sendChatMessage(receiverId,
++   { senderId, receiverId, content });
 
     res.json({ success: true });
   } catch (error) {

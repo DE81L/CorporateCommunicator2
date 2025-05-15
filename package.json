@@ -10,14 +10,14 @@
     "dev:electron": "pnpm --filter ccnew-electron run dev",
     "dev:server": "pnpm --filter server run dev",
     "log-check": "node scripts/analyse-log.js",
-    "postinstall": "pnpm --filter ccnew-electron exec electron --version",
+    "postinstall": "node ./node_modules/electron/install.js",
     "ts-report": "pnpm run type-check --pretty false --noEmit > ts-report.log",
     "build:shared": "tsc -p shared/tsconfig.json",
     "build:electron": "pnpm --filter ccnew-electron run build",
     "dev:proxy": "node ./proxy.mjs",
     "rehash-passwords": "node ./scripts/rehash-passwords.cjs",
     "seed:dev": "node ./scripts/seed-dev-users.cjs",
-    "type-check": "pnpm run build:shared && tsc -p client/tsconfig.json && tsc -p ./tsconfig.server.json"
+    "type-check": "tsc -p client/tsconfig.json && tsc -p ./tsconfig.server.json"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -70,12 +70,14 @@
     "electron": "36.2.0",
     "embla-carousel-react": "^8.6.0",
     "express-session": "^1.18.1",
+    "gel": "^2.1.0",
     "glob": "^10.3.10",
     "i18next": "^25.1.2",
     "i18next-browser-languagedetector": "^8.1.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.509.0",
     "morgan": "latest",
+    "mysql2": "^3.14.1",
     "passport": "^0.7.0",
     "path-to-regexp": "1.7.0",
     "pg": "latest",

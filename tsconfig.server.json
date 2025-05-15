@@ -4,7 +4,7 @@
     "target": "ES2022",
     "esModuleInterop": true,
     "module": "CommonJS", // Оставляем, если сервер использует CommonJS
-    "rootDir": "./server/src", // Указываем конкретную корневую директорию для исходников сервера
+    "rootDirs": ["server/src", "shared/src"], // Указываем конкретную корневую директорию для исходников сервера
     "outDir": "./dist/server",
     "baseUrl": ".", // Базовый URL для разрешения путей
     "paths": {
@@ -15,9 +15,6 @@
     },
     "typeRoots": ["./server/src/types", "../node_modules/@types"] // Путь к node_modules должен быть относительным
   },
-  "include": [
-    "server/src/**/*" // Включаем только исходники сервера
-    // "shared/src/**/*" // Убираем shared/src, т.к. он должен разрешаться через paths
-  ],
+  "include": ["server/src/**/*", "shared/src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
