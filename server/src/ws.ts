@@ -1,59 +1,96 @@
 // server/src/ws.ts
 import http from 'http';
+import type { IncomingMessage } from 'http';
+import type { RequestHandler } from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
-import session from 'express-session';
 import { logger } from './util/logger';
 
-// Переменная для хранения инстанса WSS
+// Сервер + карта подключений userId → ws
 let wss: WebSocketServer;
+const connections = new Map<number, WebSocket>();
 
-/**
- * Инициализирует WebSocketServer на уже созданном HTTP-сервере.
- * Поднимает ws на пути /ws с проверкой сессии.
- */
-export function initWebSocket(server: http.Server, sessionMiddleware: session.SessionMiddleware) {
-  // Создаём WSS без собственного слушателя порта
+export function initWebSocket(
+  server: http.Server,
+  sessionMiddleware: RequestHandler
+): void {
   wss = new WebSocketServer({ noServer: true, path: '/ws' });
 
-  // Обрабатываем upgrade-запросы (WebSocket handshake)
-  server.on('upgrade', (request, socket, head) => {
-    // Прогоняем через sessionMiddleware, чтобы request.session был заполнен
-    sessionMiddleware(request as any, {} as any, () => {
-      const sid = (request as any).session.userId;
-      if (!sid) {
-        logger.warn('WS upgrade without session, destroying socket');
+  server.on('upgrade', (req, socket, head) => {
+    // Засейвить сессию в req.session
+    sessionMiddleware(req as any, {} as any, () => {
+      const userId = (req as any).session?.userId as number | undefined;
+      if (!userId) {
+        logger.warn('WS upgrade без сессии — отклоняю');
         socket.destroy();
         return;
       }
-      // Делаем «апгрейд» соединения в WebSocket
-      wss.handleUpgrade(request, socket, head, (ws) => {
-        wss.emit('connection', ws, request);
+      wss.handleUpgrade(req, socket, head, (ws) => {
+        wss.emit('connection', ws, req);
       });
     });
   });
 
-  // На входе в сокет просто логируем подключение
-  wss.on('connection', (ws: WebSocket, request: http.IncomingMessage) => {
-    const userId = (request as any).session.userId;
-    logger.info(`WS connected: user ${userId}`);
-    ws.on('close', () => logger.info(`WS disconnected: user ${userId}`));
+  wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
+    const userId = (req as any).session.userId as number;
+    connections.set(userId, ws);
+    logger.info(`🟢 WS connected: user ${userId}`);
+
+    // Обработка входящих P2P-сигналов
+    ws.on('message', (data) => {
+      try {
+        const msg = JSON.parse(data.toString());
+        if (msg.type === 'p2p-signal') {
+          const { to, signal } = msg.payload as { to: number; signal: any };
+          const target = connections.get(to);
+          if (target?.readyState === WebSocket.OPEN) {
+            target.send(
+              JSON.stringify({
+                type: 'p2p-signal',
+                payload: { from: userId, signal },
+              })
+            );
+          }
+        }
+      } catch (err) {
+        logger.warn('WS message parse error:', err);
+      }
+    });
+
+    ws.on('close', () => {
+      connections.delete(userId);
+      logger.info(`🔴 WS disconnected: user ${userId}`);
+    });
   });
 
   logger.info('WebSocketServer initialized on /ws');
 }
 
 /**
- * Рассылает всем подключённым WS-клиентам сообщение о смене статуса.
+ * Нотификация об изменении статуса
  */
-export function broadcastStatus(userId: number, isonline: 0 | 1) {
+export function broadcastStatus(
+  userId: number,
+  isonline: 0 | 1
+): void {
   if (!wss) return;
   const msg = JSON.stringify({
     type: 'user-status',
     payload: { userId, isonline },
   });
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(msg);
-    }
+  wss.clients.forEach((c) => {
+    if (c.readyState === WebSocket.OPEN) c.send(msg);
   });
+}
+
+/**
+ * Серверная пересылка “chat” (если оба онлайн)
+ */
+export function sendChatMessage(
+  receiverId: number,
+  message: any
+): void {
+  const ws = connections.get(receiverId);
+  if (ws?.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'chat', payload: message }));
+  }
 }

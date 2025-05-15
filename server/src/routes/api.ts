@@ -1,54 +1,77 @@
 /// <reference path="../types/express-session.d.ts" />
 import 'express-session';
-
 import { Router, Request, Response } from 'express';
 import { login, register } from '../lib/api/auth';
 import { client } from '../db';
 import { logger } from '../util/logger';
 import { isAuthenticated } from '../middleware/auth';
-
+import { broadcastStatus, sendChatMessage } from '../ws';
 
 const router = Router();
 
-router.post("/login", async (req: Request, res: Response) => {
+/**
+ * POST /api/login
+ * Логин пользователя.
+ * Тело: { usernameOrEmail: string, password: string }
+ */
+router.post('/login', async (req: Request, res: Response) => {
   try {
-    // клиент может прислать username | email | usernameOrEmail
-    const {
-      username,
-      email,
-      usernameOrEmail,
-      password,
-    }: {
-      username?: string;
-      email?: string;
-      usernameOrEmail?: string;
-      password: string;
-    } = req.body;
-
-    const loginId = usernameOrEmail || username || email;
-    if (!loginId || !password) {
-      return res.status(400).json({ error: "Missing credentials" });
-    }
-
-    const user = await login(loginId, password);
+    const { usernameOrEmail, password }: { usernameOrEmail: string; password: string } = req.body;
+    const user = await login(usernameOrEmail, password);
+    // сохраняем в сессии
     req.session.userId = user.id;
     req.session.username = user.username;
-    await new Promise<void>((r, e) => req.session.save(err => (err ? e(err) : r())));
+    await new Promise<void>((resolve, reject) =>
+      req.session.save(err => (err ? reject(err) : resolve()))
+    );
     res.json(user);
   } catch (err) {
-    logger.error("Login error:", err);
-    res.status(401).json({ error: "Invalid credentials" });
+    logger.error('Login error:', err);
+    res.status(401).json({ error: 'Invalid credentials' });
   }
 });
 
-// Обновление онлайн-статуса текущего пользователя
+/**
+ * POST /api/register
+ * Регистрация нового пользователя.
+ * Тело: { username, email, password, firstName, lastName }
+ */
+router.post('/register', async (req: Request, res: Response) => {
+  try {
+    const newUser = await register(req.body);
+    // логин в сессии сразу после регистрации
+    req.session.userId = newUser.id;
+    req.session.username = newUser.username;
+    await new Promise<void>((resolve, reject) =>
+      req.session.save(err => (err ? reject(err) : resolve()))
+    );
+    res.status(201).json(newUser);
+  } catch (err) {
+    logger.error('Register error:', err);
+    res.status(400).json({ error: 'Invalid request' });
+  }
+});
+
+/**
+ * GET /api/user
+ * Информация о текущем пользователе.
+ */
+router.get('/user', isAuthenticated, (req: Request, res: Response) => {
+  res.json({ id: req.session.userId, username: req.session.username });
+});
+
+/**
+ * PATCH /api/users/status
+ * Обновление online/offline статуса пользователя.
+ * Тело: { isonline: 0|1 }
+ */
 router.patch(
   '/users/status',
   isAuthenticated,
   async (req: Request, res: Response) => {
     try {
       const { isonline } = req.body as { isonline: 0 | 1 };
-      const userId = (req.session as any).userId as number;
+      const userId = req.session.userId as number;
       if (isonline !== 0 && isonline !== 1) {
         return res.status(400).json({ error: 'Invalid isonline value' });
       }
@@ -56,40 +79,25 @@ router.patch(
         `UPDATE users SET isonline = $1 WHERE id = $2`,
         [isonline, userId]
       );
+      broadcastStatus(userId, isonline);
       res.json({ success: true });
     } catch (err) {
-      console.error('Status update error:', err);
+      logger.error('Status update error:', err);
       res.status(500).json({ error: 'Server error' });
     }
   }
 );
 
-router.get('/user', isAuthenticated, (req: Request, res: Response) => {
-  res.json({ id: req.session.userId, username: req.session.username });
-});
-
-router.post('/register', async (req: Request, res: Response) => {
-  try {
-    const newUser = await register(req.body);
-    req.session.userId   = newUser.id;
-    req.session.username = newUser.username;
-    await new Promise<void>((resolve, reject) =>
-      req.session.save(err => err ? reject(err) : resolve())
-    );
-    res.json({ id: newUser.id });
-  } catch (error) {
-    logger.error('Register failed:', error);
-    res.status(500).json({ error: 'Registration error' });
-  }
-});
-
-// Список контактов (все пользователи, кроме себя)
+/**
+ * GET /api/contacts
+ * Список всех пользователей (кроме себя) с полем isonline.
+ */
 router.get(
   '/contacts',
   isAuthenticated,
   async (req: Request, res: Response) => {
     try {
-      const userId = (req.session as any).userId as number;
+      const userId = req.session.userId as number;
       const result = await client!.query(
         `SELECT id,
                 username,
@@ -103,13 +111,107 @@ router.get(
       );
       res.json(result.rows);
     } catch (err) {
-      console.error('Get contacts error:', err);
+      logger.error('Get contacts error:', err);
       res.status(500).json({ error: 'Server error' });
     }
   }
 );
 
-router.get("/health", (_req, res) => res.json({ status: "ok" }));
-router.get("/hello", (_req, res) => res.json({ message: "👋" }));
+/**
+ * POST /api/messages
+ * Отправка сообщения: сохраняет в БД, и если оба пользователя онлайн —
+ * сразу шлёт по WS и помечает как доставленное.
+ * Тело: { receiverId: number; content: string }
+ */
+router.post(
+  '/messages',
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    try {
+      const senderId = req.session.userId as number;
+      const { receiverId, content } = req.body as {
+        receiverId: number;
+        content: string;
+      };
+      if (!receiverId || !content?.trim()) {
+        return res.status(400).json({ error: 'Invalid payload' });
+      }
+      const insert = await client!.query(
+        `INSERT INTO messages
+           (sender_id, receiver_id, content, timestamp, status)
+         VALUES
+           ($1, $2, $3, NOW(), 'pending')
+         RETURNING id, sender_id AS "senderId", receiver_id AS "receiverId", content, timestamp`,
+        [senderId, receiverId, content.trim()]
+      );
+      const message = insert.rows[0];
+      // проверяем, онлайн ли оба
+      const statusCheck = await client!.query(
+        `SELECT isonline FROM users WHERE id = ANY($1::int[])`,
+        [[senderId, receiverId]]
+      );
+      const bothOnline = statusCheck.rows.every((u) => u.isonline === 1);
+      if (bothOnline) {
+        sendChatMessage(receiverId, {
+          ...message,
+          timestamp: message.timestamp.toISOString(),
+        });
+        await client!.query(
+          `UPDATE messages SET status = 'delivered' WHERE id = $1`,
+          [message.id]
+        );
+      }
+      res.status(201).json(message);
+    } catch (err) {
+      logger.error('POST /messages error:', err);
+      res.status(500).json({ error: 'Server error' });
+    }
+  }
+);
+
+/**
+ * GET /api/messages?chatWith={id}
+ * Возвращает всю историю между текущим пользователем и chatWith,
+ * а также помечает входящие pending-сообщения как delivered.
+ */
+router.get(
+  '/messages',
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId as number;
+      const chatWith = Number(req.query.chatWith);
+      if (!chatWith) {
+        return res.status(400).json({ error: 'chatWith is required' });
+      }
+      const history = await client!.query(
+        `SELECT
+           id,
+           sender_id   AS "senderId",
+           receiver_id AS "receiverId",
+           content,
+           timestamp,
+           status
+         FROM messages
+        WHERE (sender_id = $1 AND receiver_id = $2)
+           OR (sender_id = $2 AND receiver_id = $1)
+        ORDER BY timestamp ASC`,
+        [userId, chatWith]
+      );
+      await client!.query(
+        `UPDATE messages
+            SET status = 'delivered'
+          WHERE sender_id = $2
+            AND receiver_id = $1
+            AND status = 'pending'`,
+        [userId, chatWith]
+      );
+      res.json(history.rows);
+    } catch (err) {
+      logger.error('GET /messages error:', err);
+      res.status(500).json({ error: 'Server error' });
+    }
+  }
+);
 
 export default router;

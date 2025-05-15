@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "ccnew",
   "private": true,
   "scripts": {
@@ -86,11 +86,13 @@
     "react-resizable-panels": "^3.0.1",
     "recharts": "^2.15.3",
     "rimraf": "^6.0.1",
+    "simple-peer": "^9.11.1",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.2.0",
     "tslog": "4.9.3",
     "vaul": "^1.1.2",
     "wouter": "^3.7.0",
+    "ws": "^8.18.2",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -104,6 +106,8 @@
     "@types/pg": "latest",
     "@types/react": "18.3.1",
     "@types/react-dom": "18.3.1",
+    "@types/simple-peer": "^9.11.8",
+    "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^4.4.1",
     "autoprefixer": "^10.4.17",
     "concurrently": "latest",

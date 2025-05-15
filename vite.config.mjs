@@ -35,7 +35,12 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_API_URL || 'http://localhost:3000',
           changeOrigin: true,
           secure: false,
-        }
+        },
+         "/ws": {
+          target: "ws://localhost:3000",
+          ws: true,
+          changeOrigin: true,
+         }
       },
       fs: {
         allow: [ path.resolve(__dirname, "shared") ]

@@ -1,332 +1,226 @@
-import { useState, useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "../hooks/use-auth";
-import { useWebSocket } from "../hooks/useWebSocket";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Loader2, Phone, Video, Paperclip, Send } from "lucide-react";
-import { formatDistance } from "date-fns";
-import { ru } from "date-fns/locale";
-import { queryClient } from "@/lib/queryClient";
-import { useTranslations } from "@/hooks/use-translations";
-import { createApiClient } from "@/lib/api-client";
+// client/src/pages/messages-section.tsx
+import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/use-auth';
+import { useWebSocket, WSMessage } from '@/hooks/useWebSocket';
+import { usePeerConnection } from '../hooks/usePeerConnection';
+import { createApiClient } from '@/lib/api-client';
+import { Send } from 'lucide-react';
+import { Input, Button, Loader2, Avatar, AvatarFallback } from '@/components/ui';
 
 interface Message {
   id: number;
   senderId: number;
   receiverId?: number;
-  groupId?: number;
   content: string;
   timestamp: string;
-  isRead: boolean;
 }
 
 interface User {
   id: number;
-  username: string;
   firstName: string;
   lastName: string;
-  isOnline: boolean;
-  avatarUrl?: string;
+  isonline: 0 | 1;
 }
 
-interface MessagesProps {
-  onStartCall: (
-    type: "video" | "audio",
-    recipient: { id: number; name: string },
-  ) => void;
-}
-
-export default function MessagesSection({ onStartCall }: MessagesProps) {
+export default function MessagesSection() {
   const { user } = useAuth();
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [messageInput, setMessageInput] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { sendMessage, lastMessage } = useWebSocket();
-  const { t } = useTranslations();
   const apiClient = createApiClient();
+  const { connectionStatus, lastRawMessage, sendRaw } = useWebSocket();
 
-  // Получение списка пользователей
-  const { data: users = [], isLoading: isLoadingUsers } = useQuery<User[]>({
-    queryKey: ["/api/users"],
-    queryFn: async (): Promise<User[]> => {
-      const users = (await apiClient.request<User[]>('/api/messages/users')) ?? [];
-      return users;
-    },
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [msgInput, setMsgInput] = useState('');
+  const [incomingSignal, setIncomingSignal] = useState<any>(null);
+
+  // REST: contacts & history
+  const { data: contacts = [] } = useQuery<User[]>({
+    queryKey: ['contacts'],
+    queryFn: async () =>
+      (await apiClient.request<User[]>('/contacts')) ?? [],
   });
-  const { data: messages = [], isLoading: isLoadingMessages } = useQuery<Message[]>({
-    queryKey: ["/api/messages", selectedUser?.id],
+  const {
+    data: history = [],
+    refetch: refetchHistory,
+  } = useQuery<Message[]>({
+    queryKey: ['messages', selectedUser?.id],
     enabled: !!selectedUser,
-    queryFn: async (): Promise<Message[]> => {
-      const msgs = await apiClient.request(`/api/messages?chatWith=${selectedUser!.id}`);
-      return (Array.isArray(msgs) ? msgs : []) as Message[];
-    },
+    queryFn: async () =>
+    (await apiClient.request<Message[]>(
+      `/messages?chatWith=${selectedUser!.id}`
+    )) ?? [],
   });
 
-  // Прослушивание новых сообщений из WebSocket
+  // P2P-hook
+  const isInitiator =
+    selectedUser != null &&
+    user != null &&
+    user.id < selectedUser.id;
+  const {
+    status: p2pStatus,
+    lastMessage: p2pMsg,
+    send: sendP2P,
+  } = usePeerConnection(
+    isInitiator,
+    (signal) =>
+      sendRaw({
+        type: 'p2p-signal',
+        payload: { to: selectedUser!.id, signal },
+      }),
+    incomingSignal
+  );
+
+  // Авто-реакция на WS-события
   useEffect(() => {
-    if (lastMessage) {
-        if (lastMessage) {
-        // Если сообщение от выбранного пользователя, обновляем список сообщений
-        if (
-          selectedUser &&
-          ((lastMessage.sender?.id === selectedUser.id &&
-              lastMessage.chatId) ||
-            (lastMessage.sender?.id === user?.id &&
-                lastMessage.chatId))
-              ) {
-          queryClient.invalidateQueries({
-            queryKey: ["/api/messages", selectedUser.id],
-          });
-        }
+    if (!lastRawMessage) return;
+    const { type, payload } = lastRawMessage as WSMessage<any>;
+
+    if (type === 'user-status') {
+      // Когда выбранный контакт в сети — инициируем P2P
+      if (
+        selectedUser &&
+        payload.userId === selectedUser.id &&
+        payload.isonline === 1 &&
+        connectionStatus === 'open'
+      ) {
+        // просто ререндерит P2P-hook с isInitiator
       }
     }
-  }, [lastMessage, selectedUser, user]);
 
-  // Прокрутка вниз при появлении новых сообщений
+    if (type === 'p2p-signal') {
+      // Получили сигнал от peer — передаём в usePeerConnection
+      if (payload.from === selectedUser?.id) {
+        setIncomingSignal(payload.signal);
+      }
+    }
+
+    if (type === 'chat') {
+      // Серверное сообщение: подгружаем историю
+      if (
+        selectedUser &&
+        (payload.senderId === selectedUser.id ||
+          payload.senderId === user?.id)
+      ) {
+        refetchHistory();
+      }
+    }
+  }, [lastRawMessage, selectedUser, connectionStatus, user, refetchHistory]);
+
+  // P2P-сообщения в чат
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (
+      p2pMsg &&
+      ((p2pMsg.senderId === selectedUser?.id &&
+        p2pMsg.receiverId === user?.id) ||
+        (p2pMsg.senderId === user?.id &&
+          p2pMsg.receiverId === selectedUser?.id))
+    ) {
+      refetchHistory();
+    }
+  }, [p2pMsg, selectedUser, user, refetchHistory]);
 
-  const sendChatMessage = (e: React.FormEvent) => {
+  const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!msgInput.trim() || !selectedUser) return;
 
-    if (!messageInput.trim() || !selectedUser) return;
+    if (p2pStatus === 'open') {
+      // P2P-канал
+      sendP2P({ senderId: user!.id, receiverId: selectedUser.id, content: msgInput });
+    } else {
+      // REST+WS fallback
+      await apiClient.request<Message>('/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          receiverId: selectedUser.id,
+          content: msgInput,
+        }),
+      });
+    }
 
-    sendMessage(messageInput.trim(), selectedUser.id);
-    
-
-    // Очистка поля ввода
-    setMessageInput("");
+    setMsgInput('');
+    refetchHistory();
   };
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  };
+  const getInitials = (f: string, l: string) =>
+    `${f.charAt(0)}${l.charAt(0)}`.toUpperCase();
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {selectedUser ? (
-        <>
-          {/* Заголовок чата */}
-          <div className="bg-white border-b border-gray-200 p-4 flex items-center">
-            <div className="flex-1">
-              <div className="flex items-center">
-                <Avatar className="h-10 w-10 mr-3">
-                  {selectedUser.avatarUrl ? (
-                    <img
-                      src={selectedUser.avatarUrl}
-                      alt={`${selectedUser.firstName} ${selectedUser.lastName}`}
-                    />
-                  ) : (
-                    <AvatarFallback className="bg-primary-100 text-primary-600">
-                      {getInitials(
-                        selectedUser.firstName,
-                        selectedUser.lastName,
-                      )}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <div>
-                  <h2 className="text-lg font-medium">
-                    {selectedUser.firstName} {selectedUser.lastName}
-                  </h2>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                onClick={() =>
-                  onStartCall("audio", {
-                    id: selectedUser.id,
-                    name: `${selectedUser.firstName} ${selectedUser.lastName}`,
-                  })
-                }
-                variant="ghost"
-                size="icon"
-                title={t("profile.call")}
-              >
-                <Phone className="h-5 w-5" />
-              </Button>
-              <Button
-                onClick={() =>
-                  onStartCall("video", {
-                    id: selectedUser.id,
-                    name: `${selectedUser.firstName} ${selectedUser.lastName}`,
-                  })
-                }
-                variant="ghost"
-                size="icon"
-                title={t("profile.videoCall")}
-              >
-                <Video className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Область сообщений */}
-          <div className="flex-1 overflow-y-auto p-4">
-            {isLoadingMessages ? (
-              <div className="flex justify-center items-center h-full">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : messages && messages.length > 0 ? (
-              <>
-                {messages.map((message) => {
-                  const isOwnMessage = message.senderId === user?.id;
-                  const messageDate = new Date(message.timestamp);
-
-                  return (
-                    <div
-                      key={message.id}
-                      className={`flex flex-col ${isOwnMessage ? "items-end" : "items-start"} mb-4`}
-                    >
-                      <div className="flex items-end">
-                        {!isOwnMessage && (
-                          <Avatar className="h-8 w-8 mr-2">
-                            {selectedUser.avatarUrl ? (
-                              <img
-                                src={selectedUser.avatarUrl}
-                                alt={`${selectedUser.firstName} ${selectedUser.lastName}`}
-                              />
-                            ) : (
-                              <AvatarFallback className="bg-primary-100 text-primary-600">
-                                {getInitials(
-                                  selectedUser.firstName,
-                                  selectedUser.lastName,
-                                )}
-                              </AvatarFallback>
-                            )}
-                          </Avatar>
-                        )}
-                        <div
-                          className={`${
-                            isOwnMessage
-                              ? "bg-primary-600 text-white rounded-lg rounded-br-none"
-                              : "bg-gray-100 rounded-lg rounded-bl-none"
-                          } py-2 px-4 max-w-xs break-words`}
-                        >
-                          {message.content}
-                        </div>
-                      </div>
-                      <span
-                        className={`text-xs text-gray-500 mt-1 ${isOwnMessage ? "" : "ml-10"}`}
-                      >
-                        {formatDistance(messageDate, new Date(), {
-                          addSuffix: true,
-                          locale: ru,
-                        })}
-                      </span>
-                    </div>
-                  );
-                })}
-                <div ref={messagesEndRef} />
-              </>
-            ) : (
-              <div className="flex justify-center items-center h-full text-gray-500">
-                Начните диалог с {selectedUser.firstName}
-              </div>
-            )}
-          </div>
-
-          {/* Поле ввода сообщения */}
-          <div className="bg-white border-t border-gray-200 p-4">
-            <form onSubmit={sendChatMessage} className="flex space-x-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                title="Прикрепить файл"
-              > 
-                <Paperclip className="h-5 w-5" />
-              </Button>
-              <Input
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                placeholder={t("messages.enterMessage" )}
-                className="flex-1 rounded-full"
-              />
-              <Button
-                type="submit"
-                size="icon"
-                className="rounded-full disabled:opacity-50" 
-                title={t("messages.send" )}
-              >
-                <Send className="h-5 w-5" />
-              </Button>
-            </form>
-          </div>
-        </>
-      ) : (
-        <div className="flex-1 flex flex-col items-center justify-center p-6">
-          <div className="h-24 w-24 bg-primary-100 rounded-full flex items-center justify-center mb-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-12 w-12 text-primary-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-              />
-            </svg>
-          </div>
-          <h2 className="text-xl font-medium mb-2">
-            {t("messages.noChat" )}
-          </h2>  
-          <div className="w-full max-w-md">
-            <h3 className="font-medium mb-3">{t("nav.users" )}</h3>
+      {!selectedUser ? (
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="text-center">
+            <h3 className="font-medium mb-3">{t("nav.users")}</h3>
             {isLoadingUsers ? (
-              <div className="flex justify-center items-center py-4">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              </div>
-            ) : Array.isArray(users) && users.length > 0 ? (
-              <div className="space-y-2">
-                {users
-                  .filter((u) => u.id !== user?.id)
-                  .map((u) => (
-                    <button
-                      key={u.id}
-                      onClick={() => setSelectedUser(u)}
-                      className="w-full flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors text-left"
-                    >
-                      <Avatar className="h-10 w-10 mr-3">
-                        {u.avatarUrl ? (
-                          <img
-                            src={u.avatarUrl}
-                            alt={`${u.firstName} ${u.lastName}`}
-                          />
-                        ) : (
-                          <AvatarFallback className="bg-primary-100 text-primary-600">
-                            {getInitials(u.firstName, u.lastName)}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">
-                          {u.firstName} {u.lastName}
-                        </div>
-                        <p className="text-sm text-gray-500">
-                          {u.isOnline
-                            ? t("profile.online")
-                            : t("profile.offline")}
-                        </p>
-                      </div>
-                    </button>
-                  ))} 
-              </div>
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            ) : usersError ? (
+              <p className="text-red-500">Ошибка загрузки контактов</p>
             ) : (
-              <div className="text-center py-4 text-gray-500">
-                {t("messages.noContacts" as any)}
-              </div>
+              users.map((u) => (
+                <button
+                  key={u.id}
+                  onClick={() => setSelectedUser(u)}
+                  className="w-full flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors text-left"
+                >
+                  <Avatar className="h-10 w-10 mr-3">
+                    {u.avatarUrl ? (
+                      <img
+                        src={u.avatarUrl}
+                        alt={`${u.firstName} ${u.lastName}`}
+                      />
+                    ) : (
+                      <AvatarFallback className="bg-primary-100 text-primary-600">
+                        {getInitials(u.firstName, u.lastName)}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div>
+                    <div className="font-medium">
+                      {u.firstName} {u.lastName}
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      {u.isOnline
+                        ? t("profile.online")
+                        : t("profile.offline")}
+                    </p>
+                  </div>
+                </button>
+              ))
             )}
           </div>
         </div>
+      ) : (
+        <>
+          {/* Здесь ваш UI переписки */}
+          <div className="flex-1 overflow-auto p-4">
+            {isLoadingMessages ? (
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            ) : (
+              messages.map((m) => (
+                <div key={m.id} className="mb-2">
+                  <strong>
+                    {m.senderId === user?.id ? "Вы" : selectedUser.firstName}
+                    :
+                  </strong>{" "}
+                  {m.content}
+                </div>
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+          <form
+            onSubmit={sendChatMessage}
+            className="p-4 border-t flex space-x-2"
+          >
+            <Input
+              value={messageInput}
+              onChange={(e) => setMessageInput(e.target.value)}
+              placeholder={t("messages.typeHere")}
+            />
+            <Button type="submit">
+              <Send className="h-4 w-4" />
+            </Button>
+          </form>
+        </>
       )}
     </div>
   );
