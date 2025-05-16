@@ -3,15 +3,18 @@ export async function handleResponse<T>(response: Response): Promise<T | undefin
   if (!response.ok) {
     let msg = `Request failed: ${response.status}`;
     try {
-      const raw = await response.text();
-      if (raw) msg = JSON.parse(raw).message ?? msg;
+      const text = await response.text();
+      if (text) {
+        const json = JSON.parse(text);
+        msg = json.message ?? msg;
+      }
     } catch {
-      /* ignore */
+      // ignore parse errors
     }
     throw new Error(msg);
   }
 
-  if (response.status === 204) return undefined;
+   if (response.status === 204) return undefined;
   const ct = response.headers.get('content-type');
   return ct?.includes('application/json') ? response.json() : undefined;
 }
@@ -22,14 +25,27 @@ export async function handleResponse<T>(response: Response): Promise<T | undefin
  */
 export function createApiClient() {
   const envBase = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-  const base =
-    envBase.endsWith('/api') ? envBase : `${envBase.replace(/\/+$/, '')}/api`;
+  const base = envBase.endsWith('/api')
+    ? envBase
+    : `${envBase.replace(/\/+$/, '')}/api`;
+
 
   return {
     async request<T>(endpoint: string, opts: RequestInit = {}) {
-      const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-      const url  = `${base}${path}`;
-      const res  = await fetch(url, { ...opts, credentials: 'include' });
+      let url: string;
+      if (/^https?:\/\//.test(endpoint)) {
+        url = endpoint;
+      } else {
+      let path = endpoint;
+        if (path.startsWith('/api')) {
+          path = path.replace(/^\/api/, '');
+        }
+      if (!path.startsWith('/')) {
+          path = '/' + path;
+        }
+        url = base + path;
+      }
+      const res = await fetch(url, { ...opts, credentials: 'include' });
       return handleResponse<T>(res);
     },
   };

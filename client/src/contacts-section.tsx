@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Search, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
+
 export interface User {
   id: number;
   username: string;
@@ -25,27 +26,34 @@ export default function ContactsSection() {
   const { data: users, isLoading, error } = useQuery<User[]> ({
     queryKey: ['contacts'],
     queryFn: async () => {
-      const res = await apiClient.request<User[]>(`${import.meta.env.VITE_API_URL}/contacts`, {
-        credentials: 'include',
-      });
+       const res = await apiClient.request<User[]>('/contacts');
       return res ?? [];
     },
   });
 
+
   const filtered = (users ?? []).filter(
     (u) =>
       u.id !== user?.id &&
-      (u.firstName + ' ' + u.lastName + ' ' + u.username + ' ' + u.email)
+      (
+        u.firstName +
+        ' ' +
+        u.lastName +
+        ' ' +
+        u.username +
+        ' ' +
+        u.email
+      )
         .toLowerCase()
         .includes(q.toLowerCase())
   );
 
   if (isLoading)
-    return (
-      <div className="flex justify-center items-center h-40">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+      return (
+        <div className="flex justify-center items-center h-40">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      );
   if (error)
     return (
       <div className="text-center py-10 text-red-500">
@@ -53,7 +61,7 @@ export default function ContactsSection() {
       </div>
     );
 
-  return (
+   return (
     <div className="flex-1 p-6 overflow-auto">
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-xl font-semibold">Контакты</h2>
