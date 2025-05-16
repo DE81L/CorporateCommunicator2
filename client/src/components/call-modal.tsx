@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import {
+  Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog } from "@/components/ui/dialog";
 import { MicOffIcon, VideoOffIcon, PhoneOffIcon, UserIcon } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 

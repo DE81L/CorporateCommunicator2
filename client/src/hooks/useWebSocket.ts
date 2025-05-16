@@ -1,10 +1,7 @@
 // client/src/hooks/useWebSocket.ts
 import { useState, useEffect, useRef } from 'react';
 
-export type WSMessage<T = any> = {
-  type: string;
-  payload: T;
-};
+export type WSMessage<T = any> = { type: string; payload: T };
 
 export type ConnectionStatus =
   | 'connecting'
@@ -13,38 +10,48 @@ export type ConnectionStatus =
   | 'closed'
   | 'error';
 
-// Собираем WS_URL из .env или из window.location
+// единое место правды
 const WS_URL =
-  (import.meta.env.VITE_WS_URL as string | undefined) ??
-  'ws://localhost:4000/ws';
+  (import.meta.env.VITE_WS_URL as string | undefined) ||
+  `ws://${window.location.hostname}:4000/ws`;
 
-    export function useWebSocket() {
-      const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connecting');
-      const [lastRawMessage, setLastRawMessage] = useState<WSMessage | null>(null);
-      const wsRef = useRef<WebSocket | null>(null);
+export function useWebSocket() {
+  const [connectionStatus, setConnectionStatus] =
+    useState<ConnectionStatus>('connecting');
+  const [lastRawMessage, setLastRawMessage] = useState<WSMessage | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
 
-      useEffect(() => {
-        setConnectionStatus('connecting');
+  useEffect(() => {
+    let ws: WebSocket;
 
-      
-      const wsUrl = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:4000/ws`; // Используем порт 4000 напрямую
-      const ws = new WebSocket(wsUrl); 
+    const connect = () => {
+      setConnectionStatus('connecting');
+      ws = new WebSocket(WS_URL);
 
       ws.addEventListener('open', () => setConnectionStatus('open'));
+
       ws.addEventListener('message', (evt) => {
         try {
-          const m = JSON.parse(evt.data) as WSMessage;
-          setLastRawMessage(m);
+          setLastRawMessage(JSON.parse(evt.data));
         } catch {
           console.warn('Invalid WS frame:', evt.data);
         }
       });
-      ws.addEventListener('close', () => setConnectionStatus('closed'));
+
+      ws.addEventListener('close', () => {
+        setConnectionStatus('closed');
+        // простейший авто-reconnect через 3 сек
+        setTimeout(connect, 3000);
+      });
+
       ws.addEventListener('error', () => setConnectionStatus('error'));
 
       wsRef.current = ws;
-      return () => ws.close();
-    }, []);
+    };
+
+    connect();
+    return () => ws?.close();
+  }, []);
 
   const sendRaw = (msg: WSMessage) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {

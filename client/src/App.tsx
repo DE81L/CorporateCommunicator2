@@ -40,22 +40,25 @@ function AppContent() {
 import { queryClient } from './lib/queryClient';
 
 export default function App() {
-  const [status, setStatus] = useState('Loading...');
+  const [status, setStatus]   = useState('Loading...');
   const [message, setMessage] = useState('');
 
-  const API = (import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api').replace(/\/+$/, '');
+  const API_BASE =
+    (import.meta.env.VITE_API_URL || 'http://localhost:4000')
+      .replace(/\/api\/?$/, '')        // убираем лишний /api
+      .replace(/\/+$/, '');
 
-useEffect(() => {
-  fetch(`${API}/health`)
-    .then(res => res.json())
-    .then(data => setStatus(data.status))
-    .catch(() => setStatus('error'));
+  useEffect(() => {
+    fetch(`${API_BASE}/api/health`)
+      .then(res => res.json())
+      .then(data => setStatus(data.status))
+      .catch(() => setStatus('error'));
 
-  fetch(`${API}/hello`)
-    .then(res => res.json())
-    .then(data => setMessage(data.message))
-    .catch(err => console.error(err));
-}, []);
+    fetch(`${API_BASE}/api/hello`)
+      .then(res => res.json())
+      .then(data => setMessage(data.message))
+      .catch(console.error);
+  }, [API_BASE]);
 
 
   return (

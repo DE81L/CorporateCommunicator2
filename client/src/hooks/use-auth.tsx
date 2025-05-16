@@ -5,11 +5,20 @@ import {
   ReactNode,
   useCallback,
 } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  MutationFunction,
+} from "@tanstack/react-query";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslations } from "@/hooks/use-translations";
 import { createApiClient } from "@/lib/api-client";
+
+/* ────────────────────────────────────────────────────────── */
+/* Types & Schemas                                           */
+/* ────────────────────────────────────────────────────────── */
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username or email is required"),
@@ -37,7 +46,15 @@ export interface AuthContextType {
   isLoggingOut: boolean;
 }
 
+/* ────────────────────────────────────────────────────────── */
+/* Context                                                   */
+/* ────────────────────────────────────────────────────────── */
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+/* ────────────────────────────────────────────────────────── */
+/* Provider                                                  */
+/* ────────────────────────────────────────────────────────── */
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
@@ -45,30 +62,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const apiClient = createApiClient();
 
-  const { data: user, isLoading: isLoadingUser } =
-    useQuery<UserWithoutPassword | null>({
-      queryKey: ["/api/user"],
-      queryFn: async () => {
-        try {
-          return await apiClient.request("/api/user");
-        } catch (error) {
-          if (error instanceof Error && error.message.includes("401")) {
-            return null;
-          }
-          throw error;
+  /* ─── CURRENT USER ────────────────────────────────────── */
+  const {
+    data: user,
+    isLoading: isLoadingUser,
+  } = useQuery<UserWithoutPassword | null, Error>({
+    queryKey: ["/api/user"],
+    queryFn: async () => {
+      try {
+        // 1️⃣ undefined → null
+        return (await apiClient.request<UserWithoutPassword>(
+          "/api/user",
+        )) ?? null;
+      } catch (error) {
+        // 401 → не залогинен → возвращаем null
+        if (error instanceof Error && error.message.includes("401")) {
+          return null;
         }
-      },
-      staleTime: 5 * 60 * 1000,
-      retry: 1,
-    });
+        throw error;
+      }
+    },
+    staleTime: 5 * 60_000,
+    retry: 1,
+  });
 
+  /* ─── LOGIN ───────────────────────────────────────────── */
   const loginMutation = useMutation<
     UserWithoutPassword,
     Error,
     LoginCredentials
   >({
     mutationFn: async (credentials) => {
-      const response = await fetch("/api/login", {
+      const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -77,11 +102,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           password: credentials.password,
         }),
       });
-      if (!response.ok) {
-        const err = await response.json();
+
+      if (!res.ok) {
+        const err = await res.json();
         throw new Error(err.error || "Login failed");
       }
-      return (await response.json()) as UserWithoutPassword;
+      return (await res.json()) as UserWithoutPassword;
     },
     onSuccess: (user) => {
       queryClient.setQueryData(["/api/user"], user);
@@ -95,8 +121,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  const logoutMutation = useMutation({
-    mutationFn: () => apiClient.request("/api/logout", { method: "POST" }),
+  /* ─── LOGOUT ──────────────────────────────────────────── */
+  const logoutMutation = useMutation<void, Error, void>({
+    mutationFn: async () => {
+      await apiClient.request("/api/logout", { method: "POST" });
+    },
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
       queryClient.invalidateQueries();
@@ -108,17 +137,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
+  /* ─── PUBLIC API ──────────────────────────────────────── */
   const login = useCallback(
-    (credentials: LoginCredentials) =>
-      loginMutation.mutateAsync(loginSchema.parse(credentials)),
-    [loginMutation]
+    (c: LoginCredentials) =>
+      loginMutation.mutateAsync(loginSchema.parse(c)),
+    [loginMutation],
   );
 
-  // Заменили прямой return Promise<unknown> на async → Promise<void>
-  const logout = useCallback(async () => {
+  // 2️⃣ возвращаем Promise<void>, результат logoutMutation игнорируем
+  const logout = useCallback(async (): Promise<void> => {
     await logoutMutation.mutateAsync();
   }, [logoutMutation]);
 
+  /* ─── RENDER ──────────────────────────────────────────── */
   return (
     <AuthContext.Provider
       value={{
@@ -135,10 +166,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/* ────────────────────────────────────────────────────────── */
+/* Hook                                                     */
+/* ────────────────────────────────────────────────────────── */
+
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context;
+  return ctx;
 }
