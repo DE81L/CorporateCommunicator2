@@ -1,28 +1,22 @@
-// client/src/hooks/use-auth.tsx
 import {
   createContext,
   useContext,
   ReactNode,
   useCallback,
-} from "react";
+} from 'react';
 import {
   useQuery,
   useMutation,
   useQueryClient,
-  MutationFunction,
-} from "@tanstack/react-query";
-import { z } from "zod";
-import { useToast } from "@/hooks/use-toast";
-import { useTranslations } from "@/hooks/use-translations";
-import { createApiClient } from "@/lib/api-client";
-
-/* ────────────────────────────────────────────────────────── */
-/* Types & Schemas                                           */
-/* ────────────────────────────────────────────────────────── */
+} from '@tanstack/react-query';
+import { z } from 'zod';
+import { createApiClient } from '@/lib/api-client';
+import { useToast } from '@/hooks/use-toast';
+import { useTranslations } from '@/hooks/use-translations';
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username or email is required"),
-  password: z.string().min(1, "Password is required"),
+  username: z.string().min(1),
+  password: z.string().min(1),
 });
 export type LoginCredentials = z.infer<typeof loginSchema>;
 
@@ -39,125 +33,78 @@ export interface UserWithoutPassword {
 
 export interface AuthContextType {
   user: UserWithoutPassword | null;
-  login: (credentials: LoginCredentials) => Promise<UserWithoutPassword>;
+  login: (c: LoginCredentials) => Promise<UserWithoutPassword>;
   logout: () => Promise<void>;
   isLoading: boolean;
   isLoggingIn: boolean;
   isLoggingOut: boolean;
 }
 
-/* ────────────────────────────────────────────────────────── */
-/* Context                                                   */
-/* ────────────────────────────────────────────────────────── */
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-/* ────────────────────────────────────────────────────────── */
-/* Provider                                                  */
-/* ────────────────────────────────────────────────────────── */
-
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const apiClient   = createApiClient();
   const queryClient = useQueryClient();
-  const { t } = useTranslations();
-  const { toast } = useToast();
-  const apiClient = createApiClient();
+  const { toast }   = useToast();
+  const { t }       = useTranslations();
 
-  /* ─── CURRENT USER ────────────────────────────────────── */
+  /* ─── Текущий пользователь ───────────────────────────── */
   const {
-    data: user,
+    data: user = null,
     isLoading: isLoadingUser,
-  } = useQuery<UserWithoutPassword | null, Error>({
-    queryKey: ["/api/user"],
-    queryFn: async () => {
-      try {
-        // 1️⃣ undefined → null
-        return (await apiClient.request<UserWithoutPassword>(
-          "/api/user",
-        )) ?? null;
-      } catch (error) {
-        // 401 → не залогинен → возвращаем null
-        if (error instanceof Error && error.message.includes("401")) {
-          return null;
-        }
-        throw error;
-      }
-    },
-    staleTime: 5 * 60_000,
-    retry: 1,
+  } = useQuery<UserWithoutPassword | null>({
+    queryKey: ['/user'],
+    queryFn : async () =>
+      (await apiClient.request<UserWithoutPassword | null>('/user')) ?? null,
+    gcTime  : 5 * 60 * 1000,
   });
 
-  /* ─── LOGIN ───────────────────────────────────────────── */
-  const loginMutation = useMutation<
-    UserWithoutPassword,
-    Error,
-    LoginCredentials
-  >({
-    mutationFn: async (credentials) => {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          usernameOrEmail: credentials.username,
-          password: credentials.password,
-        }),
+  /* ─── Логин ───────────────────────────────────────────── */
+  const loginMutation = useMutation({
+    mutationFn : async (c: LoginCredentials) => {
+      const res = await apiClient.request<UserWithoutPassword>('/login', {
+        method : 'POST',
+        body   : JSON.stringify(c),
       });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Login failed");
-      }
-      return (await res.json()) as UserWithoutPassword;
+      if (!res) throw new Error('Login returned empty payload');
+      return res;
     },
-    onSuccess: (user) => {
-      queryClient.setQueryData(["/api/user"], user);
+    onSuccess: (u) => {
+      queryClient.setQueryData(['/user'], u);
+      toast({ title: t('auth.loginSuccess') });
     },
-    onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: t("auth.loginFailed"),
-        description: error.message,
-      });
-    },
+    onError: () => toast({ title: t('auth.loginFailed'), variant: 'destructive' }),
   });
 
-  /* ─── LOGOUT ──────────────────────────────────────────── */
-  const logoutMutation = useMutation<void, Error, void>({
-    mutationFn: async () => {
-      await apiClient.request("/api/logout", { method: "POST" });
-    },
-    onSuccess: () => {
-      queryClient.setQueryData(["/api/user"], null);
-      queryClient.invalidateQueries();
-    },
-    onError: (error) => {
-      console.error("Logout failed:", error);
-      queryClient.setQueryData(["/api/user"], null);
+  /* ─── Логаут ──────────────────────────────────────────── */
+  const logoutMutation = useMutation({
+    mutationFn : () =>
+      apiClient.request('/logout', { method: 'POST' }).then(() => undefined),
+    onSuccess  : () => {
+      queryClient.setQueryData(['/user'], null);
       queryClient.invalidateQueries();
     },
   });
 
-  /* ─── PUBLIC API ──────────────────────────────────────── */
+  /* ─── Публичное API ──────────────────────────────────── */
   const login = useCallback(
-    (c: LoginCredentials) =>
-      loginMutation.mutateAsync(loginSchema.parse(c)),
+    (c: LoginCredentials) => loginMutation.mutateAsync(loginSchema.parse(c)),
     [loginMutation],
   );
 
-  // 2️⃣ возвращаем Promise<void>, результат logoutMutation игнорируем
-  const logout = useCallback(async (): Promise<void> => {
-    await logoutMutation.mutateAsync();
-  }, [logoutMutation]);
+  const logout = useCallback(
+    () => logoutMutation.mutateAsync(),
+    [logoutMutation],
+  );
 
-  /* ─── RENDER ──────────────────────────────────────────── */
   return (
     <AuthContext.Provider
       value={{
-        user: user ?? null,
+        user,
         login,
         logout,
-        isLoading: isLoadingUser,
-        isLoggingIn: loginMutation.isPending,
+        isLoading   : isLoadingUser,
+        isLoggingIn : loginMutation.isPending,
         isLoggingOut: logoutMutation.isPending,
       }}
     >
@@ -166,14 +113,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/* ────────────────────────────────────────────────────────── */
-/* Hook                                                     */
-/* ────────────────────────────────────────────────────────── */
-
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
   return ctx;
 }

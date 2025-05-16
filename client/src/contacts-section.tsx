@@ -1,7 +1,6 @@
-// client/src/contacts-section.tsx
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
+import { createApiClient } from '@/lib/api-client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
@@ -19,26 +18,36 @@ export interface User {
 }
 
 export default function ContactsSection() {
+  const apiClient = createApiClient();
   const { user } = useAuth();
   const [q, setQ] = useState('');
 
-  const { data: users, isLoading, error } = useQuery<User[]> ({
+  const {
+    data: users = [],
+    isLoading,
+    error,
+  } = useQuery<User[]>({
     queryKey: ['contacts'],
-    queryFn: async () => {
-      const res = await apiClient.request<User[]>(`${import.meta.env.VITE_API_URL}/contacts`, {
+    // гарантируем, что никогда не вернём undefined
+    queryFn: async () =>
+      (await apiClient.request<User[]>('/contacts', {
         credentials: 'include',
-      });
-      return res ?? [];
-    },
+      })) ?? [],
   });
 
-  const filtered = (users ?? []).filter(
-    (u) =>
-      u.id !== user?.id &&
-      (u.firstName + ' ' + u.lastName + ' ' + u.username + ' ' + u.email)
-        .toLowerCase()
-        .includes(q.toLowerCase())
-  );
+  const filtered = users.filter((u: User) => {
+    if (u.id === user?.id) return false;
+    const haystack = (
+      u.firstName +
+      ' ' +
+      u.lastName +
+      ' ' +
+      u.username +
+      ' ' +
+      u.email
+    ).toLowerCase();
+    return haystack.includes(q.toLowerCase());
+  });
 
   if (isLoading)
     return (
@@ -46,6 +55,7 @@ export default function ContactsSection() {
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
+
   if (error)
     return (
       <div className="text-center py-10 text-red-500">
@@ -55,59 +65,48 @@ export default function ContactsSection() {
 
   return (
     <div className="flex-1 p-6 overflow-auto">
-      <div className="mb-4 flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Контакты</h2>
-        <div className="flex items-center space-x-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Поиск…"
-            />
-          </div>
-          <Button>
-            <Plus className="mr-1 h-4 w-4" /> Добавить
-          </Button>
-        </div>
+      <div className="flex mb-4 items-center gap-2">
+        <Input
+          placeholder="Поиск..."
+          value={q}
+          onChange={(c: React.ChangeEvent<HTMLInputElement>) =>
+            setQ(c.target.value)
+          }
+          className="flex-1"
+        />
+        <Button variant="outline" size="icon">
+          <Search className="h-4 w-4" />
+        </Button>
+        <Button size="icon">
+          <Plus className="h-4 w-4" />
+        </Button>
       </div>
 
-      {filtered.length === 0 ? (
-        <p className="text-center text-gray-500">Нет контактов</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((c) => (
-            <Card key={c.id} className="hover:shadow">
-              <CardContent className="flex items-center space-x-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarFallback>
-                    {c.firstName[0]}
-                    {c.lastName[0]}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">
-                        {c.firstName} {c.lastName}
-                      </p>
-                      <p className="text-sm text-gray-500">@{c.username}</p>
-                    </div>
-                    {/* Индикатор статуса */}
-                    <span
-                      className={`h-3 w-3 rounded-full ${
-                        c.isonline ? 'bg-green-500' : 'bg-gray-400'
-                      }`}
-                      title={c.isonline ? 'online' : 'offline'}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1">{c.email}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      <div className="space-y-2">
+        {filtered.map((u: User) => (
+          <Card key={u.id}>
+            <CardContent className="p-3 flex items-center gap-3">
+              <Avatar className="h-9 w-9">
+                <AvatarFallback>
+                  {u.firstName.at(0)}
+                  {u.lastName.at(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="font-medium">
+                  {u.firstName} {u.lastName}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  @{u.username}
+                </span>
+              </div>
+              {u.isonline === 1 && (
+                <span className="ml-auto h-2 w-2 rounded-full bg-green-500" />
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
