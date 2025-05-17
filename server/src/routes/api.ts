@@ -104,25 +104,7 @@ router.get(
     try {
       const userId = req.session.userId as number;
 
-      // 1) находим всех «контактов» через messages
-      const { rows: idsRows } = await db!.query<{ contact_id: number }>(
-        `SELECT DISTINCT
-           CASE
-             WHEN sender_id   = $1 THEN receiver_id
-             WHEN receiver_id = $1 THEN sender_id
-           END AS contact_id
-         FROM messages
-        WHERE sender_id   = $1
-           OR receiver_id = $1;`,
-        [userId],
-      );
-
-      const contactIds = idsRows.map(r => r.contact_id);
-      if (contactIds.length === 0) {
-        return res.json([]);         // нет переписок — возвращаем пустой массив
-      }
-
-      // 2) подтягиваем данные юзеров по списку ID
+      // Возвращаем всех пользователей, кроме самого себя
       const { rows: contacts } = await db!.query<{
         id: number;
         username: string;
@@ -139,8 +121,8 @@ router.get(
            last_name  AS "lastName",
            isonline
          FROM users
-         WHERE id = ANY($1);`,
-        [contactIds],
+         WHERE id <> $1;`,
+        [userId],
       );
 
       return res.json(contacts);
