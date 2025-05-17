@@ -2,13 +2,16 @@ import { app, BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
 import path from 'node:path';
 
 let mainWindow: Electron.BrowserWindow | null = null;
+const isDev = !!process.env.VITE_DEV_SERVER_URL;
 function createMainWindow() {
   // создаём окно и запоминаем его в локальной переменной
   const win = new BrowserWindow({
     width: 1280,
     height: 800,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: isDev
+        ? path.join(__dirname, 'preload.ts')
+        : path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
