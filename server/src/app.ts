@@ -5,7 +5,7 @@ import express, {
   NextFunction,
   RequestHandler,
 } from 'express';
-import session from 'express-session';
+import session from 'express-session';   
 import cors from 'cors';
 import morgan from 'morgan';
 import pinoHttp from 'pino-http';
@@ -25,7 +25,7 @@ export function createApp(): Express {
     cookie: { secure: false, httpOnly: true, sameSite: 'lax' },
   });
   app.use(sess);
-  app.set('session-middleware', sess as RequestHandler);
+  app.set('session-middleware', sess as RequestHandler); 
 
   /* ───────── COMMON MIDDLEWARE ───────── */
   app.use(pinoHttp({ logger: logger as any }));
@@ -41,13 +41,13 @@ export function createApp(): Express {
     const start = Date.now();
     res.on('finish', () =>
       logger.info(
-        `${req.method} ${req.originalUrl} → ${res.statusCode} (${Date.now() - start} ms)`,
+        `${req.method} ${req.originalUrl} → ${res.statusCode} (${Date.now() - start} ms)`,
       ),
     );
     next();
   });
 
-  /* ───────── PUBLIC END‑POINTS ───────── */
+/* ───────── PUBLIC END-POINTS ───────── */
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
   app.get('/api/hello', (_req, res) => res.json({ message: 'Hello 👋' }));
 
