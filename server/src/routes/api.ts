@@ -199,8 +199,7 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
 
     // Если оба онлайн, пересылаем через WS:
     // Note: The sendChatMessage function needs to handle the logic of checking if the receiver is online.
-    sendChatMessage(receiverId,
-+   { senderId, receiverId, content });
+    sendChatMessage(receiverId, { senderId, receiverId, content });
 
     res.json({ success: true });
   } catch (error) {
