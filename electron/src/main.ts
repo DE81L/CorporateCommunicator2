@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
+
 import path, { resolve } from 'node:path';
 import * as dotenv from 'dotenv';
 
