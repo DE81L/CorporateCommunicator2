@@ -1,8 +1,9 @@
 import { app, BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
-import path from 'node:path';
+
+import path, { resolve } from 'node:path';
 import * as dotenv from 'dotenv';
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: resolve(__dirname, '../../.env') });
 
 let mainWindow: Electron.BrowserWindow | null = null;
 const isDev = !!process.env.VITE_DEV_SERVER_URL;
