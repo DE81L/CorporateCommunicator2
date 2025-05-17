@@ -203,8 +203,9 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
 
     res.json({ success: true });
   } catch (error) {
-    logger.error('Error sending message:', error);
-    res.status(500).json({ error: 'Server error' });
+    logger.error({ err: error }, 'Error sending message');
+    const detail = error instanceof Error ? error.message : String(error);
+    res.status(500).json({ error: 'Server error', detail });
   }
 });
 
