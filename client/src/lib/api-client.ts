@@ -1,5 +1,8 @@
 // client/src/lib/api-client.ts
 export async function handleResponse<T>(response: Response): Promise<T | undefined> {
+  // Treat 304 Not Modified as a valid empty response
+  if (response.status === 304) return undefined;
+
   if (!response.ok) {
     let msg = `Request failed: ${response.status}`;
     try {
