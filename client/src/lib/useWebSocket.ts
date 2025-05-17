@@ -73,7 +73,9 @@ export function useWebSocket(): WebSocketHook {
 
     // Setup WebSocket connection
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const apiUrl = new URL(import.meta.env.VITE_API_URL ?? "http://localhost:3000");
+    const apiUrl = new URL(
+      import.meta.env.VITE_API_URL ?? "http://localhost:4269"
+    );
     const wsUrl = `${protocol}//${apiUrl.host}/ws`;
 
     let socket: WebSocket;
