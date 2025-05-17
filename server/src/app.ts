@@ -17,6 +17,9 @@ import { isAuthenticated } from './middleware/auth';
 export function createApp(): Express {
   const app: Express = express();
 
+  // Disable ETag to avoid 304 responses which break simple fetch helpers
+  app.set('etag', false);
+
   /* ───────── SESSIONS ───────── */
   const sess = session({
     secret: process.env.SESSION_SECRET ?? 'dev‑secret',
