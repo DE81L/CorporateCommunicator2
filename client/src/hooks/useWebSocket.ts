@@ -1,65 +1,82 @@
 // client/src/hooks/useWebSocket.ts
-import { useState, useEffect, useRef } from 'react';
 
-export type WSMessage<T = any> = { type: string; payload: T };
+import { useState, useEffect, useRef } from 'react'
+import { useAuth } from '@/hooks/use-auth'
 
-export type ConnectionStatus =
-  | 'connecting'
-  | 'open'
-  | 'closing'
-  | 'closed'
-  | 'error';
+export type WSMessage<T = any> = { type: string; payload: T }
+export type ConnectionStatus = 'connecting' | 'open' | 'closing' | 'closed' | 'error'
 
-// единое место правды
-const WS_URL =
-  (import.meta.env.VITE_WS_URL as string | undefined) ||
-  `ws://${window.location.hostname}:4000/ws`;
+// build the final WebSocket URL:
+//  • if VITE_WS_URL is set and absolute, use it
+//  • if VITE_WS_URL starts with '/', proxy through the current host
+//  • otherwise fall back to ws(s)://<current host>/ws
+const _raw = (import.meta.env.VITE_WS_URL as string | undefined)
+const WS_URL = _raw
+  ? _raw.startsWith('/')
+    ? `${window.location.protocol.replace(/^http/, 'ws')}//${window.location.host}${_raw}`
+    : _raw
+  : `${window.location.protocol.replace(/^http/, 'ws')}//${window.location.host}/ws`
 
 export function useWebSocket() {
-  const [connectionStatus, setConnectionStatus] =
-    useState<ConnectionStatus>('connecting');
-  const [lastRawMessage, setLastRawMessage] = useState<WSMessage | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
+  const { user } = useAuth()
+
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('closed')
+  const [lastRawMessage, setLastRawMessage] = useState<WSMessage | null>(null)
+
+  const wsRef = useRef<WebSocket | null>(null)
+  const retries = useRef(0)
 
   useEffect(() => {
-    let ws: WebSocket;
+    let cancelled = false
 
     const connect = () => {
-      setConnectionStatus('connecting');
-      ws = new WebSocket(WS_URL);
+      setConnectionStatus('connecting')
+      const ws = new WebSocket(WS_URL)
+      wsRef.current = ws
 
-      ws.addEventListener('open', () => setConnectionStatus('open'));
+      ws.addEventListener('open', () => {
+        setConnectionStatus('open')
+        retries.current = 0
+      })
 
       ws.addEventListener('message', (evt) => {
         try {
-          setLastRawMessage(JSON.parse(evt.data));
-        } catch {
-          console.warn('Invalid WS frame:', evt.data);
+          setLastRawMessage(JSON.parse(evt.data))
+        } catch (err) {
+          console.error('Failed to parse WS message:', err)
         }
-      });
+      })
 
       ws.addEventListener('close', () => {
-        setConnectionStatus('closed');
-        // простейший авто-reconnect через 3 сек
-        setTimeout(connect, 3000);
-      });
+        setConnectionStatus('closed')
+        if (!cancelled && retries.current < 5) {
+          const backoff = Math.pow(2, retries.current) * 1000
+          retries.current += 1
+          setTimeout(connect, backoff)
+        }
+      })
 
-      ws.addEventListener('error', () => setConnectionStatus('error'));
+      ws.addEventListener('error', (err) => {
+        console.error('WebSocket error:', err)
+        setConnectionStatus('error')
+      })
+    }
 
-      wsRef.current = ws;
-    };
+    connect()
 
-    connect();
-    return () => ws?.close();
-  }, []);
+    return () => {
+      cancelled = true
+      wsRef.current?.close()
+    }
+  }, [user])
 
   const sendRaw = (msg: WSMessage) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify(msg));
+      wsRef.current.send(JSON.stringify(msg))
     } else {
-      console.error('WS not open:', wsRef.current?.readyState);
+      console.error('WS not open:', wsRef.current?.readyState)
     }
-  };
+  }
 
-  return { connectionStatus, lastRawMessage, sendRaw };
+  return { connectionStatus, lastRawMessage, sendRaw }
 }
