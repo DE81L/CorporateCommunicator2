@@ -33,7 +33,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
 
   
   return (
-    <header className="h-14 border-b border-gray-200 bg-white px-4 flex items-center justify-between">
+    <header className="h-14 border-b border-border bg-background px-4 flex items-center justify-between">
       <h1 className="text-xl font-semibold text-primary-600">
         {t("common.appName")}
       </h1>
