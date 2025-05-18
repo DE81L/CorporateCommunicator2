@@ -188,13 +188,15 @@ export default function MessagesSection({ onStartCall }: Props) {
       });
     }
 
-    appendMessage(user!.id, selectedUser.id, {
+    const msg = {
       id: Date.now(),
       senderId: user!.id,
       receiverId: selectedUser.id,
       content: msgInput,
       timestamp: new Date().toISOString(),
-    });
+    };
+    appendMessage(user!.id, selectedUser.id, msg);
+    setLocalMessages((prev) => [...prev, msg]);
 
     setMsgInput('');
     refetchHistory();
@@ -306,6 +308,10 @@ export default function MessagesSection({ onStartCall }: Props) {
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {isLoadingMessages ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
+              ) : messages.length === 0 && localMessages.length === 0 ? (
+                <p className="text-gray-500 text-sm">
+                  {t('messages.noMessages')}
+                </p>
               ) : (
                 (messages.length > 0 ? messages : localMessages).map((m) => (
                   <div
