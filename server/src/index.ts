@@ -3,7 +3,7 @@ import "./config/env";
 import * as http from "http";
 import express, { RequestHandler } from "express";
 import { createApp } from "./app";
-import { connectDb } from "./db";
+import { connectDb, resetAllOnlineStatus } from "./db";
 import { config } from "./config/env";
 import { logger } from "./util/logger";
 import session from "express-session";
@@ -11,6 +11,7 @@ import { initWebSocket } from "./ws";
 
 async function main() {
   await connectDb();
+  await resetAllOnlineStatus();
 
   const app = createApp();
 
