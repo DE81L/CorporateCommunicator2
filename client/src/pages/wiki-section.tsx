@@ -119,13 +119,13 @@ export default function WikiSection() {
     }
 
     const crumbs: WikiCategory[] = [];
-    let currentCategoryId = activeCategoryId;
+    let currentCategoryId: number | null = activeCategoryId;
 
-    while (currentCategoryId) {
+    while (currentCategoryId !== null) {
       const category = categories.find((c) => c.id === currentCategoryId);
       if (!category) break;
       crumbs.unshift(category);
-      currentCategoryId = category.parentId ?? null;
+      currentCategoryId = category.parentId;
     }
 
     return crumbs;
