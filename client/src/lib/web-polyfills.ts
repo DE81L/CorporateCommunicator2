@@ -187,6 +187,11 @@ function createMockElectronAPI(): ElectronAPI {
       quit: () => Promise.resolve(),
       minimize: () => Promise.resolve(),
       maximize: () => Promise.resolve(),
+      reload: () => {
+        window.location.reload();
+        return Promise.resolve();
+      },
+      openDevTools: () => Promise.resolve(),
     },
     system: {
       getSystemInfo: () => Promise.resolve({

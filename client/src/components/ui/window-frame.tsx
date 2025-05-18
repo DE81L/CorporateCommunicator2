@@ -1,4 +1,4 @@
-import { X, Minimize, Maximize, RefreshCw, LogOut } from 'lucide-react';
+import { X, Minimize, Maximize, RefreshCw, LogOut, Bug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useElectron } from '@/hooks/use-electron';
 import { useAuth } from '@/hooks/use-auth';
@@ -10,7 +10,8 @@ export const WindowFrame = () => {
   const handleMinimize = () => api?.app?.minimize?.() ?? window.scrollTo({ top: 0, behavior: 'smooth' });
   const handleMaximize = () => api?.app?.maximize?.() ?? window.open(window.location.href, '_blank');
   const handleClose = () => api?.app?.quit?.() ?? window.close();
-  const handleRefresh = () => window.location.reload();
+  const handleRefresh = () => api?.app?.reload?.() ?? window.location.reload();
+  const handleDevTools = () => api?.app?.openDevTools?.();
   const handleLogout = () => logout();
 
   return (
@@ -20,6 +21,9 @@ export const WindowFrame = () => {
       </Button>
       {isElectron && (
         <>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleDevTools}>
+            <Bug className="h-4 w-4"/>
+          </Button>
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleMinimize}>
             <Minimize className="h-4 w-4"/>
           </Button>
