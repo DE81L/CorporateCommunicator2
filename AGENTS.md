@@ -7,3 +7,5 @@
 - **API**: The `/api/departments` endpoint should return a list of departments for the request modal.
 Feel free to add new things to the guidelines. This may be your nothes on the project.
 
+Note: Message bubbles use a lighter primary color for sent messages on the right and a darker gray for received messages on the left.
+
