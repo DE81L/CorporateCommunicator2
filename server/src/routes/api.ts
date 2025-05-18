@@ -210,6 +210,11 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
       [senderId, receiverId, content, delivered ? 'delivered' : 'pending']
     );
 
+    logger.info(
+      { senderId, receiverId, delivered },
+      'Message stored on server'
+    );
+
     res.json({ success: true });
   } catch (error) {
     logger.error({ err: error }, 'Error sending message');
