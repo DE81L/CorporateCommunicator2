@@ -69,6 +69,8 @@ export default function WikiSection() {
   const [editingCategory, setEditingCategory] = useState<WikiCategory | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<WikiCategory[]>([]);
+  const [selectedEntry, setSelectedEntry] = useState<WikiEntry | null>(null);
+  const [editorTab, setEditorTab] = useState("write");
 
   // Wiki entries query
   const {
@@ -315,6 +317,7 @@ export default function WikiSection() {
       content: "",
       category: activeCategoryId ? categories.find(c => c.id === activeCategoryId)?.name || "" : "",
     });
+    setEditorTab("write");
     setShowEntryDialog(true);
   };
 
@@ -326,6 +329,7 @@ export default function WikiSection() {
       content: entry.content,
       category: entry.category || "",
     });
+    setEditorTab("write");
     setShowEntryDialog(true);
   };
 
@@ -422,6 +426,20 @@ export default function WikiSection() {
     ? categoryEntries
     : entries;
 
+  const renderMarkdown = (text: string) => {
+    return text
+      .replace(/\r\n/g, "\n")
+      .replace(/^###### (.*$)/gim, "<h6>$1</h6>")
+      .replace(/^##### (.*$)/gim, "<h5>$1</h5>")
+      .replace(/^#### (.*$)/gim, "<h4>$1</h4>")
+      .replace(/^### (.*$)/gim, "<h3>$1</h3>")
+      .replace(/^## (.*$)/gim, "<h2>$1</h2>")
+      .replace(/^# (.*$)/gim, "<h1>$1</h1>")
+      .replace(/\*\*(.*?)\*\*/gim, "<strong>$1</strong>")
+      .replace(/\*(.*?)\*/gim, "<em>$1</em>")
+      .replace(/\n/gim, "<br />");
+  };
+
   return (
     <div className="h-full flex flex-col p-4 overflow-hidden">
       <div className="flex justify-between items-center mb-4">
@@ -505,13 +523,21 @@ export default function WikiSection() {
               <ScrollArea className="h-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredEntries.map(entry => (
-                    <Card key={entry.id} className="h-full">
+                    <Card
+                      key={entry.id}
+                      className="h-full cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => setSelectedEntry(entry)}
+                    >
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
                           <CardTitle className="text-xl">{entry.title}</CardTitle>
                           {user?.isAdmin && (
-                            <div className="flex space-x-1">
-                              <Button size="icon" variant="ghost" onClick={() => handleEditEntry(entry)}>
+                            <div className="flex space-x-1" onClick={e => e.stopPropagation()}>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => handleEditEntry(entry)}
+                              >
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button
@@ -535,11 +561,16 @@ export default function WikiSection() {
                         )}
                       </CardHeader>
                       <CardContent>
-                        <div className="prose max-w-none">
-                          {entry.content.length > 200
-                            ? `${entry.content.substring(0, 200)}...`
-                            : entry.content}
-                        </div>
+                        <div
+                          className="prose max-w-none"
+                          dangerouslySetInnerHTML={{
+                            __html: renderMarkdown(
+                              entry.content.length > 200
+                                ? `${entry.content.substring(0, 200)}...`
+                                : entry.content,
+                            ),
+                          }}
+                        />
                         <div className="text-xs text-gray-500 mt-4">
                           Last updated: {new Date(entry.updatedAt).toLocaleDateString()}
                         </div>
@@ -681,11 +712,25 @@ export default function WikiSection() {
                   <FormItem>
                     <FormLabel>Content</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Write the content here..."
-                        className="min-h-[250px]"
-                        {...field}
-                      />
+                      <Tabs value={editorTab} onValueChange={setEditorTab} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="write">Write</TabsTrigger>
+                          <TabsTrigger value="preview">Preview</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="write">
+                          <Textarea
+                            placeholder="Write the content here..."
+                            className="min-h-[250px]"
+                            {...field}
+                          />
+                        </TabsContent>
+                        <TabsContent value="preview">
+                          <div
+                            className="min-h-[250px] border rounded-md p-4 prose max-w-none"
+                            dangerouslySetInnerHTML={{ __html: renderMarkdown(field.value || "") }}
+                          />
+                        </TabsContent>
+                      </Tabs>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -798,6 +843,30 @@ export default function WikiSection() {
               </DialogFooter>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Entry Dialog */}
+      <Dialog open={!!selectedEntry} onOpenChange={() => setSelectedEntry(null)}>
+        <DialogContent className="w-screen h-screen max-w-screen-lg">
+          {selectedEntry && (
+            <div className="flex flex-col h-full">
+              <DialogHeader>
+                <DialogTitle>{selectedEntry.title}</DialogTitle>
+              </DialogHeader>
+              <div className="flex-1 overflow-y-auto prose max-w-none mt-4" dangerouslySetInnerHTML={{ __html: renderMarkdown(selectedEntry.content) }} />
+              {user?.isAdmin && (
+                <div className="mt-4 flex justify-end space-x-2">
+                  <Button onClick={() => {
+                    handleEditEntry(selectedEntry);
+                    setSelectedEntry(null);
+                  }}>
+                    Edit
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
