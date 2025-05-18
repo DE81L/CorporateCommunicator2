@@ -58,9 +58,11 @@ export default function CallModal({
   };
 
   // Get initials for avatar
-  const getInitials = (name: string) => {
+  const getInitials = (name?: string) => {
+    if (!name) return "?";
     return name
       .split(" ")
+      .filter(Boolean)
       .map((n) => n[0])
       .join("")
       .toUpperCase();
