@@ -12,6 +12,7 @@ import CallModal from "@/components/call-modal";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { SectionType } from "@/types/sections";
 import { useChat } from "@/context/ChatContext";
+import { useMessageSync } from "@/hooks/useMessageSync";
 
 export default function HomePage() {
   const [activeSection, setActiveSection] = useState<SectionType>("messages");
@@ -24,6 +25,7 @@ export default function HomePage() {
   } | null>(null);
   const { connectionStatus } = useWebSocket();
   const { setChatUser } = useChat();
+  useMessageSync();
 
   const handleStartCall = (
     type: "video" | "audio",
