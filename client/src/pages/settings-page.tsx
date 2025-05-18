@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslations } from '@/hooks/use-translations';
+import { useSettings } from '@/context/SettingsContext';
 import {
   Card,
   CardContent,
@@ -27,25 +28,15 @@ import { Button } from '@/components/ui/button';
 import { Bell, Moon, Sun, Globe, User, Lock, Settings as SettingsIcon } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
-  const { t, currentLanguage, changeLanguage } = useTranslations();
+  const { t } = useTranslations();
+  const { theme, setTheme, language, setLanguage } = useSettings();
   const { toast } = useToast();
-  const [theme, setTheme] = React.useState<'light' | 'dark' | 'system'>('system');
   const [emailNotifications, setEmailNotifications] = React.useState(true);
   const [pushNotifications, setPushNotifications] = React.useState(true);
   const [desktopNotifications, setDesktopNotifications] = React.useState(true);
 
   const handleThemeChange = (value: 'light' | 'dark' | 'system') => {
     setTheme(value);
-    // Apply theme change logic here
-    document.documentElement.classList.remove('light', 'dark');
-    if (value === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
-      document.documentElement.classList.add(systemTheme);
-    } else {
-      document.documentElement.classList.add(value);
-    }
     
     toast({
       title: t('settings.changesApplied'),
@@ -161,8 +152,8 @@ const SettingsPage: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="language">{t('settings.language')}</Label>
                   <Select
-                    value={currentLanguage}
-                    onValueChange={changeLanguage}
+                    value={language}
+                    onValueChange={setLanguage}
                   >
                     <SelectTrigger id="language" className="flex items-center gap-2">
                       <Globe className="h-4 w-4" />
