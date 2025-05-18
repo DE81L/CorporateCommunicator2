@@ -25,12 +25,14 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Bell, Moon, Sun, Globe, User, Lock, Settings as SettingsIcon } from 'lucide-react';
+import { Bell, Moon, Sun, Globe, User, Lock, Settings as SettingsIcon, ArrowLeft } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 const SettingsPage: React.FC = () => {
   const { t } = useTranslations();
   const { theme, setTheme, language, setLanguage } = useSettings();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [emailNotifications, setEmailNotifications] = React.useState(true);
   const [pushNotifications, setPushNotifications] = React.useState(true);
   const [desktopNotifications, setDesktopNotifications] = React.useState(true);
@@ -78,7 +80,12 @@ const SettingsPage: React.FC = () => {
   return (
     <div className="container mx-auto py-10">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={() => setLocation('/') }>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
+        </div>
         <SettingsIcon className="h-6 w-6" />
       </div>
 
@@ -262,8 +269,8 @@ const SettingsPage: React.FC = () => {
       </Tabs>
 
       <div className="mt-8 flex justify-end">
-        <Button variant="outline" className="mr-2">
-          {t('common.cancel')}
+        <Button variant="outline" className="mr-2" onClick={() => setLocation('/') }>
+          {t('common.back')}
         </Button>
         <Button>
           {t('common.save')}
