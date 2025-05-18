@@ -1,33 +1,71 @@
-import { getWikiEntries } from '../api/wiki';
+import { getWikiEntries } from "../api/wiki";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
 import { createApiClient } from "@/lib/api-client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { WikiEntry, WikiCategory } from '@shared/schema/wiki';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { WikiEntry, WikiCategory } from "@shared/schema/wiki";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { Loader2, PlusCircle, Search, ChevronRight, Edit, Trash2 } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
+  Loader2,
+  PlusCircle,
+  Search,
+  ChevronRight,
+  Edit,
+  Trash2,
+} from "lucide-react";
 
 import { useLocation } from "wouter";
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
 
-import { MarkdownPreview } from '../components/wiki/markdown-preview';
-import { MarkdownEditor } from '../components/wiki/markdown-editor';
-import { getExcerpt } from '../lib/markdown';
-
-
+import { MarkdownPreview } from "../components/wiki/markdown-preview";
+import { MarkdownEditor } from "../components/wiki/markdown-editor";
+import { getExcerpt } from "../lib/markdown";
 
 // Form schema for wiki entries
 const wikiEntryFormSchema = z.object({
@@ -57,8 +95,23 @@ export default function WikiSection() {
   const [showEntryDialog, setShowEntryDialog] = useState(false);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const [editingEntry, setEditingEntry] = useState<WikiEntry | null>(null);
-  const [editingCategory, setEditingCategory] = useState<WikiCategory | null>(null);
+  const [editingCategory, setEditingCategory] = useState<WikiCategory | null>(
+    null,
+  );
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
+
+  // Wiki categories query
+  const {
+    data: categories = [],
+    isLoading: isLoadingCategories,
+    refetch: refetchCategories,
+  } = useQuery<WikiCategory[]>({
+    queryKey: ["/api/wiki/categories"],
+    queryFn: async () =>
+      (await apiClient.request<WikiCategory[]>("/api/wiki/categories")) ?? [],
+    enabled: true,
+  });
+
   // Derived breadcrumbs for current category path
   const breadcrumbs = useMemo(() => {
     if (!activeCategoryId) {
@@ -85,20 +138,10 @@ export default function WikiSection() {
     isLoading: isLoadingEntries,
     refetch: refetchEntries,
   } = useQuery<WikiEntry[]>({
-    queryKey: ['/api/wiki/entries'],
+    queryKey: ["/api/wiki/entries"],
     enabled: activeTab === "entries",
-    queryFn: async () => (await apiClient.request<WikiEntry[]>('/api/wiki/entries')) ?? [],
-  });
-
-  // Wiki categories query
-  const {
-    data: categories = [],
-    isLoading: isLoadingCategories,
-    refetch: refetchCategories,
-  } = useQuery<WikiCategory[]>({    queryKey: ['/api/wiki/categories'],
-
-    queryFn: async () => (await apiClient.request<WikiCategory[]>('/api/wiki/categories')) ?? [],
-    enabled: true,
+    queryFn: async () =>
+      (await apiClient.request<WikiEntry[]>("/api/wiki/entries")) ?? [],
   });
 
   // Category entries query
@@ -107,7 +150,7 @@ export default function WikiSection() {
     isLoading: isLoadingCategoryEntries,
     refetch: refetchCategoryEntries,
   } = useQuery<WikiEntry[]>({
-    queryKey: ['/api/wiki/categories', activeCategoryId, 'entries'],
+    queryKey: ["/api/wiki/categories", activeCategoryId, "entries"],
     queryFn: async (): Promise<WikiEntry[]> => {
       const data = await getWikiEntries();
       return data ?? [];
@@ -125,7 +168,10 @@ export default function WikiSection() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      return request("/api/wiki", { method: "POST", body: JSON.stringify(payload) });
+      return request("/api/wiki", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
     },
     onSuccess: () => {
       toast({
@@ -162,7 +208,10 @@ export default function WikiSection() {
         lastEditorId: user?.id,
         updatedAt: new Date().toISOString(),
       };
-      return request(`/api/wiki/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+      return request(`/api/wiki/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
     },
     onSuccess: () => {
       toast({
@@ -214,8 +263,15 @@ export default function WikiSection() {
   // Create category mutation
   const createCategoryMutation = useMutation({
     mutationFn: (data: CategoryFormValues) => {
-      const payload = { ...data, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-      return request("/api/wiki/categories", { method: "POST", body: JSON.stringify(payload) });
+      const payload = {
+        ...data,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      return request("/api/wiki/categories", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
     },
     onSuccess: () => {
       toast({
@@ -245,7 +301,10 @@ export default function WikiSection() {
     mutationFn: (data: CategoryFormValues & { id: number }) => {
       const { id, ...rest } = data;
       const payload = { ...rest, updatedAt: new Date().toISOString() };
-      return request(`/api/wiki/categories/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+      return request(`/api/wiki/categories/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
     },
     onSuccess: () => {
       toast({
@@ -317,7 +376,10 @@ export default function WikiSection() {
     entryForm.reset({
       title: "",
       content: "",
-      category: activeCategoryId ? (categories as WikiCategory[]).find(c => c.id === activeCategoryId)?.name || "" : "",
+      category: activeCategoryId
+        ? (categories as WikiCategory[]).find((c) => c.id === activeCategoryId)
+            ?.name || ""
+        : "",
     });
     setShowEntryDialog(true);
   };
@@ -357,9 +419,8 @@ export default function WikiSection() {
 
   // Function to get subcategories of a parent
   const getSubcategories = (parentId: number | null) => {
-    return categories.filter(category => category.parentId === parentId);
+    return categories.filter((category) => category.parentId === parentId);
   };
-
 
   // Handle entry form submission
   const onEntrySubmit = (data: WikiEntryFormValues) => {
@@ -390,11 +451,11 @@ export default function WikiSection() {
     ? (activeCategoryId ? categoryEntries : (entries as WikiEntry[])).filter(
         (entry: WikiEntry) =>
           entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          entry.content.toLowerCase().includes(searchQuery.toLowerCase())
+          entry.content.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : activeCategoryId
-    ? categoryEntries
-    : entries;
+      ? categoryEntries
+      : entries;
 
   return (
     <div className="h-full flex flex-col p-4 overflow-hidden">
@@ -402,7 +463,7 @@ export default function WikiSection() {
         <h1 className="text-2xl font-bold">Employee Wiki</h1>
         <div className="flex space-x-2">
           {user?.isAdmin && (
-            <>          
+            <>
               <Button onClick={handleAddEntry} size="sm">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 New Entry
@@ -421,7 +482,7 @@ export default function WikiSection() {
           <Input
             placeholder="Search wiki..."
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
           />
         </div>
@@ -441,7 +502,9 @@ export default function WikiSection() {
                   <BreadcrumbPage>{category.name}</BreadcrumbPage>
                 ) : (
                   <>
-                    <BreadcrumbLink onClick={() => setActiveCategoryId(category.id)}>
+                    <BreadcrumbLink
+                      onClick={() => setActiveCategoryId(category.id)}
+                    >
                       {category.name}
                     </BreadcrumbLink>
                     <BreadcrumbSeparator />
@@ -453,7 +516,11 @@ export default function WikiSection() {
         </Breadcrumb>
       )}
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="flex-1 overflow-hidden"
+      >
         <TabsList className="grid w-60 grid-cols-2">
           <TabsTrigger value="entries">Wiki Entries</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
@@ -461,7 +528,8 @@ export default function WikiSection() {
 
         <div className="mt-4 flex-1 overflow-hidden">
           <TabsContent value="entries" className="h-full">
-            {isLoadingEntries || (activeCategoryId && isLoadingCategoryEntries) ? (
+            {isLoadingEntries ||
+            (activeCategoryId && isLoadingCategoryEntries) ? (
               <div className="h-full flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
@@ -469,7 +537,11 @@ export default function WikiSection() {
               <div className="h-full flex flex-col items-center justify-center text-gray-500">
                 <p>No wiki entries found</p>
                 {user?.isAdmin && (
-                  <Button variant="link" onClick={handleAddEntry} className="mt-2">
+                  <Button
+                    variant="link"
+                    onClick={handleAddEntry}
+                    className="mt-2"
+                  >
                     <PlusCircle className="h-4 w-4 mr-2" />
                     Create a new entry
                   </Button>
@@ -481,20 +553,23 @@ export default function WikiSection() {
                   {filteredEntries.map((entry: WikiEntry) => (
                     <Card
                       key={entry.id}
-
                       className="h-full cursor-pointer hover:shadow-md transition-shadow"
                       onClick={() => setViewEntry(entry)}
-
                     >
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
-                          <CardTitle className="text-xl">{entry.title}</CardTitle>
+                          <CardTitle className="text-xl">
+                            {entry.title}
+                          </CardTitle>
                           {user?.isAdmin && (
-                            <div className="flex space-x-1" onClick={e => e.stopPropagation()}>
+                            <div
+                              className="flex space-x-1"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                onClick={e => {
+                                onClick={(e) => {
                                   e.stopPropagation();
                                   handleEditEntry(entry);
                                 }}
@@ -504,9 +579,13 @@ export default function WikiSection() {
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                onClick={e => {
+                                onClick={(e) => {
                                   e.stopPropagation();
-                                  if (window.confirm('Are you sure you want to delete this entry?')) {
+                                  if (
+                                    window.confirm(
+                                      "Are you sure you want to delete this entry?",
+                                    )
+                                  ) {
                                     deleteEntryMutation.mutate(entry.id);
                                   }
                                 }}
@@ -524,10 +603,13 @@ export default function WikiSection() {
                       </CardHeader>
                       <CardContent>
                         <div className="prose max-w-none">
-                          <MarkdownPreview content={getExcerpt(entry.content, 200)} />
+                          <MarkdownPreview
+                            content={getExcerpt(entry.content, 200)}
+                          />
                         </div>
                         <div className="text-xs text-gray-500 mt-4">
-                          Last updated: {new Date(entry.updatedAt).toLocaleDateString()}
+                          Last updated:{" "}
+                          {new Date(entry.updatedAt).toLocaleDateString()}
                         </div>
                       </CardContent>
                     </Card>
@@ -545,25 +627,38 @@ export default function WikiSection() {
             ) : (
               <ScrollArea className="h-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {getSubcategories(activeCategoryId).map(category => (
-                    <Card 
-                      key={category.id} 
+                  {getSubcategories(activeCategoryId).map((category) => (
+                    <Card
+                      key={category.id}
                       className="cursor-pointer hover:shadow-md transition-shadow"
                       onClick={() => setActiveCategoryId(category.id)}
                     >
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
-                          <CardTitle className="text-lg">{category.name}</CardTitle>
+                          <CardTitle className="text-lg">
+                            {category.name}
+                          </CardTitle>
                           {user?.isAdmin && (
-                            <div className="flex space-x-1" onClick={e => e.stopPropagation()}>
-                              <Button size="icon" variant="ghost" onClick={() => handleEditCategory(category)}>
+                            <div
+                              className="flex space-x-1"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => handleEditCategory(category)}
+                              >
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button
                                 size="icon"
                                 variant="ghost"
                                 onClick={() => {
-                                  if (window.confirm('Are you sure you want to delete this category?')) {
+                                  if (
+                                    window.confirm(
+                                      "Are you sure you want to delete this category?",
+                                    )
+                                  ) {
                                     deleteCategoryMutation.mutate(category.id);
                                   }
                                 }}
@@ -585,12 +680,16 @@ export default function WikiSection() {
                     </Card>
                   ))}
                 </div>
-                
+
                 {getSubcategories(activeCategoryId).length === 0 && (
                   <div className="flex flex-col items-center justify-center text-gray-500 py-8">
                     <p>No categories found</p>
                     {user?.isAdmin && (
-                      <Button variant="link" onClick={handleAddCategory} className="mt-2">
+                      <Button
+                        variant="link"
+                        onClick={handleAddCategory}
+                        className="mt-2"
+                      >
                         <PlusCircle className="h-4 w-4 mr-2" />
                         Create a new category
                       </Button>
@@ -604,14 +703,22 @@ export default function WikiSection() {
       </Tabs>
 
       {/* Article Dialog */}
-      <Dialog open={!!viewEntry} onOpenChange={(open) => { if (!open) setViewEntry(null); }}>
+      <Dialog
+        open={!!viewEntry}
+        onOpenChange={(open) => {
+          if (!open) setViewEntry(null);
+        }}
+      >
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>{viewEntry?.title}</DialogTitle>
             <DialogDescription>View wiki article</DialogDescription>
           </DialogHeader>
           {viewEntry && (
-            <MarkdownPreview content={viewEntry.content} className="prose max-w-none" />
+            <MarkdownPreview
+              content={viewEntry.content}
+              className="prose max-w-none"
+            />
           )}
         </DialogContent>
       </Dialog>
@@ -620,7 +727,9 @@ export default function WikiSection() {
       <Dialog open={showEntryDialog} onOpenChange={setShowEntryDialog}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>{editingEntry ? "Edit Wiki Entry" : "New Wiki Entry"}</DialogTitle>
+            <DialogTitle>
+              {editingEntry ? "Edit Wiki Entry" : "New Wiki Entry"}
+            </DialogTitle>
             <DialogDescription>
               {editingEntry
                 ? "Update the details of this wiki entry."
@@ -629,7 +738,10 @@ export default function WikiSection() {
           </DialogHeader>
 
           <Form {...entryForm}>
-            <form onSubmit={entryForm.handleSubmit(onEntrySubmit)} className="space-y-4">
+            <form
+              onSubmit={entryForm.handleSubmit(onEntrySubmit)}
+              className="space-y-4"
+            >
               <FormField
                 control={entryForm.control}
                 name="title"
@@ -660,7 +772,7 @@ export default function WikiSection() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="">None</SelectItem>
-                          {categories.map(category => (
+                          {categories.map((category) => (
                             <SelectItem key={category.id} value={category.name}>
                               {category.name}
                             </SelectItem>
@@ -680,7 +792,10 @@ export default function WikiSection() {
                   <FormItem>
                     <FormLabel>Content</FormLabel>
                     <FormControl>
-                      <MarkdownEditor value={field.value} onChange={field.onChange} />
+                      <MarkdownEditor
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -688,11 +803,22 @@ export default function WikiSection() {
               />
 
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setShowEntryDialog(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowEntryDialog(false)}
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={createEntryMutation.isPending || updateEntryMutation.isPending}>
-                  {(createEntryMutation.isPending || updateEntryMutation.isPending) && (
+                <Button
+                  type="submit"
+                  disabled={
+                    createEntryMutation.isPending ||
+                    updateEntryMutation.isPending
+                  }
+                >
+                  {(createEntryMutation.isPending ||
+                    updateEntryMutation.isPending) && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
                   {editingEntry ? "Save Changes" : "Create Entry"}
@@ -707,7 +833,9 @@ export default function WikiSection() {
       <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingCategory ? "Edit Category" : "New Category"}</DialogTitle>
+            <DialogTitle>
+              {editingCategory ? "Edit Category" : "New Category"}
+            </DialogTitle>
             <DialogDescription>
               {editingCategory
                 ? "Update the details of this category."
@@ -716,7 +844,10 @@ export default function WikiSection() {
           </DialogHeader>
 
           <Form {...categoryForm}>
-            <form onSubmit={categoryForm.handleSubmit(onCategorySubmit)} className="space-y-4">
+            <form
+              onSubmit={categoryForm.handleSubmit(onCategorySubmit)}
+              className="space-y-4"
+            >
               <FormField
                 control={categoryForm.control}
                 name="name"
@@ -758,7 +889,9 @@ export default function WikiSection() {
                     <FormControl>
                       <Select
                         value={field.value?.toString() || ""}
-                        onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)}
+                        onValueChange={(value) =>
+                          field.onChange(value ? parseInt(value) : undefined)
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a parent category (optional)" />
@@ -766,9 +899,12 @@ export default function WikiSection() {
                         <SelectContent>
                           <SelectItem value="">None (Root)</SelectItem>
                           {categories
-                            .filter(c => c.id !== editingCategory?.id) // Don't show self as parent
-                            .map(category => (
-                              <SelectItem key={category.id} value={category.id.toString()}>
+                            .filter((c) => c.id !== editingCategory?.id) // Don't show self as parent
+                            .map((category) => (
+                              <SelectItem
+                                key={category.id}
+                                value={category.id.toString()}
+                              >
                                 {category.name}
                               </SelectItem>
                             ))}
@@ -781,11 +917,22 @@ export default function WikiSection() {
               />
 
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setShowCategoryDialog(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowCategoryDialog(false)}
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}>
-                  {(createCategoryMutation.isPending || updateCategoryMutation.isPending) && (
+                <Button
+                  type="submit"
+                  disabled={
+                    createCategoryMutation.isPending ||
+                    updateCategoryMutation.isPending
+                  }
+                >
+                  {(createCategoryMutation.isPending ||
+                    updateCategoryMutation.isPending) && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
                   {editingCategory ? "Save Changes" : "Create Category"}
