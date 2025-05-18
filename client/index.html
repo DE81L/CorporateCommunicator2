@@ -8,6 +8,19 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script>
+    const stored = localStorage.getItem('userSettings');
+    try {
+      const { theme = 'system' } = stored ? JSON.parse(stored) : {};
+      document.documentElement.classList.remove('light', 'dark');
+      if (theme === 'system') {
+        const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.add(prefersDark ? 'dark' : 'light');
+      } else {
+        document.documentElement.classList.add(theme);
+      }
+    } catch {}
+  </script>
 </head>
 <body>
   <div id="root"></div>
