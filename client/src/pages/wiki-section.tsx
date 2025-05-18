@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import MarkdownEditor from "../components/markdown-editor";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -427,7 +428,7 @@ export default function WikiSection() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Employee Wiki</h1>
         <div className="flex space-x-2">
-          {user?.isAdmin === 1 && (
+          {user?.isAdmin && (
             <>          
               <Button onClick={handleAddEntry} size="sm">
                 <PlusCircle className="h-4 w-4 mr-2" />
@@ -681,10 +682,9 @@ export default function WikiSection() {
                   <FormItem>
                     <FormLabel>Content</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Write the content here..."
-                        className="min-h-[250px]"
-                        {...field}
+                      <MarkdownEditor
+                        value={field.value}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />

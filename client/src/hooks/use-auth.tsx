@@ -5,6 +5,14 @@ import { useLocation } from "wouter";
 import { getQueryFn, createApiClient, queryClient } from "../lib/queryClient";
 import { useTranslations } from "./use-translations";
 
+function normalizeUser(user: any) {
+  if (!user) return user;
+  if (user.isAdmin === undefined && user.is_admin !== undefined) {
+    user.isAdmin = user.is_admin ? 1 : 0;
+  }
+  return user;
+}
+
 
 export type User = {
   id: number;
@@ -78,7 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     Error
   >({
     queryKey: ["/api/user"],
-    queryFn: getQueryFn("/api/user"),
+    queryFn: async () => {
+      const data = await getQueryFn<UserWithoutPassword | null>("/api/user")();
+      return normalizeUser(data);
+    },
   });
 
   const loginMutation = useMutation({
@@ -91,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(credentials),
       });
       const user = await res.json();
-      return user;
+      return normalizeUser(user);
     },
     
   });
@@ -125,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
     value={{
-      user: user || null,
+      user: normalizeUser(user) || null,
       isLoading,
       error: authError,
       login,
