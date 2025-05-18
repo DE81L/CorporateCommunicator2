@@ -46,6 +46,12 @@ export default function Sidebar({
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
 
+  const displayName = `${(user.firstName || '').trim()} ${(user.lastName || '').trim()}`.trim() || user.username;
+
+  const initials =
+    (displayName.split(' ')[0]?.[0] || '') +
+    (displayName.split(' ')[1]?.[0] || '');
+
   const handleLogout = async () => {
     await logout();
     setLocation("/auth");
@@ -149,18 +155,16 @@ export default function Sidebar({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex w-full items-center justify-start gap-3">
                 <Avatar>
-                  <AvatarFallback>
-                    {(user.firstName?.[0] ?? "") + (user.lastName?.[0] ?? "")}
-                  </AvatarFallback>
+                  <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">
-                    {user.firstName} {user.lastName}
-                  </p>
+                  <p className="text-sm font-medium">{displayName}</p>
                   {user.jobTitle && (
                     <p className="text-xs text-gray-500 truncate">{user.jobTitle}</p>
                   )}
-                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {user.email || user.username}
+                  </p>
                   <p className="text-xs mt-1">
                     {user.isOnline ? 'Online' : 'Offline'}
                   </p>
@@ -169,13 +173,13 @@ export default function Sidebar({
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 bg-white border" align="start">
               <DropdownMenuLabel className="font-normal text-sm">
-                <p className="text-sm font-medium">
-                  {user.firstName} {user.lastName}
-                </p>
+                <p className="text-sm font-medium">{displayName}</p>
                 {user.jobTitle && (
                   <p className="text-xs text-gray-500 truncate">{user.jobTitle}</p>
                 )}
-                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                <p className="text-xs text-gray-500 truncate">
+                  {user.email || user.username}
+                </p>
                 <p className="text-xs mt-1">
                   {user.isOnline ? 'Online' : 'Offline'}
                 </p>
