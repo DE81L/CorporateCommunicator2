@@ -109,6 +109,7 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
         const payload = { ...data, creatorId: user?.id, /* ... */ };
         const res = await apiClient.request("/api/requests", {
           method: "POST",
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
       return res;
