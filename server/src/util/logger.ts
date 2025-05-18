@@ -1,7 +1,8 @@
 import pino, { Logger } from 'pino';
 
 export const logger: Logger = pino({
-  level: process.env.LOG_LEVEL ?? 'debug',
+  // Default to info to avoid overwhelming logs unless LOG_LEVEL=debug is set
+  level: process.env.LOG_LEVEL ?? 'info',
   transport:
     process.env.NODE_ENV === 'production'
       ? undefined

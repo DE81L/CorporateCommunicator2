@@ -55,11 +55,18 @@ export function initWebSocket(
         .catch((e) => logger.error('Set online failed:', e));
     }
 
-    // Обработка входящих P2P-сигналов
+    // Обработка входящих сообщений
     ws.on('message', (data) => {
-      logger.debug(`WS message from ${userId}: ${data}`);
+      let msg: any;
       try {
-        const msg = JSON.parse(data.toString());
+        msg = JSON.parse(data.toString());
+        if (msg.type === 'p2p-signal') {
+          logger.debug(
+            `WS p2p-signal from ${userId} to ${(msg.payload as any).to}`
+          );
+        } else {
+          logger.debug(`WS message from ${userId}: ${data}`);
+        }
         if (msg.type === 'p2p-signal') {
           const { to, signal } = msg.payload as { to: number; signal: any };
           const targets = connections.get(to);

@@ -47,3 +47,7 @@ pnpm exec jest
 
 Copy `.env.example` to `.env` and fill in the required values before running the application.
 
+The `LOG_LEVEL` environment variable controls server log verbosity. Leaving it
+unset uses `info` level logging. Set `LOG_LEVEL=debug` for detailed WebSocket
+traces when troubleshooting connection issues.
+
