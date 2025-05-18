@@ -153,7 +153,8 @@
     "searchMessages": "Поиск сообщений",
     "attachFile": "Прикрепить файл",
     "readReceipts": "Отчеты о прочтении",
-    "messageSent": "Сообщение отправлено"
+    "messageSent": "Сообщение отправлено",
+    "fileAttached": "Файл прикреплен"
   },
   "groups": {
     "title": "Группы",

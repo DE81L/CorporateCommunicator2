@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState, useCallback } from 'react';
+import { FormEvent, useEffect, useState, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 import { useChat } from '@/context/ChatContext';
@@ -19,8 +19,10 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
+  Plus,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
@@ -70,6 +72,8 @@ export default function MessagesSection({ onStartCall }: Props) {
   const { chatUser: selectedUser, setChatUser: setSelectedUser } = useChat();
   const [msgInput, setMsgInput] = useState('');
   const [fileData, setFileData] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [incomingSignal, setIncomingSignal] = useState<any>(null);
   const [contactsCollapsed, setContactsCollapsed] = useState(false);
   const [contacts, setContacts] = useState<User[]>([]);
@@ -267,6 +271,17 @@ export default function MessagesSection({ onStartCall }: Props) {
     refetchHistory();
   };
 
+  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMsgInput(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const max = 96; // limit growth
+      const newHeight = Math.min(textareaRef.current.scrollHeight, max);
+      textareaRef.current.style.height = `${newHeight}px`;
+      textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+    }
+  };
+
   /* ───── UI ───── */
   if (!user) return null;
 
@@ -410,30 +425,43 @@ export default function MessagesSection({ onStartCall }: Props) {
 
             <form
               onSubmit={sendMessage}
-              className="border-t border-border bg-background p-3 flex gap-3"
+              className="border-t border-border bg-background p-3 flex flex-col gap-2"
             >
-              <Input
-                className="flex-1"
-                placeholder={t('messages.enterMessage')}
-                value={msgInput}
-                onChange={(e) => setMsgInput(e.target.value)}
-              />
-              <input
-                type="file"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return setFileData(null);
-                  const reader = new FileReader();
-                  reader.onload = () => setFileData(reader.result as string);
-                  reader.readAsDataURL(file);
-                }}
-              />
               {fileData && (
-                <span className="text-xs text-gray-500">file attached</span>
+                <span className="text-xs text-gray-500">{t('messages.fileAttached')}</span>
               )}
-              <Button type="submit" disabled={!msgInput.trim() && !fileData}>
-                <Send className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-3 items-end">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Plus className="h-5 w-5" />
+                </Button>
+                <Textarea
+                  ref={textareaRef}
+                  className="flex-1 resize-none max-h-24 overflow-y-auto"
+                  placeholder={t('messages.enterMessage')}
+                  value={msgInput}
+                  onChange={handleInput}
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return setFileData(null);
+                    const reader = new FileReader();
+                    reader.onload = () => setFileData(reader.result as string);
+                    reader.readAsDataURL(file);
+                  }}
+                />
+                <Button type="submit" disabled={!msgInput.trim() && !fileData}>
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
             </form>
           </>
         )}
