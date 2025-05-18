@@ -11,6 +11,8 @@ import WikiSection from "@/pages/wiki-section";
 import CallModal from "@/components/call-modal";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import { SectionType } from "@/types/sections";
 import { useChat } from "@/context/ChatContext";
 import { useMessageSync } from "@/hooks/useMessageSync";
@@ -26,7 +28,9 @@ export default function HomePage() {
   } | null>(null);
   const { user } = useAuth();
   const { connectionStatus, sendRaw, lastRawMessage } = useWebSocket();
-  const { setChatUser } = useChat();
+  const { chatUser, setChatUser } = useChat();
+  const { toast } = useToast();
+  const { t } = useTranslation();
   useMessageSync();
 
   const handleStartCall = (
@@ -66,17 +70,30 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!lastRawMessage) return;
-    if (lastRawMessage.type === "call-request") {
+
+    if (lastRawMessage.type === 'chat') {
+      const msg = lastRawMessage.payload as {
+        senderId: number;
+        content: string;
+      };
+      if (!user) return;
+      if (msg.senderId === user.id) return;
+      if (chatUser && msg.senderId === chatUser.id) return;
+      toast({ title: t('messages.newMessage'), description: msg.content });
+      return;
+    }
+
+    if (lastRawMessage.type === 'call-request') {
       const payload = lastRawMessage.payload as {
         from: number;
         fromName: string;
-        callType: "video" | "audio";
+        callType: 'video' | 'audio';
       };
       setCallType(payload.callType);
       setCallRecipient({ id: payload.from, name: payload.fromName });
       setIsCallModalOpen(true);
     }
-  }, [lastRawMessage]);
+  }, [lastRawMessage, chatUser, user, toast, t]);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
