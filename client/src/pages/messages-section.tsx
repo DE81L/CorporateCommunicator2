@@ -162,8 +162,12 @@ export default function MessagesSection({ onStartCall }: Props) {
 
   useEffect(scrollBottom, [messages, localMessages]);
 
-  // combine server and local messages
-  const combinedMessages = [...messages, ...localMessages].sort(
+  // combine server and local messages without duplicates
+  const combinedMessages = Array.from(
+    new Map(
+      [...messages, ...localMessages].map((m) => [m.id, m]),
+    ).values(),
+  ).sort(
     (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
   );
 
