@@ -37,10 +37,6 @@ export function usePeerConnection(
       onSignalRef.current(sig);
     });
 
-    if (incomingSignal) {
-      console.debug('P2P received signal', incomingSignal);
-      peer.signal(incomingSignal);
-    }
 
     peer.on('connect', () => {
       console.info('P2P connection open');
@@ -70,7 +66,18 @@ export function usePeerConnection(
     return () => {
       peer.destroy();
     };
-  }, [enabled, initiator, incomingSignal]);
+  }, [enabled, initiator]);
+
+  useEffect(() => {
+    if (incomingSignal && peerRef.current) {
+      console.debug('P2P received signal', incomingSignal);
+      try {
+        peerRef.current.signal(incomingSignal);
+      } catch (err) {
+        console.error('P2P signal error', err);
+      }
+    }
+  }, [incomingSignal]);
 
   const send = (msg: PeerMessage) => {
     if (enabled && peerRef.current?.connected) {
