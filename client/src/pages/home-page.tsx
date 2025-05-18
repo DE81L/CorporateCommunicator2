@@ -11,6 +11,7 @@ import WikiSection from "@/pages/wiki-section";
 import CallModal from "@/components/call-modal";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { SectionType } from "@/types/sections";
+import { useChat } from "@/context/ChatContext";
 
 export default function HomePage() {
   const [activeSection, setActiveSection] = useState<SectionType>("messages");
@@ -22,6 +23,7 @@ export default function HomePage() {
     name: string;
   } | null>(null);
   const { connectionStatus } = useWebSocket();
+  const { setChatUser } = useChat();
 
   const handleStartCall = (
     type: "video" | "audio",
@@ -30,6 +32,17 @@ export default function HomePage() {
     setCallType(type);
     setCallRecipient(recipient);
     setIsCallModalOpen(true);
+  };
+
+  const handleOpenChat = (contact: any) => {
+    setChatUser({
+      id: Number(contact.id),
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+      avatarUrl: contact.avatarUrl,
+      isonline: contact.isonline,
+    });
+    setActiveSection("messages");
   };
 
   const toggleSidebar = () => {
@@ -65,7 +78,7 @@ export default function HomePage() {
           {activeSection === "requests" && <RequestsSection />}
 
           {activeSection === "contacts" && (
-            <ContactsSection onStartCall={handleStartCall} />
+            <ContactsSection onStartCall={handleStartCall} onOpenChat={handleOpenChat} />
           )}
 
           {activeSection === "settings" && <SettingsSection />}
