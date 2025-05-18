@@ -20,25 +20,44 @@ export function usePeerConnection(
   const peerRef = useRef<Peer>();
 
   useEffect(() => {
+    console.debug('P2P creating connection', { initiator });
     const peer = new SimplePeer({
       initiator,
       trickle: true,
       config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] },
     });
 
-    peer.on('signal', onSignal);
-    if (incomingSignal) peer.signal(incomingSignal);
+    peer.on('signal', (sig) => {
+      console.debug('P2P signal', sig);
+      onSignal(sig);
+    });
 
-    peer.on('connect', () => setStatus('open'));
+    if (incomingSignal) {
+      console.debug('P2P received signal', incomingSignal);
+      peer.signal(incomingSignal);
+    }
+
+    peer.on('connect', () => {
+      console.info('P2P connection open');
+      setStatus('open');
+    });
     peer.on('data', data => {
       try {
-        setLastMessage(JSON.parse(data.toString()));
+        const msg = JSON.parse(data.toString());
+        console.debug('P2P data received', msg);
+        setLastMessage(msg);
       } catch {
         console.warn('Invalid P2P data', data);
       }
     });
-    peer.on('close', () => setStatus('closed'));
-    peer.on('error', () => setStatus('error'));
+    peer.on('close', () => {
+      console.info('P2P connection closed');
+      setStatus('closed');
+    });
+    peer.on('error', (err) => {
+      console.error('P2P error', err);
+      setStatus('error');
+    });
 
     peerRef.current = peer;
     setStatus('connecting');
@@ -48,6 +67,7 @@ export function usePeerConnection(
 
   const send = (msg: PeerMessage) => {
     if (peerRef.current?.connected) {
+      console.debug('P2P send', msg);
       peerRef.current.send(JSON.stringify(msg));
     }
   };
