@@ -286,10 +286,11 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
     // пытаемся отправить сразу через WS
     const delivered = sendChatMessage(receiverId, { senderId, receiverId, content });
 
-    // сохраняем в БД с пометкой статуса
-    await db!.query(
+    // сохраняем в БД с пометкой статуса и возвращаем созданную запись
+    const result = await db!.query(
       `INSERT INTO messages (sender_id, receiver_id, content, timestamp, status)
-       VALUES ($1, $2, $3, NOW(), $4)`,
+       VALUES ($1, $2, $3, NOW(), $4)
+       RETURNING id, sender_id AS "senderId", receiver_id AS "receiverId", content, timestamp, status`,
       [senderId, receiverId, content, delivered ? 'delivered' : 'pending']
     );
 
@@ -298,7 +299,7 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
       'Message stored on server'
     );
 
-    res.json({ success: true });
+    res.json(result.rows[0]);
   } catch (error) {
     logger.error({ err: error }, 'Error sending message');
     const detail = error instanceof Error ? error.message : String(error);
