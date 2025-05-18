@@ -17,6 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Loader2, PlusCircle, Search, ChevronRight, Edit, Trash2 } from "lucide-react";
+import MarkdownEditor from "@/components/wiki/markdown-editor";
+import MarkdownViewer from "@/components/wiki/markdown-viewer";
 
 // Wiki entry type
 interface WikiEntry {
@@ -69,6 +71,8 @@ export default function WikiSection() {
   const [editingCategory, setEditingCategory] = useState<WikiCategory | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<WikiCategory[]>([]);
+  const [selectedEntry, setSelectedEntry] = useState<WikiEntry | null>(null);
+  const [showViewDialog, setShowViewDialog] = useState(false);
 
   // Wiki entries query
   const {
@@ -329,6 +333,11 @@ export default function WikiSection() {
     setShowEntryDialog(true);
   };
 
+  const handleViewEntry = (entry: WikiEntry) => {
+    setSelectedEntry(entry);
+    setShowViewDialog(true);
+  };
+
   // Function to handle adding new category
   const handleAddCategory = () => {
     setEditingCategory(null);
@@ -505,19 +514,20 @@ export default function WikiSection() {
               <ScrollArea className="h-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredEntries.map(entry => (
-                    <Card key={entry.id} className="h-full">
+                    <Card key={entry.id} className="h-full cursor-pointer" onClick={() => handleViewEntry(entry)}>
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
                           <CardTitle className="text-xl">{entry.title}</CardTitle>
                           {user?.isAdmin && (
                             <div className="flex space-x-1">
-                              <Button size="icon" variant="ghost" onClick={() => handleEditEntry(entry)}>
+                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); handleEditEntry(entry); }}>
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   if (window.confirm('Are you sure you want to delete this entry?')) {
                                     deleteEntryMutation.mutate(entry.id);
                                   }
@@ -681,11 +691,7 @@ export default function WikiSection() {
                   <FormItem>
                     <FormLabel>Content</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Write the content here..."
-                        className="min-h-[250px]"
-                        {...field}
-                      />
+                      <MarkdownEditor value={field.value} onChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -798,6 +804,25 @@ export default function WikiSection() {
               </DialogFooter>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Entry Dialog */}
+      <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+        <DialogContent className="max-w-4xl w-full">
+          {selectedEntry && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">{selectedEntry.title}</h2>
+                {user?.isAdmin === 1 && (
+                  <Button size="sm" onClick={() => { setShowViewDialog(false); handleEditEntry(selectedEntry); }}>
+                    <Edit className="h-4 w-4 mr-2" /> Edit
+                  </Button>
+                )}
+              </div>
+              <MarkdownViewer content={selectedEntry.content} />
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
