@@ -172,6 +172,15 @@ router.get(
             AND status = 'pending'`,
         [userId, chatWith]
       );
+
+      await db!.query(
+        `DELETE FROM messages
+          WHERE sender_id = $2
+            AND receiver_id = $1
+            AND status = 'delivered'`,
+        [userId, chatWith]
+      );
+
       res.json(history.rows);
     } catch (err) {
       logger.error('GET /messages error:', err);
@@ -191,18 +200,15 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
     const { receiverId, content } = req.body as { receiverId: number; content: string };
     const senderId = req.session.userId as number;
 
-    // Сохраняем в базу с текущим временем:
-    await db!.query(
-      `INSERT INTO messages (sender_id, receiver_id, content, timestamp) VALUES ($1, $2, $3, NOW())`,
-      [senderId, receiverId, content]
-    );
+    // пытаемся отправить сразу через WS
+    const delivered = sendChatMessage(receiverId, { senderId, receiverId, content });
 
-    // Если оба онлайн, пересылаем через WS:
-    // Note: The sendChatMessage function needs to handle the logic of checking if the receiver is online.
-    logger.debug(
-      `Forwarding chat message from ${senderId} to ${receiverId} through WS`
+    // сохраняем в БД с пометкой статуса
+    await db!.query(
+      `INSERT INTO messages (sender_id, receiver_id, content, timestamp, status)
+       VALUES ($1, $2, $3, NOW(), $4)`,
+      [senderId, receiverId, content, delivered ? 'delivered' : 'pending']
     );
-    sendChatMessage(receiverId, { senderId, receiverId, content });
 
     res.json({ success: true });
   } catch (error) {
