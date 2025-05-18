@@ -41,7 +41,18 @@ router.post('/register', async (req: Request, res: Response) => {
      logger.error('Register failed:', error);
      res.status(500).json({ error: 'Registration error' });
    }
- });
+});
+
+router.post('/logout', (req: Request, res: Response) => {
+  req.session.destroy(err => {
+    if (err) {
+      logger.error('Logout error:', err);
+      return res.status(500).json({ error: 'Logout failed' });
+    }
+    res.clearCookie('connect.sid');
+    res.json({ success: true });
+  });
+});
 
 router.get('/user', async (req, res) => {
   const userId = (req.session as any).userId;
