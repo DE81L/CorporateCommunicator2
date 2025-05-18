@@ -1,9 +1,11 @@
-import { X, Minimize, Maximize } from 'lucide-react';
+import { X, Minimize, Maximize, RotateCw, Terminal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useElectron } from '@/hooks/use-electron';
+import { useAuth } from '@/hooks/use-auth';
 export const WindowFrame = () => {
   const { isElectron, api } = useElectron();
-    if (!isElectron) return null;
+  const { user } = useAuth();
+  if (!isElectron) return null;
   
   const handleMinimize = () => {
     api?.app?.minimize();
@@ -15,6 +17,14 @@ export const WindowFrame = () => {
 
   const handleClose = () => {
     api?.app?.quit();
+  };
+
+  const handleReload = () => {
+    api?.app?.reload();
+  };
+
+  const handleDevTools = () => {
+    api?.app?.openDevTools();
   };
   
 
@@ -36,6 +46,24 @@ export const WindowFrame = () => {
       >
         <Maximize className="h-4 w-4" />
       </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 rounded-md"
+        onClick={handleReload}
+      >
+        <RotateCw className="h-4 w-4" />
+      </Button>
+      {user?.isAdmin && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 rounded-md"
+          onClick={handleDevTools}
+        >
+          <Terminal className="h-4 w-4" />
+        </Button>
+      )}
       <Button
         variant="ghost"
         size="icon"

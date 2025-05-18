@@ -11,6 +11,8 @@ contextBridge.exposeInMainWorld("electron", {
     minimize:    () => ipcRenderer.invoke("window-minimize"),
     maximize:    () => ipcRenderer.invoke("window-maximize"),
     quit:        () => ipcRenderer.invoke("app-quit"),
+    reload:      () => ipcRenderer.invoke("window-reload"),
+    openDevTools: () => ipcRenderer.invoke("open-devtools"),
   },
   window: {    close: () => ipcRenderer.invoke("window-close"),
   },
