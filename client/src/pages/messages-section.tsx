@@ -308,7 +308,7 @@ export default function MessagesSection({ onStartCall }: Props) {
         // replace temporary message with saved one
         const updated: StoredMessage = {
           ...saved,
-          file: saved.file ?? fileData || undefined,
+          file: (saved.file ?? fileData) || undefined,
           synced: true,
         };
         setLocalMessages((prev) =>
