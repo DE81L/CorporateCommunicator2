@@ -19,9 +19,14 @@ import type { WikiEntry, WikiCategory } from '@shared/schema/wiki';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Loader2, PlusCircle, Search, ChevronRight, Edit, Trash2 } from "lucide-react";
+
+import { useLocation } from "wouter";
+import ReactMarkdown from 'react-markdown';
+
 import { MarkdownPreview } from '../components/wiki/markdown-preview';
 import { MarkdownEditor } from '../components/wiki/markdown-editor';
 import { getExcerpt } from '../lib/markdown';
+
 
 
 // Form schema for wiki entries
@@ -46,6 +51,7 @@ export default function WikiSection() {
   const { request } = apiClient;
   const { user } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("entries");
   const [searchQuery, setSearchQuery] = useState("");
   const [showEntryDialog, setShowEntryDialog] = useState(false);
@@ -488,15 +494,17 @@ export default function WikiSection() {
                   {filteredEntries.map((entry: WikiEntry) => (
                     <Card
                       key={entry.id}
+
                       className="h-full cursor-pointer hover:shadow-md transition-shadow"
                       onClick={() => setViewEntry(entry)}
+
                     >
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
                           <CardTitle className="text-xl">{entry.title}</CardTitle>
                           {user?.isAdmin && (
-                            <div className="flex space-x-1">
-                              <Button
+                            <div className="flex space-x-1" onClick={e => e.stopPropagation()}>
+                              <Button size="icon" variant="ghost" onClick={() => handleEditEntry(entry)}>
                                 size="icon"
                                 variant="ghost"
                                 onClick={e => {

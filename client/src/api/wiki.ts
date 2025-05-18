@@ -14,6 +14,10 @@ export async function getWikiCategories(): Promise<WikiCategory[]> {
   return (await apiClient.request<WikiCategory[]>('/api/wiki/categories')) ?? [];
 }
 
+export async function getWikiEntry(id: number): Promise<WikiEntry | undefined> {
+  return apiClient.request<WikiEntry>(`/api/wiki/entries/${id}`);
+}
+
 export async function createWikiEntry(
   data: InsertWikiEntry
 ): Promise<WikiEntry> {
@@ -25,4 +29,14 @@ export async function createWikiEntry(
     throw new Error('createWikiEntry: no entry returned from server');
   }
   return entry;
+}
+
+export async function updateWikiEntry(
+  id: number,
+  patch: Partial<InsertWikiEntry>
+): Promise<WikiEntry | undefined> {
+  return apiClient.request<WikiEntry>(`/api/wiki/entries/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(patch),
+  });
 }

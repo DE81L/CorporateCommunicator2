@@ -12,6 +12,16 @@ router.get('/entries', async (req, res) => {
   res.json(rows);
 });
 
+// GET /api/wiki/entries/:id – получить одну запись
+router.get('/entries/:id', async (req, res) => {
+  const entryId = +req.params.id;
+  const { rows } = await db!.query('SELECT * FROM wiki_entries WHERE id = $1', [entryId]);
+  if (rows.length === 0) {
+    return res.status(404).json({ error: 'Entry not found' });
+  }
+  res.json(rows[0]);
+});
+
 // GET /api/wiki/categories – список категорий
 router.get('/categories', async (req, res) => {
   const { rows } = await db!.query('SELECT * FROM wiki_categories');
