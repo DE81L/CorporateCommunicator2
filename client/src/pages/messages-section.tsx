@@ -36,6 +36,7 @@ export interface Message {
   receiverId?: number;
   content: string;
   timestamp: string;
+  file?: string;
 }
 
 export interface User {
@@ -68,8 +69,10 @@ export default function MessagesSection({ onStartCall }: Props) {
 
   const { chatUser: selectedUser, setChatUser: setSelectedUser } = useChat();
   const [msgInput, setMsgInput] = useState('');
+  const [fileData, setFileData] = useState<string | null>(null);
   const [incomingSignal, setIncomingSignal] = useState<any>(null);
   const [contactsCollapsed, setContactsCollapsed] = useState(false);
+  const [contacts, setContacts] = useState<User[]>([]);
 
   /* ─────────── contacts ─────────── */
   const {
@@ -81,6 +84,10 @@ export default function MessagesSection({ onStartCall }: Props) {
     queryFn: async () =>
       (await apiClient.request<User[]>('/contacts')) ?? [],
   });
+
+  useEffect(() => {
+    setContacts(users);
+  }, [users]);
 
   /* ─────────── history ─────────── */
   const {
@@ -141,13 +148,19 @@ export default function MessagesSection({ onStartCall }: Props) {
     if (!lastRawMessage) return;
     const { type, payload } = lastRawMessage as WsPacket<any>;
 
-    if (
-      type === 'user-status' &&
-      selectedUser &&
-      payload.userId === selectedUser.id &&
-      payload.isonline === 1
-    ) {
-      // собеседник появился в сети – peer‑hook пересоздастся
+    if (type === 'user-status') {
+      setContacts((prev) =>
+        prev.map((u) =>
+          u.id === payload.userId ? { ...u, isonline: payload.isonline } : u
+        )
+      );
+      if (
+        selectedUser &&
+        payload.userId === selectedUser.id &&
+        payload.isonline === 1
+      ) {
+        // собеседник появился в сети – peer‑hook пересоздастся
+      }
     }
 
     if (type === 'p2p-signal' && payload.from === selectedUser?.id) {
@@ -210,7 +223,8 @@ export default function MessagesSection({ onStartCall }: Props) {
   /* ───── send ───── */
   const sendMessage = async (e: FormEvent) => {
     e.preventDefault();
-    if (!msgInput.trim() || !selectedUser) return;
+    if (!msgInput.trim() && !fileData) return;
+    if (!selectedUser) return;
 
     console.log('Sending message', msgInput);
 
@@ -219,6 +233,7 @@ export default function MessagesSection({ onStartCall }: Props) {
         senderId: user!.id,
         receiverId: selectedUser.id,
         content: msgInput,
+        file: fileData || undefined,
       });
     } else {
       await apiClient.request<Message>('/messages', {
@@ -242,11 +257,13 @@ export default function MessagesSection({ onStartCall }: Props) {
       content: msgInput,
       timestamp: new Date().toISOString(),
       synced: false,
+      file: fileData || undefined,
     };
     appendMessage(user!.id, selectedUser.id, msg);
     setLocalMessages((prev) => [...prev, msg]);
 
     setMsgInput('');
+    setFileData(null);
     refetchHistory();
   };
 
@@ -276,7 +293,7 @@ export default function MessagesSection({ onStartCall }: Props) {
 ) : usersError ? (
   <p className="p-4 text-red-500">Contacts error</p>
 ) : (
-  users
+  contacts
     .filter((u) => u.id !== user.id)
     .map((u) => (
       <Card
@@ -401,7 +418,20 @@ export default function MessagesSection({ onStartCall }: Props) {
                 value={msgInput}
                 onChange={(e) => setMsgInput(e.target.value)}
               />
-              <Button type="submit" disabled={!msgInput.trim()}>
+              <input
+                type="file"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return setFileData(null);
+                  const reader = new FileReader();
+                  reader.onload = () => setFileData(reader.result as string);
+                  reader.readAsDataURL(file);
+                }}
+              />
+              {fileData && (
+                <span className="text-xs text-gray-500">file attached</span>
+              )}
+              <Button type="submit" disabled={!msgInput.trim() && !fileData}>
                 <Send className="h-4 w-4" />
               </Button>
             </form>

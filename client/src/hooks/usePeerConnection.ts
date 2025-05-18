@@ -8,6 +8,7 @@ export interface PeerMessage {
   senderId: number;
   receiverId: number;
   content: string;
+  file?: string;
 }
 
 export function usePeerConnection(
