@@ -39,6 +39,8 @@ router.post('/login', async (req: Request, res: Response) => {
     await new Promise<void>((resolve, reject) =>
       req.session.save(err => (err ? reject(err) : resolve()))
     );
+    await db!.query('UPDATE users SET isonline = 1 WHERE id = $1', [user.id]);
+    broadcastStatus(user.id, 1);
     res.json(user);
   } catch (err) {
     logger.error('Login error:', err);
@@ -60,6 +62,8 @@ router.post('/register', async (req: Request, res: Response) => {
     await new Promise<void>((resolve, reject) =>
       req.session.save(err => (err ? reject(err) : resolve()))
     );
+    await db!.query('UPDATE users SET isonline = 1 WHERE id = $1', [newUser.id]);
+    broadcastStatus(newUser.id, 1);
     res.status(201).json(newUser);
   } catch (err) {
     logger.error('Register error:', err);
