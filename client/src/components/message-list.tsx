@@ -19,6 +19,10 @@ export function MessageList({ messages, myId }: MessageListProps) {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  useEffect(() => {
+    console.log('Displaying messages', messages);
+  }, [messages]);
+
   if (messages.length === 0) {
     return <p className="text-gray-500 text-sm">No messages</p>;
   }
