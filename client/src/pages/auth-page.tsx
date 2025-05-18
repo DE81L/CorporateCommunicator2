@@ -56,7 +56,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-background text-foreground">
       <Tabs defaultValue={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")}>
         <TabsList>
           <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
@@ -136,9 +136,9 @@ function LoginForm({
                 <input
                   type="checkbox"
                   id="remember-me"
-                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                 />
-                <label htmlFor="remember-me" className="text-sm text-gray-600">
+                <label htmlFor="remember-me" className="text-sm text-gray-600 dark:text-gray-300">
                   {t('auth.rememberMe')}
                 </label>
               </div>
