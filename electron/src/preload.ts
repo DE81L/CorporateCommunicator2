@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('electron', {
     quit: () => ipcRenderer.invoke('app-quit'),
     minimize: () => ipcRenderer.invoke('window-minimize'),
     maximize: () => ipcRenderer.invoke('window-maximize'),
+    reload: () => ipcRenderer.invoke('window-reload'),
+    openDevTools: () => ipcRenderer.invoke('open-devtools'),
   },
   system: {
     getSystemInfo: () => ipcRenderer.invoke('get-system-info'),
