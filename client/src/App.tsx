@@ -45,30 +45,36 @@ export default function App() {
   };
 
   return (
-    <div style={{ width: 400, margin: '50px auto' }}>
-      <h2 style={{ textAlign: 'center' }}>User: {user}</h2>
-      <div
-        style={{
-          height: 400,
-          border: '1px solid #ccc',
-          marginBottom: 10,
-          overflowY: 'scroll',
-          padding: 5,
-        }}
-      >
-        {chat.map((msg, i) => (
-          <div key={i}>
-            <b>{msg.from}:</b> {msg.text}
-          </div>
-        ))}
+    <div className="max-w-md mx-auto mt-12">
+      <h2 className="text-center mb-4">User: {user}</h2>
+      <div className="h-96 border border-gray-300 mb-2 overflow-y-scroll p-2 space-y-2">
+        {chat.map((msg, i) => {
+          const own = msg.from === user;
+          return (
+            <div
+              key={i}
+              className={`flex ${own ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`rounded-lg px-3 py-2 max-w-xs break-words ${
+                  own
+                    ? 'bg-blue-200 text-gray-900'
+                    : 'bg-gray-200 text-gray-900'
+                }`}
+              >
+                <b className="mr-1">{msg.from}:</b> {msg.text}
+              </div>
+            </div>
+          );
+        })}
       </div>
-      <div style={{ display: 'flex' }}>
+      <div className="flex">
         <input
-          style={{ flex: 1, padding: '5px' }}
+          className="flex-1 p-1 border border-gray-300"
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
-        <button style={{ marginLeft: '5px' }} onClick={send}>
+        <button className="ml-2 px-3 py-1 border" onClick={send}>
           Send
         </button>
       </div>
