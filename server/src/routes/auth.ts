@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { login, register } from '../lib/api/auth';
+import { db } from '../db';
+import { broadcastStatus } from '../ws';
 import { logger } from '@shared/logger';
 
 
@@ -19,6 +21,8 @@ router.post('/login', async (req: Request, res: Response) => {
       await new Promise<void>((resolve, reject) =>
         req.session.save(err => err ? reject(err) : resolve())
       );
+      await db!.query('UPDATE users SET isonline = 1 WHERE id = $1', [user.id]);
+      broadcastStatus(user.id, 1);
       res.json({ id: user.id });
     } catch (error) {
       logger.error('Login error:', error);
@@ -36,6 +40,8 @@ router.post('/register', async (req: Request, res: Response) => {
      await new Promise<void>((resolve, reject) =>
        req.session.save(err => err ? reject(err) : resolve())
      );
+     await db!.query('UPDATE users SET isonline = 1 WHERE id = $1', [newUser.id]);
+     broadcastStatus(newUser.id, 1);
      res.json({ id: newUser.id });
    } catch (error) {
      logger.error('Register failed:', error);
@@ -48,6 +54,12 @@ router.post('/logout', (req: Request, res: Response) => {
     if (err) {
       logger.error('Logout error:', err);
       return res.status(500).json({ error: 'Logout failed' });
+    }
+    const userId = (req.session as any).userId as number | undefined;
+    if (userId) {
+      db!.query('UPDATE users SET isonline = 0 WHERE id = $1', [userId])
+        .then(() => broadcastStatus(userId, 0))
+        .catch((e) => logger.error('Set offline failed:', e));
     }
     res.clearCookie('connect.sid');
     res.json({ success: true });

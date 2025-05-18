@@ -13,13 +13,17 @@ export interface PeerMessage {
 export function usePeerConnection(
   initiator: boolean,
   onSignal: (signal: SimplePeer.SignalData) => void,
-  incomingSignal?: SimplePeer.SignalData
+  incomingSignal?: SimplePeer.SignalData,
+  enabled = true,
 ) {
   const [status, setStatus] = useState<PeerStatus>('init');
   const [lastMessage, setLastMessage] = useState<PeerMessage | null>(null);
   const peerRef = useRef<Peer>();
+  const onSignalRef = useRef(onSignal);
+  onSignalRef.current = onSignal;
 
   useEffect(() => {
+    if (!enabled) return;
     console.debug('P2P creating connection', { initiator });
     const peer = new SimplePeer({
       initiator,
@@ -29,7 +33,7 @@ export function usePeerConnection(
 
     peer.on('signal', (sig) => {
       console.debug('P2P signal', sig);
-      onSignal(sig);
+      onSignalRef.current(sig);
     });
 
     if (incomingSignal) {
@@ -62,11 +66,13 @@ export function usePeerConnection(
     peerRef.current = peer;
     setStatus('connecting');
 
-    return () => peer.destroy();
-  }, [initiator, onSignal, incomingSignal]);
+    return () => {
+      peer.destroy();
+    };
+  }, [enabled, initiator, incomingSignal]);
 
   const send = (msg: PeerMessage) => {
-    if (peerRef.current?.connected) {
+    if (enabled && peerRef.current?.connected) {
       console.debug('P2P send', msg);
       peerRef.current.send(JSON.stringify(msg));
     }

@@ -4,6 +4,7 @@ import type { IncomingMessage } from 'http';
 import type { RequestHandler } from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
 import { logger } from './util/logger';
+import { db } from './db';
 
 // Сервер + карта подключений userId → ws
 let wss: WebSocketServer;
@@ -45,6 +46,9 @@ export function initWebSocket(
     logger.info(
       `🟢 WS connected: user ${userId} from ${req.socket.remoteAddress ?? 'unknown'}`
     );
+    db!.query('UPDATE users SET isonline = 1 WHERE id = $1', [userId])
+      .then(() => broadcastStatus(userId, 1))
+      .catch((e) => logger.error('Set online failed:', e));
 
     // Обработка входящих P2P-сигналов
     ws.on('message', (data) => {
@@ -78,6 +82,9 @@ export function initWebSocket(
       logger.info(
         `🔴 WS disconnected: user ${userId} code=${code} reason=${reason.toString()}`
       );
+      db!.query('UPDATE users SET isonline = 0 WHERE id = $1', [userId])
+        .then(() => broadcastStatus(userId, 0))
+        .catch((e) => logger.error('Set offline failed:', e));
     });
 
     ws.on('error', (err) => {

@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 import { useChat } from '@/context/ChatContext';
@@ -124,12 +124,16 @@ export default function MessagesSection({ onStartCall }: Props) {
     send: sendP2P,
   } = usePeerConnection(
     isInitiator,
-    (signal) =>
-      sendRaw({
-        type: 'p2p-signal',
-        payload: { to: selectedUser!.id, signal },
-      }),
+    useCallback(
+      (signal: any) =>
+        sendRaw({
+          type: 'p2p-signal',
+          payload: { to: selectedUser!.id, signal },
+        }),
+      [sendRaw, selectedUser]
+    ),
     incomingSignal,
+    !!selectedUser && selectedUser.isonline === 1,
   );
 
   /* ───── WS side‑effects ───── */
