@@ -257,67 +257,68 @@ export default function MessagesSection({ onStartCall }: Props) {
               <ChevronLeft className="h-5 w-5" />
             </Button>
           </div>
-          {isLoadingUsers ? (
-            <div className="p-4 flex justify-center">
-              <Loader2 className="h-5 w-5 animate-spin" />
-            </div>
-          ) : usersError ? (
-            <p className="p-4 text-red-500">Contacts error</p>
-          ) : (
-            users
-              .filter((u) => u.id !== user.id)
-              .map((u) => (
-                <Card
-                  key={u.id}
-                  onClick={() => setSelectedUser(u)}
-                  className={cn(
-                    'm-2 cursor-pointer hover:shadow-md transition-shadow',
-                    selectedUser?.id === u.id ? 'bg-muted' : 'hover:bg-muted/50'
-                  )}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      {u.avatarUrl ? (
-                        <img
-                          src={u.avatarUrl}
-                          alt=""
-                          className="h-8 w-8 rounded-full object-cover"
-                        />
-                      ) : (
-                        <AvatarFallback>
-                          {getInitials(u.firstName, u.lastName)}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                    <span className="flex-1 truncate">
-                      {u.firstName} {u.lastName}
-                    </span>
-                    <span
-                      className={cn(
-                        'h-2 w-2 rounded-full',
-                        u.isonline ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
-                      )}
-                    />
-                  </CardContent>
-                </Card>
-              ))
-          )}
-        </aside>
-      )}
-      {contactsCollapsed && (
-        <div className="hidden md:flex flex-col border-r border-border">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="m-2"
-            onClick={() => setContactsCollapsed(false)}
-          >
-            <ChevronRight className="h-5 w-5" />
-          </Button>
-        </div>
-      )}
+{isLoadingUsers ? (
+  <div className="p-4 flex justify-center">
+    <Loader2 className="h-5 w-5 animate-spin" />
+  </div>
+) : usersError ? (
+  <p className="p-4 text-red-500">Contacts error</p>
+) : (
+  users
+    .filter((u) => u.id !== user.id)
+    .map((u) => (
+      <Card
+        key={u.id}
+        onClick={() => setSelectedUser(u)}
+        className={cn(
+          'm-2 cursor-pointer hover:shadow-md transition-shadow',
+          selectedUser?.id === u.id
+            ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400'
+            : 'hover:bg-muted/50'
+        )}
+        role="button"
+        tabIndex={0}
+      >
+        <CardContent className="p-3 flex items-center gap-3">
+          <Avatar className="h-8 w-8">
+            {u.avatarUrl ? (
+              <img
+                src={u.avatarUrl}
+                alt=""
+                className="h-8 w-8 rounded-full object-cover"
+              />
+            ) : (
+              <AvatarFallback>
+                {getInitials(u.firstName, u.lastName)}
+              </AvatarFallback>
+            )}
+          </Avatar>
+          <span className="flex-1 truncate">
+            {u.firstName} {u.lastName}
+          </span>
+          <span
+            className={cn(
+              'h-2 w-2 rounded-full',
+              u.isonline ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+            )}
+          />
+        </CardContent>
+      </Card>
+    ))
+)}
+</aside>
+{contactsCollapsed && (
+  <div className="hidden md:flex flex-col border-r border-border">
+    <Button
+      variant="ghost"
+      size="icon"
+      className="m-2"
+      onClick={() => setContactsCollapsed(false)}
+    >
+      <ChevronRight className="h-5 w-5" />
+    </Button>
+  </div>
+)}
 
       {/* chat */}
       <section className="flex-1 flex flex-col">
