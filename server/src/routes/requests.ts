@@ -17,11 +17,33 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const { receiverDepartmentId, taskId, cabinet, phone, isUrgent, deadline, comment } = req.body;
   const senderId = req.session.userId;
-  const { rows } = await db!.query(
-    'INSERT INTO requests(sender_id, receiver_department_id, task_id, cabinet, phone, is_urgent, deadline, comment) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
-    [senderId, receiverDepartmentId, taskId, cabinet, phone, isUrgent, deadline, comment]
-  );
-  res.status(201).json(rows[0]);
+
+  // Normalize optional fields. Empty strings should be stored as NULL to avoid
+  // Postgres casting errors for timestamp/boolean columns.
+  const sanitizedCabinet = cabinet || null;
+  const sanitizedPhone = phone || null;
+  const sanitizedDeadline = deadline || null;
+  const sanitizedComment = comment || null;
+
+  try {
+    const { rows } = await db!.query(
+      'INSERT INTO requests(sender_id, receiver_department_id, task_id, cabinet, phone, is_urgent, deadline, comment) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
+      [
+        senderId,
+        receiverDepartmentId,
+        taskId,
+        sanitizedCabinet,
+        sanitizedPhone,
+        isUrgent ?? false,
+        sanitizedDeadline,
+        sanitizedComment,
+      ]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    console.error('Failed to insert request:', err);
+    res.status(500).json({ error: 'Failed to create request' });
+  }
 });
 
 // PATCH /api/requests/:id/complete – пометить заявку выполненной (добавить отзыв, оценку)
