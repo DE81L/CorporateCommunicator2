@@ -16,7 +16,14 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { useSettings } from "@/context/SettingsContext";
 import { useCallConnection } from "@/hooks/useCallConnection";
 
-export type TranslationKey =  "call.video" | "call.audio" | "call.in_progress" | "common.cancel";
+export type TranslationKey =
+  | "call.video"
+  | "call.audio"
+  | "call.calling"
+  | "call.connecting"
+  | "call.connected"
+  | "call.in_call"
+  | "common.cancel";
 
 interface CallModalProps {
   isOpen: boolean;
@@ -44,15 +51,26 @@ export default function CallModal({
   const { audioInputId } = useSettings();
   const [incomingSignal, setIncomingSignal] = useState<any>();
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [stage, setStage] = useState<'calling' | 'connecting' | 'connected' | 'in_call'>('calling');
 
   const isInitiator = user && recipient ? user.id < recipient.id : false;
-  const { localStream, remoteStream } = useCallConnection(
+  const { status, localStream, remoteStream } = useCallConnection(
     isInitiator,
     (signal) =>
       sendRaw({ type: "p2p-signal", payload: { to: recipient.id, signal } }),
     incomingSignal,
     audioInputId
   );
+
+  useEffect(() => {
+    if (status === 'init') setStage('calling');
+    else if (status === 'connecting') setStage('connecting');
+    else if (status === 'open') {
+      setStage('connected');
+      const t = setTimeout(() => setStage('in_call'), 1000);
+      return () => clearTimeout(t);
+    }
+  }, [status]);
 
   useEffect(() => {
     if (
@@ -76,9 +94,9 @@ export default function CallModal({
     }
   }, [isMuted, localStream]);
 
-  // Start call timer when modal opens
+  // Start call timer when call is active
   useEffect(() => {
-    if (!isOpen) {
+    if (stage !== 'in_call') {
       setCallDuration(0);
       return;
     }
@@ -88,7 +106,7 @@ export default function CallModal({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isOpen]);
+  }, [stage]);
 
   // Format call duration as MM:SS
   const formatDuration = (seconds: number) => {
@@ -112,8 +130,8 @@ export default function CallModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-primary-800 text-white border-none">
         <DialogHeader>
-          <DialogTitle> 
-            {t(`call.${callType}`)} {t("call.in_progress")}
+          <DialogTitle>
+            {t(`call.${callType}`)} {t(`call.${stage}`)}
           </DialogTitle>
         </DialogHeader>
         <div className="p-6 text-center">
@@ -128,9 +146,7 @@ export default function CallModal({
           </Avatar>
 
           <h3 className="text-xl font-medium mt-4">{recipient.name}</h3>
-          <p className="text-primary-300">
-            {t(`call.${callType}`)} {t('call.in_progress')}
-          </p>
+          <p className="text-primary-300">{t(`call.${stage}`)}</p>
 
           <div className="mt-8 flex justify-center space-x-4">
             <Button
@@ -171,9 +187,9 @@ export default function CallModal({
             </Button>
           </div>
 
-          <p className="text-primary-300 mt-6">
-            {formatDuration(callDuration)}
-          </p>
+          {stage === 'in_call' && (
+            <p className="text-primary-300 mt-6">{formatDuration(callDuration)}</p>
+          )}
           <audio ref={audioRef} className="hidden" />
         </div>
 

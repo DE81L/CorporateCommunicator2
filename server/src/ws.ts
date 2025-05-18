@@ -99,6 +99,23 @@ export function initWebSocket(
           } else {
             logger.debug(`Target ${to} not connected for call-request`);
           }
+        } else if (msg.type === 'call-accept' || msg.type === 'call-reject') {
+          const { to } = msg.payload as { to: number };
+          const targets = connections.get(to);
+          if (targets?.size) {
+            targets.forEach((target) => {
+              if (target.readyState === WebSocket.OPEN) {
+                target.send(
+                  JSON.stringify({
+                    type: msg.type,
+                    payload: { from: userId },
+                  })
+                );
+              }
+            });
+          } else {
+            logger.debug(`Target ${to} not connected for ${msg.type}`);
+          }
         }
       } catch (err) {
         logger.warn('WS message parse error:', err);

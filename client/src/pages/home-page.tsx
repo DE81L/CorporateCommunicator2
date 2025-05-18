@@ -9,6 +9,7 @@ import ContactsSection from "@/pages/contacts-section";
 import SettingsSection from "@/pages/settings-section";
 import WikiSection from "@/pages/wiki-section";
 import CallModal from "@/components/call-modal";
+import CallRequestDialog from "@/components/call-request-dialog";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +22,12 @@ export default function HomePage() {
   const [activeSection, setActiveSection] = useState<SectionType>("messages");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCallModalOpen, setIsCallModalOpen] = useState(false);
+  const [incomingCall, setIncomingCall] = useState<{
+    from: number;
+    name: string;
+    callType: "video" | "audio";
+  } | null>(null);
+  const [isCalling, setIsCalling] = useState(false);
   const [callType, setCallType] = useState<"video" | "audio">("video");
   const [callRecipient, setCallRecipient] = useState<{
     id: number;
@@ -39,7 +46,7 @@ export default function HomePage() {
   ) => {
     setCallType(type);
     setCallRecipient(recipient);
-    setIsCallModalOpen(true);
+    setIsCalling(true);
     sendRaw({
       type: "call-request",
       payload: {
@@ -51,6 +58,28 @@ export default function HomePage() {
             : user?.username,
       },
     });
+  };
+
+  const acceptCall = () => {
+    if (!incomingCall) return;
+    sendRaw({ type: "call-accept", payload: { to: incomingCall.from } });
+    setCallRecipient({ id: incomingCall.from, name: incomingCall.name });
+    setCallType(incomingCall.callType);
+    setIncomingCall(null);
+    setIsCallModalOpen(true);
+  };
+
+  const declineCall = () => {
+    if (!incomingCall) return;
+    sendRaw({ type: "call-reject", payload: { to: incomingCall.from } });
+    setIncomingCall(null);
+  };
+
+  const cancelOutgoingCall = () => {
+    if (!callRecipient) return;
+    sendRaw({ type: "call-reject", payload: { to: callRecipient.id } });
+    setIsCalling(false);
+    setCallRecipient(null);
   };
 
   const handleOpenChat = (contact: any) => {
@@ -89,11 +118,32 @@ export default function HomePage() {
         fromName: string;
         callType: 'video' | 'audio';
       };
-      setCallType(payload.callType);
-      setCallRecipient({ id: payload.from, name: payload.fromName });
+      setIncomingCall({
+        from: payload.from,
+        name: payload.fromName,
+        callType: payload.callType,
+      });
+    }
+
+    if (
+      lastRawMessage.type === 'call-accept' &&
+      callRecipient &&
+      lastRawMessage.payload.from === callRecipient.id
+    ) {
+      setIsCalling(false);
       setIsCallModalOpen(true);
     }
-  }, [lastRawMessage, chatUser, user, toast, t]);
+
+    if (
+      lastRawMessage.type === 'call-reject' &&
+      callRecipient &&
+      lastRawMessage.payload.from === callRecipient.id
+    ) {
+      setIsCalling(false);
+      setCallRecipient(null);
+      toast({ title: t('call.rejected') });
+    }
+  }, [lastRawMessage, chatUser, user, toast, t, callRecipient]);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -139,6 +189,27 @@ export default function HomePage() {
           onClose={() => setIsCallModalOpen(false)}
           callType={callType}
           recipient={callRecipient}
+        />
+      )}
+
+      {incomingCall && (
+        <CallRequestDialog
+          isOpen={true}
+          incoming={true}
+          callType={incomingCall.callType}
+          participant={{ name: incomingCall.name }}
+          onAccept={acceptCall}
+          onDecline={declineCall}
+        />
+      )}
+
+      {isCalling && callRecipient && (
+        <CallRequestDialog
+          isOpen={true}
+          incoming={false}
+          callType={callType}
+          participant={{ name: callRecipient.name }}
+          onDecline={cancelOutgoingCall}
         />
       )}
     </div>
