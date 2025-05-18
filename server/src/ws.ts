@@ -6,9 +6,9 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { logger } from './util/logger';
 import { db } from './db';
 
-// Сервер + карта подключений userId → ws
+// Сервер + карта подключений userId → Set<ws>
 let wss: WebSocketServer;
-const connections = new Map<number, WebSocket>();
+const connections = new Map<number, Set<WebSocket>>();
 
 export function initWebSocket(
   server: http.Server,
@@ -42,13 +42,18 @@ export function initWebSocket(
       ws.close();
       return;
     }
-    connections.set(userId, ws);
+    if (!connections.has(userId)) connections.set(userId, new Set());
+    const set = connections.get(userId)!;
+    set.add(ws);
+    const first = set.size === 1;
     logger.info(
       `🟢 WS connected: user ${userId} from ${req.socket.remoteAddress ?? 'unknown'}`
     );
-    db!.query('UPDATE users SET isonline = 1 WHERE id = $1', [userId])
-      .then(() => broadcastStatus(userId, 1))
-      .catch((e) => logger.error('Set online failed:', e));
+    if (first) {
+      db!.query('UPDATE users SET isonline = 1 WHERE id = $1', [userId])
+        .then(() => broadcastStatus(userId, 1))
+        .catch((e) => logger.error('Set online failed:', e));
+    }
 
     // Обработка входящих P2P-сигналов
     ws.on('message', (data) => {
@@ -57,17 +62,19 @@ export function initWebSocket(
         const msg = JSON.parse(data.toString());
         if (msg.type === 'p2p-signal') {
           const { to, signal } = msg.payload as { to: number; signal: any };
-          const target = connections.get(to);
-          if (target?.readyState === WebSocket.OPEN) {
-            logger.debug(
-              `Forwarding p2p-signal from ${userId} to ${to}`
-            );
-            target.send(
-              JSON.stringify({
-                type: 'p2p-signal',
-                payload: { from: userId, signal },
-              })
-            );
+          const targets = connections.get(to);
+          if (targets?.size) {
+            logger.debug(`Forwarding p2p-signal from ${userId} to ${to}`);
+            targets.forEach((target) => {
+              if (target.readyState === WebSocket.OPEN) {
+                target.send(
+                  JSON.stringify({
+                    type: 'p2p-signal',
+                    payload: { from: userId, signal },
+                  })
+                );
+              }
+            });
           } else {
             logger.debug(`Target ${to} not connected for p2p-signal`);
           }
@@ -77,14 +84,18 @@ export function initWebSocket(
             callType: 'video' | 'audio';
             fromName: string;
           };
-          const target = connections.get(to);
-          if (target?.readyState === WebSocket.OPEN) {
-            target.send(
-              JSON.stringify({
-                type: 'call-request',
-                payload: { from: userId, fromName, callType },
-              })
-            );
+          const targets = connections.get(to);
+          if (targets?.size) {
+            targets.forEach((target) => {
+              if (target.readyState === WebSocket.OPEN) {
+                target.send(
+                  JSON.stringify({
+                    type: 'call-request',
+                    payload: { from: userId, fromName, callType },
+                  })
+                );
+              }
+            });
           } else {
             logger.debug(`Target ${to} not connected for call-request`);
           }
@@ -95,13 +106,18 @@ export function initWebSocket(
     });
 
     ws.on('close', (code, reason) => {
-      connections.delete(userId);
+      const set = connections.get(userId);
+      set?.delete(ws);
+      const last = !set || set.size === 0;
+      if (last) connections.delete(userId);
       logger.info(
         `🔴 WS disconnected: user ${userId} code=${code} reason=${reason.toString()}`
       );
-      db!.query('UPDATE users SET isonline = 0 WHERE id = $1', [userId])
-        .then(() => broadcastStatus(userId, 0))
-        .catch((e) => logger.error('Set offline failed:', e));
+      if (last) {
+        db!.query('UPDATE users SET isonline = 0 WHERE id = $1', [userId])
+          .then(() => broadcastStatus(userId, 0))
+          .catch((e) => logger.error('Set offline failed:', e));
+      }
     });
 
     ws.on('error', (err) => {
@@ -136,12 +152,14 @@ export function sendChatMessage(
   receiverId: number,
   message: any
 ): boolean {
-  const ws = connections.get(receiverId);
-  if (ws?.readyState === WebSocket.OPEN) {
-    logger.debug(
-      `Sending chat message from ${message.senderId} to ${receiverId}`
-    );
-    ws.send(JSON.stringify({ type: 'chat', payload: message }));
+  const targets = connections.get(receiverId);
+  if (targets && targets.size > 0) {
+    logger.debug(`Sending chat message from ${message.senderId} to ${receiverId}`);
+    targets.forEach((ws) => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'chat', payload: message }));
+      }
+    });
     return true;
   }
 
