@@ -1,6 +1,7 @@
 /// <reference path="../types/express-session.d.ts" />
 import 'express-session';
 import { Router, Request, Response } from 'express';
+import bcrypt from 'bcrypt';
 import { login, register } from '../lib/api/auth';
 import { db } from '../db'; // Уже есть
 import { logger } from '../util/logger'; // Уже есть
@@ -99,6 +100,53 @@ router.get('/user', isAuthenticated, async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+/**
+ * POST /api/change-password
+ * Смена пароля текущего пользователя.
+ * Тело: { currentPassword: string; newPassword: string }
+ */
+router.post(
+  '/change-password',
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    try {
+      const { currentPassword, newPassword } = req.body as {
+        currentPassword: string;
+        newPassword: string;
+      };
+      const userId = req.session.userId as number;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: 'Missing fields' });
+      }
+
+      const result = await db!.query<{ password: string }>(
+        'SELECT password FROM users WHERE id = $1',
+        [userId]
+      );
+      const user = result.rows[0];
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const valid = await bcrypt.compare(currentPassword, user.password);
+      if (!valid) {
+        return res.status(400).json({ error: 'Incorrect current password' });
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const hashed = await bcrypt.hash(newPassword, salt);
+
+      await db!.query('UPDATE users SET password = $1 WHERE id = $2', [hashed, userId]);
+
+      res.json({ success: true });
+    } catch (err) {
+      logger.error('Change password error:', err);
+      res.status(500).json({ error: 'Server error' });
+    }
+  }
+);
 
 /**
  * PATCH /api/users/status

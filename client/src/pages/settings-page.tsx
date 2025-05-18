@@ -25,6 +25,12 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
 import { Bell, Moon, Sun, Globe, User, Lock, Settings as SettingsIcon, ArrowLeft } from 'lucide-react';
 import { useLocation } from 'wouter';
 
@@ -76,6 +82,102 @@ const SettingsPage: React.FC = () => {
       duration: 2000,
     });
   };
+
+  const changePasswordSchema = z
+    .object({
+      currentPassword: z.string().min(1, 'Current password is required'),
+      newPassword: z.string().min(6, 'Password too short'),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: 'Passwords do not match',
+      path: ['confirmPassword'],
+    });
+
+  function ChangePasswordForm() {
+    const form = useForm<z.infer<typeof changePasswordSchema>>({
+      resolver: zodResolver(changePasswordSchema),
+    });
+
+    const mutation = useMutation({
+      mutationFn: async (data: z.infer<typeof changePasswordSchema>) => {
+        const { confirmPassword, ...payload } = data;
+        const res = await fetch('/api/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            currentPassword: payload.currentPassword,
+            newPassword: payload.newPassword,
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || 'Failed to change password');
+        }
+      },
+      onSuccess: () => {
+        toast({ title: t('common.changesApplied') });
+        form.reset();
+      },
+      onError: (error: Error) => {
+        toast({ variant: 'destructive', title: error.message });
+      },
+    });
+
+    const onSubmit = (data: z.infer<typeof changePasswordSchema>) => {
+      mutation.mutate(data);
+    };
+
+    return (
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="currentPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('profile.currentPassword')}</FormLabel>
+                <FormControl>
+                  <Input type="password" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="newPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('profile.newPassword')}</FormLabel>
+                <FormControl>
+                  <Input type="password" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('auth.confirmPassword')}</FormLabel>
+                <FormControl>
+                  <Input type="password" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" disabled={mutation.isPending}>
+            {t('profile.changePassword')}
+          </Button>
+        </form>
+      </Form>
+    );
+  }
 
   return (
     <div className="container mx-auto py-10">
@@ -187,7 +289,7 @@ const SettingsPage: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <p>{t('settings.accountSettings')}</p>
-              {/* Account settings will be implemented here */}
+              <ChangePasswordForm />
             </CardContent>
           </Card>
         </TabsContent>
