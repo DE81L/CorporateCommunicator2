@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 import { useChat } from '@/context/ChatContext';
-import { useWebSocket } from '@/hooks/useWebSocket';
+import { useWS } from '@/context/WebSocketContext';
 import { usePeerConnection } from '@/hooks/usePeerConnection';
 import { createApiClient } from '@/lib/api-client';
 import {
@@ -65,7 +65,7 @@ export default function MessagesSection({ onStartCall }: Props) {
   const { user } = useAuth();
   const apiClient = createApiClient();
   const { t } = useTranslation();
-  const { connectionStatus, lastRawMessage, sendRaw } = useWebSocket();
+  const { connectionStatus, lastRawMessage, sendRaw } = useWS();
 
   const { chatUser: selectedUser, setChatUser: setSelectedUser } = useChat();
   const [msgInput, setMsgInput] = useState('');

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/layout/header";
 import Sidebar from "@/components/layout/sidebar";
 import MessagesSection from "@/pages/messages-section";
@@ -9,7 +9,10 @@ import ContactsSection from "@/pages/contacts-section";
 import SettingsSection from "@/pages/settings-section";
 import WikiSection from "@/pages/wiki-section";
 import CallModal from "@/components/call-modal";
-import { useWebSocket } from "@/hooks/useWebSocket";
+import { useWS } from "@/context/WebSocketContext";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import { SectionType } from "@/types/sections";
 import { useChat } from "@/context/ChatContext";
 import { useMessageSync } from "@/hooks/useMessageSync";
@@ -23,8 +26,11 @@ export default function HomePage() {
     id: number;
     name: string;
   } | null>(null);
-  const { connectionStatus } = useWebSocket();
-  const { setChatUser } = useChat();
+  const { connectionStatus, lastRawMessage } = useWS();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { t } = useTranslation();
+  const { chatUser, setChatUser } = useChat();
   useMessageSync();
 
   const handleStartCall = (
@@ -50,6 +56,16 @@ export default function HomePage() {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  useEffect(() => {
+    if (!lastRawMessage) return;
+    if (lastRawMessage.type !== 'chat') return;
+    const msg = lastRawMessage.payload as { senderId: number; content: string };
+    if (!user) return;
+    if (msg.senderId === user.id) return;
+    if (chatUser && msg.senderId === chatUser.id) return;
+    toast({ title: t('messages.newMessage'), description: msg.content });
+  }, [lastRawMessage, chatUser, user, toast, t]);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">

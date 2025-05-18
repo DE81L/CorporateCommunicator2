@@ -8,6 +8,7 @@ import { Route, Switch, Redirect } from 'wouter';
 import { QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
 import { ChatProvider } from "./context/ChatContext";
+import { WebSocketProvider } from "./context/WebSocketContext";
 import { WindowFrameHeader } from "./components/ui/window-frame";
 import { useElectron } from "./hooks/use-electron";
 import { useEffect, useState } from "react";
@@ -77,13 +78,15 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ChatProvider>
-          <AppContent />
-          {status !== 'ok' && (
-            <div>
-              <h1>Server Status: {status}</h1>
-              <p>{message}</p>
-            </div>
-          )}
+          <WebSocketProvider>
+            <AppContent />
+            {status !== 'ok' && (
+              <div>
+                <h1>Server Status: {status}</h1>
+                <p>{message}</p>
+              </div>
+            )}
+          </WebSocketProvider>
         </ChatProvider>
       </AuthProvider>
     </QueryClientProvider>
