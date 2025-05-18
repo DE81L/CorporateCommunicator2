@@ -12,23 +12,11 @@ export type ConnectionStatus = 'connecting' | 'open' | 'closing' | 'closed' | 'e
 //  • otherwise fall back to ws(s)://<current host>/ws
 const _raw = (import.meta.env.VITE_WS_URL as string | undefined)
 
-// Always connect on port 4269. Build the final WebSocket URL while
-// respecting any custom path from VITE_WS_URL.
-const WS_URL = (() => {
-  const base = `${window.location.protocol.replace(/^http/, 'ws')}//${window.location.hostname}:4269`
-
-  if (!_raw) return `${base}/ws`
-
-  if (_raw.startsWith('/')) return `${base}${_raw}`
-
-  try {
-    const url = new URL(_raw)
-    url.port = '4269'
-    return url.toString()
-  } catch {
-    return `${base}/${_raw.replace(/^\/?/, '')}`
-  }
-})()
+const WS_URL = _raw
+  ? _raw.startsWith('/')
+    ? `${window.location.protocol.replace(/^http/, 'ws')}//${window.location.host}${_raw}`
+    : _raw
+  : `${window.location.protocol.replace(/^http/, 'ws')}//${window.location.host}/ws`
 
 export function useWebSocket() {
   const { user } = useAuth()
