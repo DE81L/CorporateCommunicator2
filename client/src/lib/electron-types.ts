@@ -13,6 +13,8 @@ export interface ElectronAPI {
     quit: () => Promise<void>;
     minimize: () => Promise<void>;
     maximize: () => Promise<void>;
+    reload: () => Promise<void>;
+    openDevTools: () => Promise<void>;
   };
   // System utilities
   system: {

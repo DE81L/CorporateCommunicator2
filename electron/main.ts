@@ -57,6 +57,8 @@ async function createWindow() {
       mainWindow?.maximize();
     }
   });
+  ipcMain.handle('window-reload', () => mainWindow?.reload());
+  ipcMain.handle('open-devtools', () => mainWindow?.webContents.openDevTools());
   ipcMain.handle('app-quit',    () => { app.quit(); });
   ipcMain.handle('window-close', () => mainWindow?.hide());
 
