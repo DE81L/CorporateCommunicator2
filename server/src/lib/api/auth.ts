@@ -48,8 +48,15 @@ export async function register(userData: {
   const result = await db?.query(
     `INSERT INTO users (username, email, password, first_name, last_name)
      VALUES ($1, $2, $3, $4, $5)
-     RETURNING id, username, email, first_name, last_name`,
-    [userData.username, userData.email, hashedPassword, userData.firstName, userData.lastName]
+     RETURNING id, username, email,
+               first_name AS "firstName", last_name AS "lastName"`,
+    [
+      userData.username,
+      userData.email,
+      hashedPassword,
+      userData.firstName,
+      userData.lastName,
+    ]
   );
 
   return result?.rows[0];

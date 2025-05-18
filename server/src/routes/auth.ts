@@ -23,7 +23,7 @@ router.post('/login', async (req: Request, res: Response) => {
       );
       await db!.query('UPDATE users SET isonline = 1 WHERE id = $1', [user.id]);
       broadcastStatus(user.id, 1);
-      res.json({ id: user.id });
+      res.json({ ...user, isOnline: 1 });
     } catch (error) {
       logger.error('Login error:', error);
       res.status(401).json({ message: (error as Error).message });
@@ -42,8 +42,8 @@ router.post('/register', async (req: Request, res: Response) => {
      );
      await db!.query('UPDATE users SET isonline = 1 WHERE id = $1', [newUser.id]);
      broadcastStatus(newUser.id, 1);
-     res.json({ id: newUser.id });
-   } catch (error) {
+     res.json({ ...newUser, isOnline: 1 });
+  } catch (error) {
      logger.error('Register failed:', error);
      res.status(500).json({ error: 'Registration error' });
    }
