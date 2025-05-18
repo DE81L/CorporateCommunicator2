@@ -89,7 +89,9 @@
     "phone": "Phone",
     "location": "Location",
     "department": "Department",
-    "position": "Position"
+    "position": "Position",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password"
   },
   "settings": {
     "title": "Settings",

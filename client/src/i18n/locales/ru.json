@@ -101,7 +101,9 @@
     "phone": "Телефон",
     "location": "Местоположение",
     "department": "Отдел",
-    "position": "Должность"
+    "position": "Должность",
+    "currentPassword": "Текущий пароль",
+    "newPassword": "Новый пароль"
   },
   "settings": {
     "title": "Настройки",
