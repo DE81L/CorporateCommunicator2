@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLanguage } from '@/lib/i18n/translations.ts';
+import { useSettings } from '@/hooks/use-settings';
 import {
   Card,
   CardContent,
@@ -27,9 +28,10 @@ import { Button } from '@/components/ui/button';
 import { Bell, Moon, Sun, Globe, User, Lock, Settings as SettingsIcon } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
-  const { t, language, setLanguage } = useLanguage();
+  const { t } = useLanguage();
   const { toast } = useToast();
-  const [theme, setTheme] = React.useState<'light' | 'dark' | 'system'>('system');
+  const { settings, setTheme, setLanguage } = useSettings();
+  const { theme, language } = settings;
   const [emailNotifications, setEmailNotifications] = React.useState(true);
   const [pushNotifications, setPushNotifications] = React.useState(true);
   const [desktopNotifications, setDesktopNotifications] = React.useState(true);
@@ -44,25 +46,14 @@ const SettingsPage: React.FC = () => {
   };
 
   const handleThemeChange = (value: 'light' | 'dark' | 'system') => {
-    setTheme(value);
-    // Apply theme change logic here
-    document.documentElement.classList.remove('light', 'dark');
-    if (value === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
-      document.documentElement.classList.add(systemTheme);
-    } else {
-      document.documentElement.classList.add(value);
-    }
-    
+    setTheme(value as 'light' | 'dark' | 'system');
     toast({
       title: t('settings.changesApplied'),
-      description: t('settings.theme') + ': ' + 
-        (value === 'light' 
-          ? t('settings.lightMode') 
-          : value === 'dark' 
-            ? t('settings.darkMode') 
+      description: t('settings.theme') + ': ' +
+        (value === 'light'
+          ? t('settings.lightMode')
+          : value === 'dark'
+            ? t('settings.darkMode')
             : t('settings.system')),
       duration: 2000,
     });
