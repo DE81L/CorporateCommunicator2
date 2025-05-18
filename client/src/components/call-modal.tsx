@@ -87,7 +87,7 @@ export default function CallModal({
 
           <h3 className="text-xl font-medium mt-4">{recipient.name}</h3>
           <p className="text-primary-300">
-            {callType === "video" ? "Video call" : "Voice call"} in progress...
+            {t(`call.${callType}`)} {t('call.in_progress')}
           </p>
 
           <div className="mt-8 flex justify-center space-x-4">
@@ -154,3 +154,4 @@ export default function CallModal({
     </Dialog>
   );
 }
+

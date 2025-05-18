@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/layout/header";
 import Sidebar from "@/components/layout/sidebar";
 import MessagesSection from "@/pages/messages-section";
@@ -10,6 +10,7 @@ import SettingsSection from "@/pages/settings-section";
 import WikiSection from "@/pages/wiki-section";
 import CallModal from "@/components/call-modal";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { useAuth } from "@/hooks/use-auth";
 import { SectionType } from "@/types/sections";
 import { useChat } from "@/context/ChatContext";
 import { useMessageSync } from "@/hooks/useMessageSync";
@@ -23,7 +24,8 @@ export default function HomePage() {
     id: number;
     name: string;
   } | null>(null);
-  const { connectionStatus } = useWebSocket();
+  const { user } = useAuth();
+  const { connectionStatus, sendRaw, lastRawMessage } = useWebSocket();
   const { setChatUser } = useChat();
   useMessageSync();
 
@@ -34,6 +36,17 @@ export default function HomePage() {
     setCallType(type);
     setCallRecipient(recipient);
     setIsCallModalOpen(true);
+    sendRaw({
+      type: "call-request",
+      payload: {
+        to: recipient.id,
+        callType: type,
+        fromName:
+          user?.firstName || user?.lastName
+            ? `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim()
+            : user?.username,
+      },
+    });
   };
 
   const handleOpenChat = (contact: any) => {
@@ -50,6 +63,20 @@ export default function HomePage() {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  useEffect(() => {
+    if (!lastRawMessage) return;
+    if (lastRawMessage.type === "call-request") {
+      const payload = lastRawMessage.payload as {
+        from: number;
+        fromName: string;
+        callType: "video" | "audio";
+      };
+      setCallType(payload.callType);
+      setCallRecipient({ id: payload.from, name: payload.fromName });
+      setIsCallModalOpen(true);
+    }
+  }, [lastRawMessage]);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -100,3 +127,4 @@ export default function HomePage() {
     </div>
   );
 }
+
