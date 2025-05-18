@@ -75,8 +75,29 @@ router.post('/register', async (req: Request, res: Response) => {
  * GET /api/user
  * Информация о текущем пользователе.
  */
-router.get('/user', isAuthenticated, (req: Request, res: Response) => {
-  res.json({ id: req.session.userId, username: req.session.username });
+router.get('/user', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = req.session.userId as number;
+    const result = await db!.query(
+      `SELECT
+         id,
+         username,
+         email,
+         first_name AS "firstName",
+         last_name  AS "lastName",
+         job_title  AS "jobTitle",
+         avatarurl  AS "avatarUrl",
+         is_admin   AS "isAdmin",
+         isonline   AS "isOnline"
+       FROM users
+       WHERE id = $1`,
+      [userId]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    logger.error('Get current user error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 /**

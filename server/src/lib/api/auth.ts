@@ -4,7 +4,19 @@ import { logger } from '@shared/logger';
 
 export async function login(usernameOrEmail: string, password: string) {
   const result = await db?.query(
-    `SELECT * FROM users WHERE username = $1 OR email = $1`,
+    `SELECT
+       id,
+       username,
+       email,
+       password,
+       first_name AS "firstName",
+       last_name  AS "lastName",
+       job_title  AS "jobTitle",
+       avatarurl  AS "avatarUrl",
+       is_admin   AS "isAdmin",
+       isonline   AS "isOnline"
+     FROM users
+     WHERE username = $1 OR email = $1`,
     [usernameOrEmail]
   );
 
