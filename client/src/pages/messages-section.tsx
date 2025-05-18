@@ -160,7 +160,19 @@ export default function MessagesSection({ onStartCall }: Props) {
   const scrollBottom = () =>
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
-  useEffect(scrollBottom, [messages]);
+  useEffect(scrollBottom, [messages, localMessages]);
+
+  // combine server and local messages
+  const combinedMessages = [...messages, ...localMessages].sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+  );
+
+  // clear local messages once server history arrives
+  useEffect(() => {
+    if (messages.length > 0 && localMessages.length > 0) {
+      setLocalMessages([]);
+    }
+  }, [messages]);
 
   /* ───── send ───── */
   const sendMessage = async (e: FormEvent) => {
@@ -313,7 +325,7 @@ export default function MessagesSection({ onStartCall }: Props) {
                   {t('messages.noMessages')}
                 </p>
               ) : (
-                (messages.length > 0 ? messages : localMessages).map((m) => (
+                combinedMessages.map((m) => (
                   <div
                     key={m.id}
                     className={`max-w-[80%] rounded-lg px-4 py-2 text-sm break-words ${
