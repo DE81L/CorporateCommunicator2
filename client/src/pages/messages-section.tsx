@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
+import { useChat } from '@/context/ChatContext';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { usePeerConnection } from '@/hooks/usePeerConnection';
 import { createApiClient } from '@/lib/api-client';
@@ -49,7 +50,7 @@ export default function MessagesSection({ onStartCall }: Props) {
   const { t } = useTranslation();
   const { connectionStatus, lastRawMessage, sendRaw } = useWebSocket();
 
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const { chatUser: selectedUser, setChatUser: setSelectedUser } = useChat();
   const [msgInput, setMsgInput] = useState('');
   const [incomingSignal, setIncomingSignal] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);

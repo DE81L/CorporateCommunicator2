@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
+import { useChat } from "../context/ChatContext";
 import { User } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,10 +24,12 @@ interface ContactsProps {
     type: "video" | "audio",
     recipient: { id: number; name: string },
   ) => void;
+  onOpenChat: (contact: User) => void;
 }
 
-export default function ContactsSection({ onStartCall }: ContactsProps) {
+export default function ContactsSection({ onStartCall, onOpenChat }: ContactsProps) {
   const { user } = useAuth();
+  const { setChatUser } = useChat();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -84,6 +87,7 @@ export default function ContactsSection({ onStartCall }: ContactsProps) {
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               placeholder="Search contacts..."
+              className="pl-8"
             />
           </div>
           <Button className="flex items-center">
@@ -132,7 +136,21 @@ export default function ContactsSection({ onStartCall }: ContactsProps) {
                   </div>
                 </div>
                 <div className="mt-4 flex justify-between">
-                  <Button variant="ghost" size="icon" className="rounded-full">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full"
+                    onClick={() => {
+                      setChatUser({
+                        id: Number(contact.id),
+                        firstName: contact.firstName,
+                        lastName: contact.lastName,
+                        avatarUrl: contact.avatarUrl,
+                        isonline: contact.isonline,
+                      });
+                      onOpenChat(contact);
+                    }}
+                  >
                     <MessageSquare className="h-5 w-5" />
                   </Button>
                   <Button
@@ -161,7 +179,7 @@ export default function ContactsSection({ onStartCall }: ContactsProps) {
                   >
                     <Video className="h-5 w-5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="rounded-full">
+                  <Button variant="ghost" size="icon" className="rounded-full" title="Email">
                     <Mail className="h-5 w-5" />
                   </Button>
                 </div>

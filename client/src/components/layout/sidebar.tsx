@@ -153,11 +153,17 @@ export default function Sidebar({
                     {(user.firstName?.[0] ?? "") + (user.lastName?.[0] ?? "")}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 ">
+                <div className="flex-1">
                   <p className="text-sm font-medium">
                     {user.firstName} {user.lastName}
                   </p>
+                  {user.jobTitle && (
+                    <p className="text-xs text-gray-500 truncate">{user.jobTitle}</p>
+                  )}
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  <p className="text-xs mt-1">
+                    {user.isOnline ? 'Online' : 'Offline'}
+                  </p>
                 </div>
               </Button>
             </DropdownMenuTrigger>
@@ -166,7 +172,13 @@ export default function Sidebar({
                 <p className="text-sm font-medium">
                   {user.firstName} {user.lastName}
                 </p>
+                {user.jobTitle && (
+                  <p className="text-xs text-gray-500 truncate">{user.jobTitle}</p>
+                )}
                 <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                <p className="text-xs mt-1">
+                  {user.isOnline ? 'Online' : 'Offline'}
+                </p>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {/* <LanguageSwitcher />          reuse existing component */}
@@ -174,6 +186,15 @@ export default function Sidebar({
                 <SettingsIcon className="mr-2 h-4 w-4" />
                 {t("sidebar.nav.settings")}
               </DropdownMenuItem>
+
+              {user.isAdmin && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setLocation('/admin')}>
+                    Admin Panel
+                  </DropdownMenuItem>
+                </>
+              )}
 
               <DropdownMenuSeparator />
 

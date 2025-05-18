@@ -19,6 +19,7 @@ import type { WikiEntry, WikiCategory } from '@shared/schema/wiki';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Loader2, PlusCircle, Search, ChevronRight, Edit, Trash2 } from "lucide-react";
+import ReactMarkdown from 'react-markdown';
 
 
 // Form schema for wiki entries
@@ -513,9 +514,11 @@ export default function WikiSection() {
                       </CardHeader>
                       <CardContent>
                         <div className="prose max-w-none">
-                          {entry.content.length > 200
-                            ? `${entry.content.substring(0, 200)}...`
-                            : entry.content}
+                          <ReactMarkdown>
+                            {entry.content.length > 200
+                              ? `${entry.content.substring(0, 200)}...`
+                              : entry.content}
+                          </ReactMarkdown>
                         </div>
                         <div className="text-xs text-gray-500 mt-4">
                           Last updated: {new Date(entry.updatedAt).toLocaleDateString()}
