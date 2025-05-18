@@ -25,10 +25,22 @@ router.post('/login', async (req, res) => {
   try {
     const { usernameOrEmail, password } = loginSchema.parse(req.body);
     
-    const result = await db?.query(
-      `SELECT * FROM users WHERE username = $1 OR email = $1`,
-      [usernameOrEmail]
-    );
+  const result = await db?.query(
+    `SELECT
+       id,
+       username,
+       email,
+       first_name AS "firstName",
+       last_name  AS "lastName",
+       job_title  AS "jobTitle",
+       avatarurl  AS "avatarUrl",
+       is_admin   AS "isAdmin",
+       isonline   AS "isOnline",
+       password
+     FROM users
+     WHERE username = $1 OR email = $1`,
+    [usernameOrEmail]
+  );
 
     const user = result?.rows[0];
     if (!user) {
