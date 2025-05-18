@@ -34,7 +34,7 @@ export function MessageList({ messages, myId }: MessageListProps) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="min-h-full flex flex-col justify-end space-y-3">
       {messages.map((m) => (
         <div
           key={m.id}
