@@ -307,6 +307,7 @@ export default function MessagesSection({ onStartCall }: Props) {
     ))
 )}
 </aside>
+      )}
 {contactsCollapsed && (
   <div className="hidden md:flex flex-col border-r border-border">
     <Button
