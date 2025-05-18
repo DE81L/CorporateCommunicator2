@@ -16,7 +16,7 @@ export async function createApp() {
   app.use(express.json());
 
   // HTTP logging middleware
-  app.use(pinoHttp({ logger }));
+  app.use(pinoHttp({ logger, autoLogging: false }));
 
   // debug middleware
   app.use((req, _res, next) => {

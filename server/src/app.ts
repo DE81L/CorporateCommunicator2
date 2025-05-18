@@ -31,7 +31,7 @@ export function createApp(): Express {
   app.set('session-middleware', sess as RequestHandler); 
 
   /* ───────── COMMON MIDDLEWARE ───────── */
-  app.use(pinoHttp({ logger: logger as any }));
+  app.use(pinoHttp({ logger: logger as any, autoLogging: false }));
   app.use(morgan('dev'));
   app.use(express.json());
   app.use(
