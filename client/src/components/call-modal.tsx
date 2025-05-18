@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MicOffIcon, VideoOffIcon, PhoneOffIcon, UserIcon } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
+import { useAuth } from "@/hooks/use-auth";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { useSettings } from "@/context/SettingsContext";
+import { useCallConnection } from "@/hooks/useCallConnection";
 
 export type TranslationKey =  "call.video" | "call.audio" | "call.in_progress" | "common.cancel";
 
@@ -35,6 +39,42 @@ export default function CallModal({
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const { t } = useTranslations();
+  const { user } = useAuth();
+  const { sendRaw, lastRawMessage } = useWebSocket();
+  const { audioInputId } = useSettings();
+  const [incomingSignal, setIncomingSignal] = useState<any>();
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const isInitiator = user && recipient ? user.id < recipient.id : false;
+  const { localStream, remoteStream } = useCallConnection(
+    isInitiator,
+    (signal) =>
+      sendRaw({ type: "p2p-signal", payload: { to: recipient.id, signal } }),
+    incomingSignal,
+    audioInputId
+  );
+
+  useEffect(() => {
+    if (
+      lastRawMessage?.type === "p2p-signal" &&
+      (lastRawMessage as any).payload.from === recipient.id
+    ) {
+      setIncomingSignal((lastRawMessage as any).payload.signal);
+    }
+  }, [lastRawMessage, recipient]);
+
+  useEffect(() => {
+    if (audioRef.current && remoteStream) {
+      audioRef.current.srcObject = remoteStream;
+      audioRef.current.play().catch(() => {});
+    }
+  }, [remoteStream]);
+
+  useEffect(() => {
+    if (localStream) {
+      localStream.getAudioTracks().forEach((t) => (t.enabled = !isMuted));
+    }
+  }, [isMuted, localStream]);
 
   // Start call timer when modal opens
   useEffect(() => {
@@ -134,6 +174,7 @@ export default function CallModal({
           <p className="text-primary-300 mt-6">
             {formatDuration(callDuration)}
           </p>
+          <audio ref={audioRef} className="hidden" />
         </div>
 
         {/* Video placeholder - in a real app this would connect to WebRTC */}
