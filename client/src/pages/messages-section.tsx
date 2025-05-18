@@ -113,6 +113,15 @@ export default function MessagesSection({ onStartCall }: Props) {
 
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
 
+  const pageSize = 50;
+  const maxDisplay = 250;
+  const [visibleCount, setVisibleCount] = useState(pageSize);
+  const messageWrapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setVisibleCount(pageSize);
+  }, [selectedUser]);
+
   useEffect(() => {
     if (user && selectedUser) {
       setLocalMessages(loadMessages(user.id, selectedUser.id));
@@ -120,7 +129,7 @@ export default function MessagesSection({ onStartCall }: Props) {
   }, [user, selectedUser]);
 
   useEffect(() => {
-    if (user && selectedUser) {
+    if (user && selectedUser && messages.length > 0) {
       saveMessages(user.id, selectedUser.id, messages);
     }
   }, [messages, user, selectedUser]);
@@ -190,9 +199,18 @@ export default function MessagesSection({ onStartCall }: Props) {
         (p2pMsg.senderId === user?.id &&
           p2pMsg.receiverId === selectedUser?.id))
     ) {
-      refetchHistory();
+      const stored: StoredMessage = {
+        id: Date.now(),
+        senderId: p2pMsg.senderId,
+        receiverId: p2pMsg.receiverId,
+        content: p2pMsg.content,
+        timestamp: new Date().toISOString(),
+        file: p2pMsg.file,
+      };
+      appendMessage(user!.id, selectedUser!.id, stored);
+      setLocalMessages((prev) => [...prev, stored]);
     }
-  }, [p2pMsg, selectedUser, user, refetchHistory]);
+  }, [p2pMsg, selectedUser, user]);
 
   /* ───── helpers ───── */
   const getInitials = (f: string, l: string) =>
@@ -208,21 +226,24 @@ export default function MessagesSection({ onStartCall }: Props) {
     (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
   );
 
-  // clear local messages once server history arrives
-  useEffect(() => {
-    if (messages.length > 0 && localMessages.length > 0) {
-      setLocalMessages([]);
-    }
-  }, [messages]);
+  const trimmedMessages = combinedMessages.slice(-maxDisplay);
+  const visibleMessages = trimmedMessages.slice(-visibleCount);
 
-  // periodic refresh while chat is open
   useEffect(() => {
-    if (!selectedUser) return;
-    const id = setInterval(() => {
-      void refetchHistory();
-    }, 500);
-    return () => clearInterval(id);
-  }, [selectedUser, refetchHistory]);
+    setVisibleCount((c) => Math.min(c, trimmedMessages.length));
+  }, [trimmedMessages.length]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (e.currentTarget.scrollTop < 50) {
+      setVisibleCount((c) =>
+        Math.min(c + pageSize, Math.min(trimmedMessages.length, maxDisplay)),
+      );
+    }
+  };
+
+
+
+
 
   /* ───── send ───── */
   const sendMessage = async (e: FormEvent) => {
@@ -415,11 +436,15 @@ export default function MessagesSection({ onStartCall }: Props) {
           </div>
         ) : (
           <>
-              <div className="flex-1 overflow-y-auto p-4">
+              <div
+                ref={messageWrapRef}
+                onScroll={handleScroll}
+                className="flex-1 overflow-y-auto p-4"
+              >
                 {isLoadingMessages ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <MessageList messages={combinedMessages} myId={user.id} />
+                  <MessageList messages={visibleMessages} myId={user.id} />
                 )}
               </div>
 
