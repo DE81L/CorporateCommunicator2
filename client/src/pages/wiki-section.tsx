@@ -19,6 +19,7 @@ import type { WikiEntry, WikiCategory } from '@shared/schema/wiki';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Loader2, PlusCircle, Search, ChevronRight, Edit, Trash2 } from "lucide-react";
+import { useLocation } from "wouter";
 import ReactMarkdown from 'react-markdown';
 
 
@@ -44,6 +45,7 @@ export default function WikiSection() {
   const { request } = apiClient;
   const { user } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("entries");
   const [searchQuery, setSearchQuery] = useState("");
   const [showEntryDialog, setShowEntryDialog] = useState(false);
@@ -483,12 +485,16 @@ export default function WikiSection() {
               <ScrollArea className="h-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredEntries.map((entry: WikiEntry) => (
-                    <Card key={entry.id} className="h-full">
+                    <Card
+                      key={entry.id}
+                      className="h-full cursor-pointer"
+                      onClick={() => setLocation(`/wiki/${entry.id}`)}
+                    >
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
                           <CardTitle className="text-xl">{entry.title}</CardTitle>
                           {user?.isAdmin && (
-                            <div className="flex space-x-1">
+                            <div className="flex space-x-1" onClick={e => e.stopPropagation()}>
                               <Button size="icon" variant="ghost" onClick={() => handleEditEntry(entry)}>
                                 <Edit className="h-4 w-4" />
                               </Button>
