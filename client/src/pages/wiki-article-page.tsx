@@ -60,7 +60,7 @@ export default function WikiArticlePage() {
         content: values.content,
         category: values.category,
         lastEditorId: user?.id,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(),
       }),
     onSuccess: () => {
       toast({ title: 'Success', description: 'Wiki entry updated' });

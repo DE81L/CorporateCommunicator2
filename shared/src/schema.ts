@@ -8,10 +8,12 @@ import { z } from "zod";
 export interface User {
   id: number;
   firstName: string;
-  lastName: string; 
+  lastName: string;
   username: string;
   email: string;
   avatarUrl?: string | null;
+  jobTitle?: string | null;
+  isonline?: number | boolean;
 }
 
 export interface Group {

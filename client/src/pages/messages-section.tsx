@@ -33,7 +33,7 @@ import { MessageList } from '@/components/message-list';
 export interface Message {
   id: number;
   senderId: number;
-  receiverId?: number;
+  receiverId: number;
   content: string;
   timestamp: string;
   file?: string;
