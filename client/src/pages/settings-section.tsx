@@ -1,6 +1,7 @@
 import { useAuth } from "../hooks/use-auth";
 import { useTranslations } from "@/hooks/use-translations";
 import { useSettings } from "@/context/SettingsContext";
+import { useAudioDevices } from "@/hooks/useAudioDevices";
 import {
   Select,
   SelectTrigger,
@@ -13,7 +14,8 @@ import { Label } from "@/components/ui/label";
 export default function SettingsSection() {
   const { user } = useAuth();
   const { t } = useTranslations();
-  const { language, setLanguage } = useSettings();
+  const { language, setLanguage, audioInputId, setAudioInputId } = useSettings();
+  const { devices } = useAudioDevices();
 
   if (!user) return null;
 
@@ -29,6 +31,26 @@ export default function SettingsSection() {
           <SelectContent>
             <SelectItem value="ru">Русский</SelectItem>
             <SelectItem value="en">English</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2 max-w-xs mt-4">
+        <Label htmlFor="audioInput">{t('settings.audioInput')}</Label>
+        <Select value={audioInputId ?? ''} onValueChange={setAudioInputId}>
+          <SelectTrigger id="audioInput">
+            <SelectValue placeholder={t('settings.audioInput')} />
+          </SelectTrigger>
+          <SelectContent>
+            {devices.length === 0 ? (
+              <SelectItem value="">{t('settings.noAudioDevices')}</SelectItem>
+            ) : (
+              devices.map((d) => (
+                <SelectItem key={d.deviceId} value={d.deviceId}>
+                  {d.label}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
       </div>

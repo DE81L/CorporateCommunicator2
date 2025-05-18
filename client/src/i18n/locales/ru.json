@@ -113,6 +113,8 @@
     "notifications": "Уведомления",
     "appearance": "Внешний вид",
     "language": "Язык",
+    "audioInput": "Микрофон",
+    "noAudioDevices": "Устройства не найдены",
     "darkMode": "Темный режим",
     "lightMode": "Светлый режим",
     "theme": "Тема",
