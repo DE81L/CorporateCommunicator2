@@ -5,6 +5,7 @@ import { useWebSocket } from "../hooks/useWebSocket";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Phone, Video, Paperclip, Send } from "lucide-react";
 import { formatDistance } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -128,7 +129,7 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
       {selectedUser ? (
         <>
           {/* Заголовок чата */}
-          <div className="bg-white border-b border-gray-200 p-4 flex items-center">
+          <div className="bg-white border-b border-gray-200 p-4 flex items-center dark:bg-gray-800 dark:border-gray-700">
             <div className="flex-1">
               <div className="flex items-center">
                 <Avatar className="h-10 w-10 mr-3">
@@ -220,16 +221,16 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
                         )}
                         <div
                           className={`${
-                            isOwnMessage
+                          isOwnMessage
                               ? "bg-primary-600 text-white rounded-lg rounded-br-none"
-                              : "bg-gray-100 rounded-lg rounded-bl-none"
+                              : "bg-gray-100 dark:bg-gray-800 rounded-lg rounded-bl-none"
                           } py-2 px-4 max-w-xs break-words`}
                         >
                           {message.content}
                         </div>
                       </div>
                       <span
-                        className={`text-xs text-gray-500 mt-1 ${isOwnMessage ? "" : "ml-10"}`}
+                        className={`text-xs text-gray-500 dark:text-gray-400 mt-1 ${isOwnMessage ? "" : "ml-10"}`}
                       >
                         {formatDistance(messageDate, new Date(), {
                           addSuffix: true,
@@ -242,14 +243,14 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
                 <div ref={messagesEndRef} />
               </>
             ) : (
-              <div className="flex justify-center items-center h-full text-gray-500">
+              <div className="flex justify-center items-center h-full text-gray-500 dark:text-gray-400">
                 Начните диалог с {selectedUser.firstName}
               </div>
             )}
           </div>
 
           {/* Поле ввода сообщения */}
-          <div className="bg-white border-t border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
             <form onSubmit={sendChatMessage} className="flex space-x-2">
               <Button
                 type="button"
@@ -278,7 +279,7 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
         </>
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center p-6">
-          <div className="h-24 w-24 bg-primary-100 rounded-full flex items-center justify-center mb-4">
+          <div className="h-24 w-24 bg-primary-100 dark:bg-primary-800 rounded-full flex items-center justify-center mb-4">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-12 w-12 text-primary-600"
@@ -297,49 +298,49 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
           <h2 className="text-xl font-medium mb-2">
             {t("messages.noChat" )}
           </h2>  
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-2xl">
             <h3 className="font-medium mb-3">{t("nav.users" )}</h3>
             {isLoadingUsers ? (
               <div className="flex justify-center items-center py-4">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : users && users.length > 0 ? (
-              <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {users
                   .filter((u) => u.id !== user?.id)
                   .map((u) => (
-                    <button
+                    <Card
                       key={u.id}
                       onClick={() => setSelectedUser(u)}
-                      className="w-full flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors text-left"
+                      className="cursor-pointer hover:shadow-md transition-shadow"
                     >
-                      <Avatar className="h-10 w-10 mr-3">
-                        {u.avatarUrl ? (
-                          <img
-                            src={u.avatarUrl}
-                            alt={`${u.firstName} ${u.lastName}`}
-                          />
-                        ) : (
-                          <AvatarFallback className="bg-primary-100 text-primary-600">
-                            {getInitials(u.firstName, u.lastName)}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">
-                          {u.firstName} {u.lastName}
+                      <CardContent className="p-4 flex items-center space-x-4">
+                        <Avatar className="h-10 w-10">
+                          {u.avatarUrl ? (
+                            <img
+                              src={u.avatarUrl}
+                              alt={`${u.firstName} ${u.lastName}`}
+                            />
+                          ) : (
+                            <AvatarFallback className="bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-400">
+                              {getInitials(u.firstName, u.lastName)}
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">
+                            {u.firstName} {u.lastName}
+                          </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {u.isOnline ? t("profile.online") : t("profile.offline")}
+                          </p>
                         </div>
-                        <p className="text-sm text-gray-500">
-                          {u.isOnline
-                            ? t("profile.online")
-                            : t("profile.offline")}
-                        </p>
-                      </div>
-                    </button>
-                  ))} 
+                      </CardContent>
+                    </Card>
+                  ))}
               </div>
             ) : (
-              <div className="text-center py-4 text-gray-500">
+              <div className="text-center py-4 text-gray-500 dark:text-gray-400">
                 {t("messages.noContacts" as any)}
               </div>
             )}
