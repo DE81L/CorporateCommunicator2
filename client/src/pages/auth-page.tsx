@@ -44,17 +44,21 @@ export default function AuthPage() {
       <div className="flex justify-end p-4">
         <LanguageSwitcher />
       </div>
-      <div className="flex justify-center bg-gray-50 py-4 border-b w-full">
-        <div className='w-full max-w-md'>
-          <Tabs 
-            defaultValue={activeTab} 
-            onValueChange={(v) => setActiveTab(v as "login" | "register")} 
+      <div className="flex justify-center bg-background py-4 border-b w-full">
+        <div className="w-full max-w-md">
+          <Tabs
+            defaultValue={activeTab}
+            onValueChange={(v) => setActiveTab(v as "login" | "register")}
             className="w-full"
           >
               <Card>
-              <TabsList className="space-x-4 bg-white w-full flex">
-                <TabsTrigger value="login" className='text-gray-500 hover:text-gray-900 bg-white data-[state=active]:bg-white data-[state=active]:text-black flex-1'>{t('auth.login')}</TabsTrigger>
-                <TabsTrigger value="register" className='text-gray-500 hover:text-gray-900 bg-white data-[state=active]:bg-white data-[state=active]:text-black flex-1'>{t('auth.register')}</TabsTrigger>
+              <TabsList className="space-x-4 bg-background w-full flex">
+                <TabsTrigger value="login" className="flex-1">
+                  {t('auth.login')}
+                </TabsTrigger>
+                <TabsTrigger value="register" className="flex-1">
+                  {t('auth.register')}
+                </TabsTrigger>
               </TabsList>
                 
               <CardContent className='p-0'>
