@@ -194,6 +194,15 @@ export default function MessagesSection({ onStartCall }: Props) {
     }
   }, [messages]);
 
+  // periodic refresh while chat is open
+  useEffect(() => {
+    if (!selectedUser) return;
+    const id = setInterval(() => {
+      void refetchHistory();
+    }, 500);
+    return () => clearInterval(id);
+  }, [selectedUser, refetchHistory]);
+
   /* ───── send ───── */
   const sendMessage = async (e: FormEvent) => {
     e.preventDefault();
@@ -235,7 +244,6 @@ export default function MessagesSection({ onStartCall }: Props) {
 
     setMsgInput('');
     refetchHistory();
-    scrollBottom();
   };
 
   /* ───── UI ───── */
