@@ -46,7 +46,11 @@ export default function Sidebar({
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
 
-  const displayName = `${(user.firstName || '').trim()} ${(user.lastName || '').trim()}`.trim() || user.username;
+  if (!user) return null;
+
+  const displayName =
+    `${(user.firstName || '').trim()} ${(user.lastName || '').trim()}`.trim() ||
+    user.username;
 
   const initials =
     (displayName.split(' ')[0]?.[0] || '') +
@@ -56,8 +60,6 @@ export default function Sidebar({
     await logout();
     setLocation("/auth");
   };
-
-  if (!user) return null;
 
   const handleNavItemClick = (id: SectionType) => {
     setActiveSection(id);
