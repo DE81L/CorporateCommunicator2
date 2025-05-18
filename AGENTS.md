@@ -4,5 +4,6 @@
 - **Tooling**: Use `pnpm` for installing dependencies and running scripts.
 - **Node version**: Node.js 20 or higher is required.
 - **Pull Requests**: Include a summary of changes and testing results when creating PRs.
+- **API**: The `/api/departments` endpoint should return a list of departments for the request modal.
 Feel free to add new things to the guidelines. This may be your nothes on the project.
 
