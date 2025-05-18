@@ -1,5 +1,5 @@
 import { getWikiEntries } from '../api/wiki';
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
 import { createApiClient } from "@/lib/api-client";
@@ -59,7 +59,24 @@ export default function WikiSection() {
   const [editingEntry, setEditingEntry] = useState<WikiEntry | null>(null);
   const [editingCategory, setEditingCategory] = useState<WikiCategory | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
-  const [breadcrumbs, setBreadcrumbs] = useState<WikiCategory[]>([]);
+  // Derived breadcrumbs for current category path
+  const breadcrumbs = useMemo(() => {
+    if (!activeCategoryId) {
+      return [] as WikiCategory[];
+    }
+
+    const crumbs: WikiCategory[] = [];
+    let currentCategoryId = activeCategoryId;
+
+    while (currentCategoryId) {
+      const category = categories.find((c) => c.id === currentCategoryId);
+      if (!category) break;
+      crumbs.unshift(category);
+      currentCategoryId = category.parentId ?? null;
+    }
+
+    return crumbs;
+  }, [activeCategoryId, categories]);
   const [viewEntry, setViewEntry] = useState<WikiEntry | null>(null);
 
   // Wiki entries query
@@ -343,36 +360,6 @@ export default function WikiSection() {
     return categories.filter(category => category.parentId === parentId);
   };
 
-  // Function to handle breadcrumb generation
-  useEffect(() => {
-    const generateBreadcrumbs = () => {
-      if (!activeCategoryId) {
-        setBreadcrumbs([]);
-        return;
-      }
-      
-      const crumbs: WikiCategory[] = [];
-      let currentCategoryId = activeCategoryId;
-      
-      while (currentCategoryId) {
-        const category = categories.find(c => c.id === currentCategoryId);
-        if (category) {
-          crumbs.unshift(category);
-          if (category.parentId !== null) {
-            currentCategoryId = category.parentId;
-          } else {
-            break;
-          }
-        } else {
-          break;
-        }
-      }
-      
-      setBreadcrumbs(crumbs);
-    };
-    
-    generateBreadcrumbs();
-  }, [activeCategoryId, categories]);
 
   // Handle entry form submission
   const onEntrySubmit = (data: WikiEntryFormValues) => {
@@ -621,6 +608,7 @@ export default function WikiSection() {
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>{viewEntry?.title}</DialogTitle>
+            <DialogDescription>View wiki article</DialogDescription>
           </DialogHeader>
           {viewEntry && (
             <MarkdownPreview content={viewEntry.content} className="prose max-w-none" />

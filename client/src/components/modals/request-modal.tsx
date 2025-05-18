@@ -1,8 +1,9 @@
 import {
   Dialog,
-  DialogContent, 
+  DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 interface RequestModalProps {
@@ -23,6 +24,7 @@ export default function RequestModal({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
+          <DialogDescription />
         </DialogHeader>
         {children}
       </DialogContent>

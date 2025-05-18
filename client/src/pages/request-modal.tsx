@@ -133,6 +133,7 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Новая заявка</DialogTitle>
+          <DialogDescription>Введите данные для создания заявки</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
