@@ -5,6 +5,7 @@ export interface MessageItem {
   senderId: number;
   content: string;
   timestamp: string;
+  file?: string;
 }
 
 interface MessageListProps {
@@ -37,13 +38,22 @@ export function MessageList({ messages, myId }: MessageListProps) {
       {messages.map((m) => (
         <div
           key={m.id}
-          className={`max-w-[80%] rounded-xl px-4 py-2 text-sm break-words ${
+          className={`max-w-[80%] rounded-xl px-4 py-2 text-sm break-words space-y-2 ${
             m.senderId === myId
               ? 'ml-auto bg-primary-100 text-primary-900 dark:bg-primary-700 dark:text-white'
               : 'mr-auto bg-gray-200 text-black dark:bg-gray-700 dark:text-white'
           }`}
         >
-          {m.content}
+          <div>{m.content}</div>
+          {m.file && (
+            m.file.startsWith('data:image') ? (
+              <img src={m.file} alt="attachment" className="max-w-xs rounded-md" />
+            ) : (
+              <a href={m.file} download className="underline text-blue-600 dark:text-blue-400">
+                Download file
+              </a>
+            )
+          )}
         </div>
       ))}
       <div ref={endRef} />

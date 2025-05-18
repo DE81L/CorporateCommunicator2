@@ -4,6 +4,7 @@ export interface StoredMessage {
   receiverId: number;
   content: string;
   timestamp: string;
+  file?: string;
   synced?: boolean;
 }
 
