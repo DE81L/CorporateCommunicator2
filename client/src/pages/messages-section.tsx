@@ -265,6 +265,7 @@ export default function MessagesSection({ onStartCall }: Props) {
 
     console.log('Sending message', msgInput);
 
+    const tempId = Date.now();
     if (p2pStatus === 'open') {
       sendP2P({
         senderId: user!.id,
@@ -272,23 +273,10 @@ export default function MessagesSection({ onStartCall }: Props) {
         content: msgInput,
         file: fileData || undefined,
       });
-    } else {
-      await apiClient.request<Message>('/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          receiverId: selectedUser.id,
-          content: msgInput,
-        }),
-      });
-      console.info('Message sent to server', {
-        from: user!.id,
-        to: selectedUser.id,
-      });
     }
 
-    const msg: StoredMessage = {
-      id: Date.now(),
+    const tempMsg: StoredMessage = {
+      id: tempId,
       senderId: user!.id,
       receiverId: selectedUser.id,
       content: msgInput,
@@ -296,8 +284,43 @@ export default function MessagesSection({ onStartCall }: Props) {
       synced: false,
       file: fileData || undefined,
     };
-    appendMessage(user!.id, selectedUser.id, msg);
-    setLocalMessages((prev) => [...prev, msg]);
+
+    appendMessage(user!.id, selectedUser.id, tempMsg);
+    setLocalMessages((prev) => [...prev, tempMsg]);
+
+    if (p2pStatus !== 'open') {
+      try {
+        const saved = await apiClient.request<Message>('/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            receiverId: selectedUser.id,
+            content: msgInput,
+          }),
+        });
+
+        console.info('Message sent to server', {
+          from: user!.id,
+          to: selectedUser.id,
+        });
+
+        // replace temporary message with saved one
+        const updated: StoredMessage = {
+          ...saved,
+          file: fileData || undefined,
+          synced: true,
+        };
+        setLocalMessages((prev) =>
+          prev.map((m) => (m.id === tempId ? updated : m))
+        );
+        const stored = loadMessages(user!.id, selectedUser.id).map((m) =>
+          m.id === tempId ? updated : m
+        );
+        saveMessages(user!.id, selectedUser.id, stored);
+      } catch (err) {
+        console.error('Failed to send message', err);
+      }
+    }
 
     setMsgInput('');
     setFileData(null);
