@@ -15,6 +15,9 @@ export function initWebSocket(
 ): void {
   wss = new WebSocketServer({ noServer: true, path: '/ws' }); // Убедись, что path: '/ws' соответствует VITE_WS_URL
   server.on('upgrade', (req: IncomingMessage, socket, head) => {
+    logger.debug(
+      `WS upgrade request from ${req.socket.remoteAddress ?? 'unknown'}`
+    );
     // Засейвить сессию в req.session
     sessionMiddleware(req as any, {} as any, () => {
       const userId = (req as any).session?.userId as number | undefined;
@@ -30,16 +33,18 @@ export function initWebSocket(
     });
   });
 
-   wss.on('connection', (ws: WebSocket, req: IncomingMessage) => { // req здесь IncomingMessage
+  wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
     // Нужно снова получить userId из сессии, если она была корректно привязана
     const userId = (req as any).session?.userId as number;
     if (!userId) {
-        logger.warn('WS connection без userId в сессии после upgrade.');
-        ws.close();
-        return;
+      logger.warn('WS connection без userId в сессии после upgrade.');
+      ws.close();
+      return;
     }
     connections.set(userId, ws);
-    logger.info(`🟢 WS connected: user ${userId}`);
+    logger.info(
+      `🟢 WS connected: user ${userId} from ${req.socket.remoteAddress ?? 'unknown'}`
+    );
 
     // Обработка входящих P2P-сигналов
     ws.on('message', (data) => {
@@ -68,9 +73,15 @@ export function initWebSocket(
       }
     });
 
-    ws.on('close', () => {
+    ws.on('close', (code, reason) => {
       connections.delete(userId);
-      logger.info(`🔴 WS disconnected: user ${userId}`);
+      logger.info(
+        `🔴 WS disconnected: user ${userId} code=${code} reason=${reason.toString()}`
+      );
+    });
+
+    ws.on('error', (err) => {
+      logger.error(`WS error for user ${userId}:`, err);
     });
   });
 
