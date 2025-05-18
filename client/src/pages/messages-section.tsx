@@ -51,9 +51,22 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
   });
 
   // Получение сообщений при выборе пользователя
-  const { data: messages, isLoading: isLoadingMessages } = useQuery<Message[]>({
+  const {
+    data: messages,
+    isLoading: isLoadingMessages,
+  } = useQuery<Message[]>({
     queryKey: ["/api/messages", selectedUser?.id],
     enabled: !!selectedUser,
+    onSuccess: (data) => {
+      console.log(
+        "Fetched messages for user",
+        selectedUser?.id,
+        data,
+      );
+    },
+    onError: (err) => {
+      console.error("Failed to fetch messages:", err);
+    },
   });
 
   // Прослушивание новых сообщений из WebSocket
@@ -81,11 +94,24 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Логирование полученных сообщений для отладки
+  useEffect(() => {
+    if (messages) {
+      console.log("Displaying messages for user", selectedUser?.id, messages);
+    }
+  }, [messages, selectedUser]);
+
   const sendChatMessage = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!messageInput.trim() || !selectedUser) return;
 
+    console.log(
+      "Sending message to",
+      selectedUser.id,
+      ":",
+      messageInput.trim(),
+    );
     sendMessage(messageInput.trim(), selectedUser.id);
     
 
