@@ -163,6 +163,11 @@
     "noGroups": "No groups found",
     "createGroup": "Create Group"
   },
+  "call": {
+    "video": "Video call",
+    "audio": "Audio call",
+    "in_progress": "in progress..."
+  },
   "requests": {
     "title": "Requests",
     "newRequest": "New Request",
