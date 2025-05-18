@@ -12,10 +12,19 @@ import {
   WifiIcon,
   WifiOffIcon,
   LucideIcon,
-  BookOpenIcon
+  BookOpenIcon,
+  LogOutIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { type SectionType } from "@/types/sections";
 
 interface SidebarProps {
@@ -33,7 +42,7 @@ export default function Sidebar({
   setIsOpen,
   connectionStatus,
 }: SidebarProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { t } = useTranslation();
 
   if (!user) return null;
@@ -151,23 +160,47 @@ export default function Sidebar({
           ))}
         </nav>
 
-        {/* User profile section - Could be added at the bottom */}
+        {/* User profile section */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-          <div className="flex items-center">
-
-            <div className="flex-shrink-0">
-              <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
-                {user.firstName.charAt(0)}
-                {user.lastName.charAt(0)}
-              </div>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium">
-                {user.firstName} {user.lastName}
-              </p>
-              <p className="text-xs text-gray-500 truncate">{user.email}</p>
-            </div>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex w-full items-center justify-start gap-3">
+                <Avatar className="h-10 w-10">
+                  {user.avatarUrl ? (
+                    <AvatarImage src={user.avatarUrl} alt={`${user.firstName} ${user.lastName}`} />
+                  ) : (
+                    <AvatarFallback className="bg-primary-100 text-primary-600">
+                      {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">
+                    {user.firstName} {user.lastName}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  <p className="text-xs mt-1">
+                    {connectionStatus === "online"
+                      ? "Online"
+                      : connectionStatus === "offline"
+                      ? "Offline"
+                      : connectionStatus.charAt(0).toUpperCase() + connectionStatus.slice(1)}
+                  </p>
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuItem onClick={() => handleNavItemClick("settings")}> 
+                <SettingsIcon className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => logout()}>
+                <LogOutIcon className="mr-2 h-4 w-4" />
+                <span>Sign Out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </aside>
     </>
