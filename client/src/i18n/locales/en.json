@@ -141,7 +141,8 @@
     "searchMessages": "Search messages",
     "attachFile": "Attach file",
     "readReceipts": "Read receipts",
-    "messageSent": "Message sent"
+    "messageSent": "Message sent",
+    "fileAttached": "File attached"
   },
   "groups": {
     "title": "Groups",
