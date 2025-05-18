@@ -8,19 +8,20 @@ import {
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import i18n from '../i18n';
+import { useSettings } from '@/context/SettingsContext';
 
 export function LanguageSwitcher() {
-  const currentLanguage = i18n.language;
+  const { language, setLanguage } = useSettings();
 
   const handleLanguageChange = async (value: string) => {
-    await i18n.changeLanguage(value);
+    await setLanguage(value);
   };
 
   return (
     <div className="flex flex-col space-y-2">
       <Label htmlFor="language-select">{i18n.t('settings.general')}</Label>
       <Select
-        value={currentLanguage}
+        value={language}
         onValueChange={handleLanguageChange}
       >
         <SelectTrigger id="language-select" className="w-[180px]">

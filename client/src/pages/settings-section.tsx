@@ -1,5 +1,6 @@
 import { useAuth } from "../hooks/use-auth";
 import { useTranslations } from "@/hooks/use-translations";
+import { useSettings } from "@/context/SettingsContext";
 import {
   Select,
   SelectTrigger,
@@ -11,7 +12,8 @@ import { Label } from "@/components/ui/label";
 
 export default function SettingsSection() {
   const { user } = useAuth();
-  const { t, currentLanguage, changeLanguage } = useTranslations();
+  const { t } = useTranslations();
+  const { language, setLanguage } = useSettings();
 
   if (!user) return null;
 
@@ -20,7 +22,7 @@ export default function SettingsSection() {
       <h2 className="text-xl font-semibold mb-4">{t('settings.title')}</h2>
       <div className="space-y-2 max-w-xs">
         <Label htmlFor="language">{t('settings.language')}</Label>
-        <Select value={currentLanguage} onValueChange={changeLanguage}>
+        <Select value={language} onValueChange={setLanguage}>
           <SelectTrigger id="language">
             <SelectValue placeholder={t('settings.language')} />
           </SelectTrigger>
