@@ -29,7 +29,7 @@ export function MessageList({ messages, myId }: MessageListProps) {
   }, [messages]);
 
   if (messages.length === 0) {
-    return <p className="text-gray-500 text-sm">No messages</p>;
+    return <p className="text-gray-500 dark:text-gray-400 text-sm">No messages</p>;
   }
 
   return (
@@ -38,7 +38,9 @@ export function MessageList({ messages, myId }: MessageListProps) {
         <div
           key={m.id}
           className={`max-w-[80%] rounded-lg px-4 py-2 text-sm break-words ${
-            m.senderId === myId ? 'ml-auto bg-primary-600 text-white' : 'mr-auto bg-gray-100'
+            m.senderId === myId
+              ? 'ml-auto bg-primary-600 text-white'
+              : 'mr-auto bg-gray-100 dark:bg-gray-800'
           }`}
         >
           {m.content}

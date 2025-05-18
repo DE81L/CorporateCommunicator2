@@ -44,6 +44,14 @@ ipcMain.on('ping', (event: IpcMainEvent, msg: any) => {
   event.reply('pong', '🤖');
 });
 
+ipcMain.handle('window-reload', () => {
+  mainWindow?.reload();
+});
+
+ipcMain.handle('open-devtools', () => {
+  mainWindow?.webContents.openDevTools();
+});
+
 app.whenReady().then(createMainWindow);
 
 // macOS / общего назначения обработчики
