@@ -50,12 +50,12 @@ router.post('/register', async (req: Request, res: Response) => {
 });
 
 router.post('/logout', (req: Request, res: Response) => {
+  const userId = (req.session as any).userId as number | undefined;
   req.session.destroy(err => {
     if (err) {
       logger.error('Logout error:', err);
       return res.status(500).json({ error: 'Logout failed' });
     }
-    const userId = (req.session as any).userId as number | undefined;
     if (userId) {
       db!.query('UPDATE users SET isonline = 0 WHERE id = $1', [userId])
         .then(() => broadcastStatus(userId, 0))
