@@ -23,6 +23,7 @@ export function appendMessage(myId: number, otherId: number, message: StoredMess
   const msgs = loadMessages(myId, otherId);
   msgs.push(message);
   saveMessages(myId, otherId, msgs);
+  console.info('Message stored in localStorage', { myId, otherId, message });
 }
 
 export function clearMessages(myId: number, otherId: number): void {

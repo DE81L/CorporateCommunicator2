@@ -5,7 +5,7 @@ import { useWebSocket } from '@/hooks/useWebSocket';
 import { usePeerConnection } from '@/hooks/usePeerConnection';
 import { createApiClient } from '@/lib/api-client';
 import { loadMessages, saveMessages, appendMessage } from '@/lib/message-storage';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Phone, Video, ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -181,6 +181,10 @@ export default function MessagesSection({ onStartCall }: Props) {
           content: msgInput,
         }),
       });
+      console.info('Message sent to server', {
+        from: user!.id,
+        to: selectedUser.id,
+      });
     }
 
     appendMessage(user!.id, selectedUser.id, {
@@ -202,7 +206,9 @@ export default function MessagesSection({ onStartCall }: Props) {
   return (
     <div className="flex h-full overflow-hidden">
       {/* contacts */}
-      <aside className="w-64 border-r overflow-y-auto">
+      <aside
+        className={`w-64 border-r overflow-y-auto ${selectedUser ? 'hidden md:block' : ''}`}
+      >
         {isLoadingUsers ? (
           <div className="p-4 flex justify-center">
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -248,6 +254,48 @@ export default function MessagesSection({ onStartCall }: Props) {
 
       {/* chat */}
       <section className="flex-1 flex flex-col">
+        {selectedUser && (
+          <div className="md:hidden flex items-center gap-2 p-3 border-b">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSelectedUser(null)}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <span className="flex-1 font-medium">
+              {selectedUser.firstName} {selectedUser.lastName}
+            </span>
+            {onStartCall && (
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() =>
+                    onStartCall('audio', {
+                      id: selectedUser.id,
+                      name: `${selectedUser.firstName} ${selectedUser.lastName}`,
+                    })
+                  }
+                >
+                  <Phone className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() =>
+                    onStartCall('video', {
+                      id: selectedUser.id,
+                      name: `${selectedUser.firstName} ${selectedUser.lastName}`,
+                    })
+                  }
+                >
+                  <Video className="h-5 w-5" />
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
         {!selectedUser ? (
           <div className="flex-1 flex items-center justify-center text-gray-400">
             {t('messages.noChat')}
@@ -261,7 +309,7 @@ export default function MessagesSection({ onStartCall }: Props) {
                 (messages.length > 0 ? messages : localMessages).map((m) => (
                   <div
                     key={m.id}
-                    className={`max-w-xs rounded px-3 py-2 text-sm ${
+                    className={`max-w-[80%] rounded-lg px-4 py-2 text-sm break-words ${
                       m.senderId === user.id
                         ? 'ml-auto bg-primary-600 text-white'
                         : 'mr-auto bg-gray-100'
