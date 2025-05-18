@@ -238,7 +238,11 @@ export default function MessagesSection({ onStartCall }: Props) {
   const visibleMessages = trimmedMessages.slice(-visibleCount);
 
   useEffect(() => {
-    setVisibleCount((c) => Math.min(c, trimmedMessages.length));
+    setVisibleCount((c) => {
+      const baseline = Math.min(pageSize, trimmedMessages.length);
+      const clamped = Math.min(c, trimmedMessages.length);
+      return Math.max(clamped, baseline);
+    });
   }, [trimmedMessages.length]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
