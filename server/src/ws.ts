@@ -100,14 +100,16 @@ export function broadcastStatus(
 export function sendChatMessage(
   receiverId: number,
   message: any
-): void {
+): boolean {
   const ws = connections.get(receiverId);
   if (ws?.readyState === WebSocket.OPEN) {
     logger.debug(
       `Sending chat message from ${message.senderId} to ${receiverId}`
     );
     ws.send(JSON.stringify({ type: 'chat', payload: message }));
-  } else {
-    logger.debug(`Chat recipient ${receiverId} offline, skipping WS send`);
+    return true;
   }
+
+  logger.debug(`Chat recipient ${receiverId} offline, skipping WS send`);
+  return false;
 }

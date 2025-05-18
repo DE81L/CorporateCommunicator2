@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { usePeerConnection } from '@/hooks/usePeerConnection';
 import { createApiClient } from '@/lib/api-client';
+import { loadMessages, saveMessages, appendMessage } from '@/lib/message-storage';
 import { Send, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -77,6 +78,20 @@ export default function MessagesSection({ onStartCall }: Props) {
         `/messages?chatWith=${selectedUser!.id}`,
       )) ?? [],
   });
+
+  const [localMessages, setLocalMessages] = useState<Message[]>([]);
+
+  useEffect(() => {
+    if (user && selectedUser) {
+      setLocalMessages(loadMessages(user.id, selectedUser.id));
+    }
+  }, [user, selectedUser]);
+
+  useEffect(() => {
+    if (user && selectedUser) {
+      saveMessages(user.id, selectedUser.id, messages);
+    }
+  }, [messages, user, selectedUser]);
 
   /* ─────────── P2P ─────────── */
   const isInitiator =
@@ -168,6 +183,14 @@ export default function MessagesSection({ onStartCall }: Props) {
       });
     }
 
+    appendMessage(user!.id, selectedUser.id, {
+      id: Date.now(),
+      senderId: user!.id,
+      receiverId: selectedUser.id,
+      content: msgInput,
+      timestamp: new Date().toISOString(),
+    });
+
     setMsgInput('');
     refetchHistory();
     scrollBottom();
@@ -235,7 +258,7 @@ export default function MessagesSection({ onStartCall }: Props) {
               {isLoadingMessages ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                messages.map((m) => (
+                (messages.length > 0 ? messages : localMessages).map((m) => (
                   <div
                     key={m.id}
                     className={`max-w-xs rounded px-3 py-2 text-sm ${
