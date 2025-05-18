@@ -14,13 +14,18 @@ interface MessageListProps {
 
 export function MessageList({ messages, myId }: MessageListProps) {
   const endRef = useRef<HTMLDivElement | null>(null);
+  const prevMessagesRef = useRef<string | null>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
-    console.log('Displaying messages', messages);
+    const serialized = JSON.stringify(messages);
+    if (prevMessagesRef.current !== serialized) {
+      console.log('Displaying messages', messages);
+      prevMessagesRef.current = serialized;
+    }
   }, [messages]);
 
   if (messages.length === 0) {
