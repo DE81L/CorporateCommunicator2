@@ -14,17 +14,18 @@ export function initWebSocket(
   sessionMiddleware: RequestHandler // Тип RequestHandler из express
 ): void {
   wss = new WebSocketServer({ noServer: true, path: '/ws' }); // Убедись, что path: '/ws' соответствует VITE_WS_URL
-  server.on('upgrade', (req: IncomingMessage, socket, head) => { // req здесь IncomingMessage, а не express.Request
+  server.on('upgrade', (req: IncomingMessage, socket, head) => {
     // Засейвить сессию в req.session
     sessionMiddleware(req as any, {} as any, () => {
-      const userId = (req as any).session?.userId as number | undefined; // Доступ к сессии
+      const userId = (req as any).session?.userId as number | undefined;
       if (!userId) {
         logger.warn('WS upgrade без аутентифицированной сессии — отклоняю');
         socket.destroy();
         return;
       }
+      logger.debug(`WS upgrade success for user ${userId}`);
       wss.handleUpgrade(req, socket, head, (ws) => {
-        wss.emit('connection', ws, req); // req здесь все еще IncomingMessage
+        wss.emit('connection', ws, req);
       });
     });
   });
@@ -42,18 +43,24 @@ export function initWebSocket(
 
     // Обработка входящих P2P-сигналов
     ws.on('message', (data) => {
+      logger.debug(`WS message from ${userId}: ${data}`);
       try {
         const msg = JSON.parse(data.toString());
         if (msg.type === 'p2p-signal') {
           const { to, signal } = msg.payload as { to: number; signal: any };
           const target = connections.get(to);
           if (target?.readyState === WebSocket.OPEN) {
+            logger.debug(
+              `Forwarding p2p-signal from ${userId} to ${to}`
+            );
             target.send(
               JSON.stringify({
                 type: 'p2p-signal',
                 payload: { from: userId, signal },
               })
             );
+          } else {
+            logger.debug(`Target ${to} not connected for p2p-signal`);
           }
         }
       } catch (err) {
@@ -96,6 +103,11 @@ export function sendChatMessage(
 ): void {
   const ws = connections.get(receiverId);
   if (ws?.readyState === WebSocket.OPEN) {
+    logger.debug(
+      `Sending chat message from ${message.senderId} to ${receiverId}`
+    );
     ws.send(JSON.stringify({ type: 'chat', payload: message }));
+  } else {
+    logger.debug(`Chat recipient ${receiverId} offline, skipping WS send`);
   }
 }

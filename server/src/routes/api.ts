@@ -191,14 +191,17 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
     const { receiverId, content } = req.body as { receiverId: number; content: string };
     const senderId = req.session.userId as number;
 
-    // Сохраняем в базу:
+    // Сохраняем в базу с текущим временем:
     await db!.query(
-      `INSERT INTO messages (sender_id, receiver_id, content) VALUES ($1, $2, $3)`,
+      `INSERT INTO messages (sender_id, receiver_id, content, timestamp) VALUES ($1, $2, $3, NOW())`,
       [senderId, receiverId, content]
     );
 
     // Если оба онлайн, пересылаем через WS:
     // Note: The sendChatMessage function needs to handle the logic of checking if the receiver is online.
+    logger.debug(
+      `Forwarding chat message from ${senderId} to ${receiverId} through WS`
+    );
     sendChatMessage(receiverId, { senderId, receiverId, content });
 
     res.json({ success: true });
