@@ -6,7 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Phone, Video, Paperclip, Send } from "lucide-react";
+import {
+  Loader2,
+  Phone,
+  Video,
+  Paperclip,
+  Send,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { formatDistance } from "date-fns";
 import { ru } from "date-fns/locale";
 import { queryClient } from "@/lib/queryClient";
@@ -41,6 +49,7 @@ interface MessagesProps {
 export default function MessagesSection({ onStartCall }: MessagesProps) {
   const { user } = useAuth();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [contactsCollapsed, setContactsCollapsed] = useState(false);
   const [messageInput, setMessageInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { sendMessage, lastMessage } = useWebSocket();
@@ -129,57 +138,79 @@ export default function MessagesSection({ onStartCall }: MessagesProps) {
       {selectedUser ? (
         <>
           {/* Заголовок чата */}
-          <div className="bg-white border-b border-gray-200 p-4 flex items-center dark:bg-gray-800 dark:border-gray-700">
-            <div className="flex-1">
-              <div className="flex items-center">
-                <Avatar className="h-10 w-10 mr-3">
-                  {selectedUser.avatarUrl ? (
-                    <img
-                      src={selectedUser.avatarUrl}
-                      alt={`${selectedUser.firstName} ${selectedUser.lastName}`}
-                    />
-                  ) : (
-                    <AvatarFallback className="bg-primary-100 text-primary-600">
-                      {getInitials(
-                        selectedUser.firstName,
-                        selectedUser.lastName,
-                      )}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <div>
-                  <h2 className="text-lg font-medium">
-                    {selectedUser.firstName} {selectedUser.lastName}
-                  </h2>
+          <div className="bg-white border-b border-gray-200 p-4 flex items-center justify-between dark:bg-gray-800 dark:border-gray-700">
+            {!contactsCollapsed && (
+              <div className="flex-1">
+                <div className="flex items-center">
+                  <Avatar className="h-10 w-10 mr-3">
+                    {selectedUser.avatarUrl ? (
+                      <img
+                        src={selectedUser.avatarUrl}
+                        alt={`${selectedUser.firstName} ${selectedUser.lastName}`}
+                      />
+                    ) : (
+                      <AvatarFallback className="bg-primary-100 text-primary-600">
+                        {getInitials(
+                          selectedUser.firstName,
+                          selectedUser.lastName,
+                        )}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div>
+                    <h2 className="text-lg font-medium">
+                      {selectedUser.firstName} {selectedUser.lastName}
+                    </h2>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
             <div className="flex items-center space-x-2">
+              {!contactsCollapsed && (
+                <>
+                  <Button
+                    onClick={() =>
+                      onStartCall("audio", {
+                        id: selectedUser.id,
+                        name: `${selectedUser.firstName} ${selectedUser.lastName}`,
+                      })
+                    }
+                    variant="ghost"
+                    size="icon"
+                    title={t("profile.call")}
+                  >
+                    <Phone className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      onStartCall("video", {
+                        id: selectedUser.id,
+                        name: `${selectedUser.firstName} ${selectedUser.lastName}`,
+                      })
+                    }
+                    variant="ghost"
+                    size="icon"
+                    title={t("profile.videoCall")}
+                  >
+                    <Video className="h-5 w-5" />
+                  </Button>
+                </>
+              )}
               <Button
-                onClick={() =>
-                  onStartCall("audio", {
-                    id: selectedUser.id,
-                    name: `${selectedUser.firstName} ${selectedUser.lastName}`,
-                  })
-                }
+                onClick={() => setContactsCollapsed(!contactsCollapsed)}
                 variant="ghost"
                 size="icon"
-                title={t("profile.call")}
-              >
-                <Phone className="h-5 w-5" />
-              </Button>
-              <Button
-                onClick={() =>
-                  onStartCall("video", {
-                    id: selectedUser.id,
-                    name: `${selectedUser.firstName} ${selectedUser.lastName}`,
-                  })
+                title={
+                  contactsCollapsed
+                    ? t("messages.showContacts" as any)
+                    : t("messages.hideContacts" as any)
                 }
-                variant="ghost"
-                size="icon"
-                title={t("profile.videoCall")}
               >
-                <Video className="h-5 w-5" />
+                {contactsCollapsed ? (
+                  <ChevronDown className="h-5 w-5" />
+                ) : (
+                  <ChevronUp className="h-5 w-5" />
+                )}
               </Button>
             </div>
           </div>

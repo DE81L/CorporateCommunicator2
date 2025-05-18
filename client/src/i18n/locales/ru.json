@@ -125,7 +125,9 @@
     "searchMessages": "Поиск сообщений",
     "attachFile": "Прикрепить файл",
     "readReceipts": "Отчеты о прочтении",
-    "messageSent": "Сообщение отправлено"
+    "messageSent": "Сообщение отправлено",
+    "hideContacts": "Скрыть контакты",
+    "showContacts": "Показать контакты"
   },
   "groups": {
     "title": "Группы",

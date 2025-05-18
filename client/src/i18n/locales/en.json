@@ -125,7 +125,9 @@
     "searchMessages": "Search messages",
     "attachFile": "Attach file",
     "readReceipts": "Read receipts",
-    "messageSent": "Message sent"
+    "messageSent": "Message sent",
+    "hideContacts": "Hide contacts",
+    "showContacts": "Show contacts"
   },
   "groups": {
     "title": "Groups",
