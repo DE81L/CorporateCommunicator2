@@ -74,10 +74,12 @@ export default function App() {
       <AuthProvider>
         <ChatProvider>
           <AppContent />
-          <div>
-            <h1>Server Status: {status}</h1>
-            <p>{message}</p>
-          </div>
+          {status !== 'ok' && (
+            <div>
+              <h1>Server Status: {status}</h1>
+              <p>{message}</p>
+            </div>
+          )}
         </ChatProvider>
       </AuthProvider>
     </QueryClientProvider>
