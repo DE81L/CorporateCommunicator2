@@ -17,7 +17,9 @@
     "search": "Поиск",
     "filter": "Фильтр",
     "sortBy": "Сортировать по",
-    "welcome": "Добро пожаловать"
+    "welcome": "Добро пожаловать",
+    "enabled": "Включено",
+    "disabled": "Отключено"
   },
   "auth": {
     "login": "Вход",
@@ -120,7 +122,18 @@
     "changesApplied": "Изменения успешно применены",
     "languageChanged": "Язык изменен",
     "languageChangeSuccess": "Язык приложения обновлён",
-    "languageChangeFailed": "Не удалось изменить язык"
+    "languageChangeFailed": "Не удалось изменить язык",
+    "system": "Системная",
+    "customizeAppearance": "Настройка внешнего вида приложения",
+    "changeLanguage": "Изменить язык приложения",
+    "manageAccount": "Управление учетной записью",
+    "accountSettings": "Настройки учетной записи",
+    "managePrivacy": "Управление параметрами конфиденциальности",
+    "privacySettings": "Настройки конфиденциальности",
+    "manageNotifications": "Управление уведомлениями",
+    "emailNotificationsDescription": "Получать обновления по электронной почте",
+    "pushNotificationsDescription": "Получать push-уведомления на устройстве",
+    "desktopNotificationsDescription": "Получать уведомления на рабочем столе"
   },
   "messages": {
     "title": "Сообщения",

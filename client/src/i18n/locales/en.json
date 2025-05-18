@@ -17,7 +17,9 @@
     "search": "Search",
     "filter": "Filter",
     "sortBy": "Sort by",
-    "welcome": "Welcome"
+    "welcome": "Welcome",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
   },
   "auth": {
     "login": "Login",
@@ -108,7 +110,18 @@
     "changesApplied": "Changes applied successfully",
     "languageChanged": "Language Changed",
     "languageChangeSuccess": "Application language has been updated",
-    "languageChangeFailed": "Failed to change language"
+    "languageChangeFailed": "Failed to change language",
+    "system": "System",
+    "customizeAppearance": "Customize the application's look and feel",
+    "changeLanguage": "Change the application language",
+    "manageAccount": "Manage your account settings",
+    "accountSettings": "Account settings",
+    "managePrivacy": "Manage your privacy preferences",
+    "privacySettings": "Privacy settings",
+    "manageNotifications": "Manage notification preferences",
+    "emailNotificationsDescription": "Receive updates via email",
+    "pushNotificationsDescription": "Receive push notifications on your device",
+    "desktopNotificationsDescription": "Receive notifications on your desktop"
   },
   "messages": {
     "noChat": "No chat",
