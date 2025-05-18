@@ -30,16 +30,19 @@ export function useWebSocket() {
     let cancelled = false
 
     const connect = () => {
+      console.debug('WS connect attempt', retries.current)
       setConnectionStatus('connecting')
       const ws = new WebSocket(WS_URL)
       wsRef.current = ws
 
       ws.addEventListener('open', () => {
+        console.info('WebSocket open')
         setConnectionStatus('open')
         retries.current = 0
       })
 
       ws.addEventListener('message', (evt) => {
+        console.debug('WS message', evt.data)
         try {
           setLastRawMessage(JSON.parse(evt.data))
         } catch (err) {
@@ -47,7 +50,8 @@ export function useWebSocket() {
         }
       })
 
-      ws.addEventListener('close', () => {
+      ws.addEventListener('close', (evt) => {
+        console.info('WebSocket closed', evt.code, evt.reason)
         setConnectionStatus('closed')
         if (!cancelled && retries.current < 5) {
           const backoff = Math.pow(2, retries.current) * 1000
