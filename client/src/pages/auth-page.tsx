@@ -40,18 +40,18 @@ export default function AuthPage() {
   if (user) return <Redirect to="/" />;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-primary-100 to-secondary-100 dark:from-primary-900 dark:to-gray-800">
       <div className="flex justify-end p-4">
         <LanguageSwitcher />
       </div>
-      <div className="flex justify-center bg-background py-4 border-b w-full">
+      <div className="flex justify-center bg-primary-50 dark:bg-primary-800/40 py-4 border-b w-full">
         <div className="w-full max-w-md">
           <Tabs
             defaultValue={activeTab}
             onValueChange={(v) => setActiveTab(v as "login" | "register")}
             className="w-full"
           >
-              <Card>
+              <Card className="bg-background/80 backdrop-blur">
               <TabsList className="space-x-4 bg-background w-full flex">
                 <TabsTrigger value="login" className="flex-1">
                   {t('auth.login')}
@@ -88,7 +88,7 @@ export default function AuthPage() {
       loginFn({ username: data.username, password: data.password });
 
     return (
-      <Card className='p-4'>
+      <Card className='p-4 bg-background/80 backdrop-blur'>
         <CardHeader>
           <CardTitle>{t('auth.loginTitle')}</CardTitle>
           <CardDescription>{t('auth.loginDescription')}</CardDescription>
@@ -173,7 +173,7 @@ export default function AuthPage() {
 
     return (
       <Form {...form}>
-        <Card className='p-4'>
+        <Card className='p-4 bg-background/80 backdrop-blur'>
         <CardHeader>
           <CardTitle>{t('auth.register')}</CardTitle>
           <CardDescription>{t('auth.registerDescription')}</CardDescription>
