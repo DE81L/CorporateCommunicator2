@@ -91,7 +91,7 @@ export default function Sidebar({
       {/* Sidebar */}
       <aside
         className={cn(
-          "w-64 bg-white border-r border-gray-200 z-30 transition-transform duration-200 ease-in-out",
+          "w-64 bg-background border-r border-border z-30 transition-transform duration-200 ease-in-out",
           "fixed left-0 top-0 bottom-0 md:relative md:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
@@ -105,7 +105,7 @@ export default function Sidebar({
         </div>
 
         {/* Connection status indicator */}
-        <div className="px-4 py-2 flex items-center text-xs border-b border-gray-100">
+        <div className="px-4 py-2 flex items-center text-xs border-b border-border">
           {connectionStatus === "online" ? (
             <div className="flex items-center text-green-600">
               <WifiIcon className="h-3 w-3 mr-1" />
@@ -136,9 +136,9 @@ export default function Sidebar({
               key={item.id}
               variant="ghost"
               className={cn(
-                "w-full justify-start text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+                "w-full justify-start text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-50",
                 activeSection === item.id &&
-                  "bg-primary-50 text-primary-600 hover:bg-primary-50 hover:text-primary-600",
+                  "bg-primary-50 text-primary-600 hover:bg-primary-50 hover:text-primary-600 dark:bg-primary-900/20 dark:text-primary-400 dark:hover:bg-primary-900/20 dark:hover:text-primary-400",
               )}
               onClick={() => handleNavItemClick(item.id)}
             >
@@ -154,7 +154,7 @@ export default function Sidebar({
           ))}
         </nav>
         {/* Profile dropdown section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex w-full items-center justify-start gap-3">
@@ -175,7 +175,7 @@ export default function Sidebar({
                 </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-white border" align="start">
+            <DropdownMenuContent className="w-56 bg-background border-border" align="start">
               <DropdownMenuLabel className="font-normal text-sm">
                 <p className="text-sm font-medium">{displayName}</p>
                 {user.jobTitle && (
