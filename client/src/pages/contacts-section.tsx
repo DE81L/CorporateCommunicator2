@@ -14,7 +14,6 @@ import {
   MessageSquare,
   Phone,
   Video,
-  Mail,
 } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 // Remove the line: const apiClient = createApiClient();
@@ -178,9 +177,6 @@ export default function ContactsSection({ onStartCall, onOpenChat }: ContactsPro
                     }
                   >
                     <Video className="h-5 w-5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="rounded-full" title="Email">
-                    <Mail className="h-5 w-5" />
                   </Button>
                 </div>
               </CardContent>
