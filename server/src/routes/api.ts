@@ -41,7 +41,7 @@ router.post('/login', async (req: Request, res: Response) => {
     );
     await db!.query('UPDATE users SET isonline = 1 WHERE id = $1', [user.id]);
     broadcastStatus(user.id, 1);
-    res.json(user);
+    res.json({ ...user, isOnline: 1 });
   } catch (err) {
     logger.error('Login error:', err);
     res.status(401).json({ error: 'Invalid credentials' });
@@ -64,7 +64,7 @@ router.post('/register', async (req: Request, res: Response) => {
     );
     await db!.query('UPDATE users SET isonline = 1 WHERE id = $1', [newUser.id]);
     broadcastStatus(newUser.id, 1);
-    res.status(201).json(newUser);
+    res.status(201).json({ ...newUser, isOnline: 1 });
   } catch (err) {
     logger.error('Register error:', err);
     res.status(400).json({ error: 'Invalid request' });
