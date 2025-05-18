@@ -253,7 +253,9 @@ export default function MessagesSection({ onStartCall }: Props) {
                 onClick={() => setSelectedUser(u)}
                 className={cn(
                   'm-2 cursor-pointer hover:shadow-md transition-shadow',
-                  selectedUser?.id === u.id ? 'bg-muted' : 'hover:bg-muted/50'
+                  selectedUser?.id === u.id
+                    ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400'
+                    : 'hover:bg-muted/50'
                 )}
                 role="button"
                 tabIndex={0}
