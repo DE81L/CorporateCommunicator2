@@ -1,6 +1,8 @@
 /// <reference path="../types/express-session.d.ts" />
 import 'express-session';
 import { Router, Request, Response } from 'express';
+import fs from 'fs';
+import path from 'path';
 import bcrypt from 'bcrypt';
 import { login, register } from '../lib/api/auth';
 import { db } from '../db'; // Уже есть
@@ -20,6 +22,7 @@ interface SyncMessage {
 }
 
 const syncStore = new Map<number, SyncMessage[]>();
+const fileStore = new Map<number, string>();
 
 const router = Router();
 router.use('/departments', isAuthenticated, departmentsRouter);
@@ -264,7 +267,11 @@ router.get(
         [userId, chatWith]
       );
 
-      res.json(history.rows);
+      const withFiles = history.rows.map((m) => ({
+        ...m,
+        file: fileStore.get(m.id) ?? null,
+      }));
+      res.json(withFiles);
     } catch (err) {
       logger.error('GET /messages error:', err);
       res.status(500).json({ error: 'Server error' });
@@ -280,26 +287,44 @@ router.get(
  */
 router.post('/messages', isAuthenticated, async (req: Request, res: Response) => {
   try {
-    const { receiverId, content } = req.body as { receiverId: number; content: string };
+    const { receiverId, content, file } = req.body as {
+      receiverId: number;
+      content: string;
+      file?: string;
+    };
     const senderId = req.session.userId as number;
 
-    // пытаемся отправить сразу через WS
-    const delivered = sendChatMessage(receiverId, { senderId, receiverId, content });
-
-    // сохраняем в БД с пометкой статуса и возвращаем созданную запись
-    const result = await db!.query(
+    const insert = await db!.query(
       `INSERT INTO messages (sender_id, receiver_id, content, timestamp, status)
-       VALUES ($1, $2, $3, NOW(), $4)
+       VALUES ($1, $2, $3, NOW(), 'pending')
        RETURNING id, sender_id AS "senderId", receiver_id AS "receiverId", content, timestamp, status`,
-      [senderId, receiverId, content, delivered ? 'delivered' : 'pending']
+      [senderId, receiverId, content]
     );
 
-    logger.info(
-      { senderId, receiverId, delivered },
-      'Message stored on server'
-    );
+    const message = insert.rows[0];
+    let filePath: string | undefined;
+    if (file) {
+      const uploadDir = path.join(process.cwd(), 'uploads');
+      fs.mkdirSync(uploadDir, { recursive: true });
+      const extMatch = /^data:(.*?);base64/.exec(file);
+      const ext = extMatch ? extMatch[1].split('/')[1] || 'bin' : 'bin';
+      const base64Data = file.replace(/^data:.*;base64,/, '');
+      const name = `${message.id}.${ext}`;
+      fs.writeFileSync(path.join(uploadDir, name), Buffer.from(base64Data, 'base64'));
+      filePath = `/uploads/${name}`;
+      fileStore.set(message.id, filePath);
+    }
 
-    res.json(result.rows[0]);
+    const delivered = sendChatMessage(receiverId, { ...message, file: filePath });
+
+    if (delivered) {
+      await db!.query('UPDATE messages SET status = \"delivered\" WHERE id = $1', [message.id]);
+      message.status = 'delivered';
+    }
+
+    logger.info({ senderId, receiverId, delivered }, 'Message stored on server');
+
+    res.json({ ...message, file: filePath });
   } catch (error) {
     logger.error({ err: error }, 'Error sending message');
     const detail = error instanceof Error ? error.message : String(error);

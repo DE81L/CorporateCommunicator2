@@ -13,6 +13,7 @@ import { logger } from './util/logger';
 import authRouter from './routes/auth';
 import apiRouter from './routes/api';
 import { isAuthenticated } from './middleware/auth';
+import path from 'path';
 
 export function createApp(): Express {
   const app: Express = express();
@@ -49,6 +50,8 @@ export function createApp(): Express {
     );
     next();
   });
+
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 /* ───────── PUBLIC END-POINTS ───────── */
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
