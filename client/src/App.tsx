@@ -11,10 +11,12 @@ import { ChatProvider } from "./context/ChatContext";
 import { WindowFrameHeader } from "./components/ui/window-frame";
 import { useElectron } from "./hooks/use-electron";
 import { useEffect, useState } from "react";
+import { useUserStatusHeartbeat } from "./hooks/useUserStatus";
 
 function AppContent() {
   const { user, isLoading } = useAuth();
   const { isElectron } = useElectron();
+  useUserStatusHeartbeat();
 
   useEffect(() => {
     if (isElectron) {
