@@ -50,11 +50,13 @@ export default function Sidebar({
 
   const displayName =
     `${(user.firstName || '').trim()} ${(user.lastName || '').trim()}`.trim() ||
-    user.username;
+    user.username ||
+    '';
 
+  const nameParts = displayName.split(' ');
   const initials =
-    (displayName.split(' ')[0]?.[0] || '') +
-    (displayName.split(' ')[1]?.[0] || '');
+    (nameParts[0]?.[0] || '') +
+    (nameParts[1]?.[0] || '');
 
   const handleLogout = async () => {
     await logout();
