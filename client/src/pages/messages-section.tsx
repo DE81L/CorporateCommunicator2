@@ -79,10 +79,14 @@ export default function MessagesSection({ onStartCall }: Props) {
   } = useQuery<Message[]>({
     queryKey: ['messages', selectedUser?.id],
     enabled: !!selectedUser,
-    queryFn: async () =>
-      (await apiClient.request<Message[]>(
-        `/messages?chatWith=${selectedUser!.id}`,
-      )) ?? [],
+    queryFn: async () => {
+      console.log('Fetching messages for', selectedUser?.id);
+      return (
+        (await apiClient.request<Message[]>(
+          `/messages?chatWith=${selectedUser!.id}`,
+        )) ?? []
+      );
+    },
   });
 
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
@@ -183,6 +187,8 @@ export default function MessagesSection({ onStartCall }: Props) {
   const sendMessage = async (e: FormEvent) => {
     e.preventDefault();
     if (!msgInput.trim() || !selectedUser) return;
+
+    console.log('Sending message', msgInput);
 
     if (p2pStatus === 'open') {
       sendP2P({
