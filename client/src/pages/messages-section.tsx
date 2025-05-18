@@ -15,6 +15,8 @@ import { Send, Loader2, Phone, Video, ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { MessageList } from '@/components/message-list';
 
@@ -231,10 +233,10 @@ export default function MessagesSection({ onStartCall }: Props) {
   if (!user) return null;
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex h-full overflow-hidden bg-background">
       {/* contacts */}
       <aside
-        className={`w-64 border-r overflow-y-auto ${selectedUser ? 'hidden md:block' : ''}`}
+        className={`w-64 border-r border-border bg-background overflow-y-auto ${selectedUser ? 'hidden md:block' : ''}`}
       >
         {isLoadingUsers ? (
           <div className="p-4 flex justify-center">
@@ -246,35 +248,41 @@ export default function MessagesSection({ onStartCall }: Props) {
           users
             .filter((u) => u.id !== user.id)
             .map((u) => (
-              <button
+              <Card
                 key={u.id}
                 onClick={() => setSelectedUser(u)}
-                className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 ${
-                  selectedUser?.id === u.id ? 'bg-gray-100' : ''
-                }`}
+                className={cn(
+                  'm-2 cursor-pointer hover:shadow-md transition-shadow',
+                  selectedUser?.id === u.id ? 'bg-muted' : 'hover:bg-muted/50'
+                )}
+                role="button"
+                tabIndex={0}
               >
-                <Avatar className="h-8 w-8">
-                  {u.avatarUrl ? (
-                    <img
-                      src={u.avatarUrl}
-                      alt=""
-                      className="h-8 w-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <AvatarFallback>
-                      {getInitials(u.firstName, u.lastName)}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <span className="flex-1 truncate">
-                  {u.firstName} {u.lastName}
-                </span>
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    u.isonline ? 'bg-green-500' : 'bg-gray-300'
-                  }`}
-                />
-              </button>
+                <CardContent className="p-3 flex items-center gap-3">
+                  <Avatar className="h-8 w-8">
+                    {u.avatarUrl ? (
+                      <img
+                        src={u.avatarUrl}
+                        alt=""
+                        className="h-8 w-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <AvatarFallback>
+                        {getInitials(u.firstName, u.lastName)}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <span className="flex-1 truncate">
+                    {u.firstName} {u.lastName}
+                  </span>
+                  <span
+                    className={cn(
+                      'h-2 w-2 rounded-full',
+                      u.isonline ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+                    )}
+                  />
+                </CardContent>
+              </Card>
             ))
         )}
       </aside>
@@ -282,7 +290,7 @@ export default function MessagesSection({ onStartCall }: Props) {
       {/* chat */}
       <section className="flex-1 flex flex-col">
         {selectedUser && (
-          <div className="md:hidden flex items-center gap-2 p-3 border-b">
+          <div className="md:hidden flex items-center gap-2 p-3 border-b border-border bg-background">
             <Button
               variant="ghost"
               size="icon"
@@ -324,7 +332,7 @@ export default function MessagesSection({ onStartCall }: Props) {
           </div>
         )}
         {!selectedUser ? (
-          <div className="flex-1 flex items-center justify-center text-gray-400">
+          <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500">
             {t('messages.noChat')}
           </div>
         ) : (
@@ -339,7 +347,7 @@ export default function MessagesSection({ onStartCall }: Props) {
 
             <form
               onSubmit={sendMessage}
-              className="border-t p-3 flex gap-3"
+              className="border-t border-border bg-background p-3 flex gap-3"
             >
               <Input
                 className="flex-1"
