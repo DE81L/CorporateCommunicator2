@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 import { useChat } from '@/context/ChatContext';
@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useTranslation } from 'react-i18next';
+import { MessageList } from '@/components/message-list';
 
 /* ──────────────── TYPES ──────────────── */
 
@@ -58,7 +59,6 @@ export default function MessagesSection({ onStartCall }: Props) {
   const { chatUser: selectedUser, setChatUser: setSelectedUser } = useChat();
   const [msgInput, setMsgInput] = useState('');
   const [incomingSignal, setIncomingSignal] = useState<any>(null);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   /* ─────────── contacts ─────────── */
   const {
@@ -162,10 +162,6 @@ export default function MessagesSection({ onStartCall }: Props) {
   const getInitials = (f: string, l: string) =>
     `${f[0]}${l[0]}`.toUpperCase();
 
-  const scrollBottom = () =>
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-
-  useEffect(scrollBottom, [messages, localMessages]);
 
   // combine server and local messages without duplicates
   const combinedMessages = Array.from(
@@ -327,29 +323,13 @@ export default function MessagesSection({ onStartCall }: Props) {
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {isLoadingMessages ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : messages.length === 0 && localMessages.length === 0 ? (
-                <p className="text-gray-500 text-sm">
-                  {t('messages.noMessages')}
-                </p>
-              ) : (
-                combinedMessages.map((m) => (
-                  <div
-                    key={m.id}
-                    className={`max-w-[80%] rounded-lg px-4 py-2 text-sm break-words ${
-                      m.senderId === user.id
-                        ? 'ml-auto bg-primary-600 text-white'
-                        : 'mr-auto bg-gray-100'
-                    }`}
-                  >
-                    {m.content}
-                  </div>
-                ))
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                {isLoadingMessages ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <MessageList messages={combinedMessages} myId={user.id} />
+                )}
+              </div>
 
             <form
               onSubmit={sendMessage}
