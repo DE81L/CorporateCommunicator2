@@ -296,6 +296,7 @@ export default function MessagesSection({ onStartCall }: Props) {
           body: JSON.stringify({
             receiverId: selectedUser.id,
             content: msgInput,
+            file: fileData,
           }),
         });
 
@@ -307,7 +308,7 @@ export default function MessagesSection({ onStartCall }: Props) {
         // replace temporary message with saved one
         const updated: StoredMessage = {
           ...saved,
-          file: fileData || undefined,
+          file: saved.file ?? fileData || undefined,
           synced: true,
         };
         setLocalMessages((prev) =>
