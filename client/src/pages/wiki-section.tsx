@@ -6,9 +6,9 @@ import { createApiClient } from "@/lib/api-client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -19,7 +19,9 @@ import type { WikiEntry, WikiCategory } from '@shared/schema/wiki';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Loader2, PlusCircle, Search, ChevronRight, Edit, Trash2 } from "lucide-react";
-import ReactMarkdown from 'react-markdown';
+import { MarkdownPreview } from '../components/wiki/markdown-preview';
+import { MarkdownEditor } from '../components/wiki/markdown-editor';
+import { getExcerpt } from '../lib/markdown';
 
 
 // Form schema for wiki entries
@@ -52,6 +54,7 @@ export default function WikiSection() {
   const [editingCategory, setEditingCategory] = useState<WikiCategory | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<WikiCategory[]>([]);
+  const [viewEntry, setViewEntry] = useState<WikiEntry | null>(null);
 
   // Wiki entries query
   const {
@@ -483,19 +486,31 @@ export default function WikiSection() {
               <ScrollArea className="h-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredEntries.map((entry: WikiEntry) => (
-                    <Card key={entry.id} className="h-full">
+                    <Card
+                      key={entry.id}
+                      className="h-full cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => setViewEntry(entry)}
+                    >
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
                           <CardTitle className="text-xl">{entry.title}</CardTitle>
                           {user?.isAdmin && (
                             <div className="flex space-x-1">
-                              <Button size="icon" variant="ghost" onClick={() => handleEditEntry(entry)}>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  handleEditEntry(entry);
+                                }}
+                              >
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                onClick={() => {
+                                onClick={e => {
+                                  e.stopPropagation();
                                   if (window.confirm('Are you sure you want to delete this entry?')) {
                                     deleteEntryMutation.mutate(entry.id);
                                   }
@@ -514,11 +529,7 @@ export default function WikiSection() {
                       </CardHeader>
                       <CardContent>
                         <div className="prose max-w-none">
-                          <ReactMarkdown>
-                            {entry.content.length > 200
-                              ? `${entry.content.substring(0, 200)}...`
-                              : entry.content}
-                          </ReactMarkdown>
+                          <MarkdownPreview content={getExcerpt(entry.content, 200)} />
                         </div>
                         <div className="text-xs text-gray-500 mt-4">
                           Last updated: {new Date(entry.updatedAt).toLocaleDateString()}
@@ -597,6 +608,18 @@ export default function WikiSection() {
         </div>
       </Tabs>
 
+      {/* Article Dialog */}
+      <Dialog open={!!viewEntry} onOpenChange={(open) => { if (!open) setViewEntry(null); }}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{viewEntry?.title}</DialogTitle>
+          </DialogHeader>
+          {viewEntry && (
+            <MarkdownPreview content={viewEntry.content} className="prose max-w-none" />
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Wiki Entry Dialog */}
       <Dialog open={showEntryDialog} onOpenChange={setShowEntryDialog}>
         <DialogContent className="max-w-3xl">
@@ -661,11 +684,7 @@ export default function WikiSection() {
                   <FormItem>
                     <FormLabel>Content</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Write the content here..."
-                        className="min-h-[250px]"
-                        {...field}
-                      />
+                      <MarkdownEditor value={field.value} onChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
