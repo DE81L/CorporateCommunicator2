@@ -504,7 +504,7 @@ export default function WikiSection() {
                           <CardTitle className="text-xl">{entry.title}</CardTitle>
                           {user?.isAdmin && (
                             <div className="flex space-x-1" onClick={e => e.stopPropagation()}>
-                              <Button size="icon" variant="ghost" onClick={() => handleEditEntry(entry)}>
+                              <Button
                                 size="icon"
                                 variant="ghost"
                                 onClick={e => {
