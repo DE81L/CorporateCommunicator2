@@ -1,6 +1,7 @@
 # Corporate Communicator 2
 
 This repository contains a monorepo setup for a corporate messaging application. It includes:
+- Please note that some features are still under active development. Audio and video calls are currently stubbed and do not establish real connections.
 
 - **client** – React frontend built with Vite
 - **server** – Express API backend
