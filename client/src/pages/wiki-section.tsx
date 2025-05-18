@@ -427,7 +427,7 @@ export default function WikiSection() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Employee Wiki</h1>
         <div className="flex space-x-2">
-          {user?.isAdmin === 1 && (
+          {user?.isAdmin && (
             <>          
               <Button onClick={handleAddEntry} size="sm">
                 <PlusCircle className="h-4 w-4 mr-2" />
