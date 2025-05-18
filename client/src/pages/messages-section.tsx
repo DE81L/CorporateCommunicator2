@@ -5,7 +5,12 @@ import { useChat } from '@/context/ChatContext';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { usePeerConnection } from '@/hooks/usePeerConnection';
 import { createApiClient } from '@/lib/api-client';
-import { loadMessages, saveMessages, appendMessage } from '@/lib/message-storage';
+import {
+  loadMessages,
+  saveMessages,
+  appendMessage,
+  StoredMessage,
+} from '@/lib/message-storage';
 import { Send, Loader2, Phone, Video, ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -200,12 +205,13 @@ export default function MessagesSection({ onStartCall }: Props) {
       });
     }
 
-    const msg = {
+    const msg: StoredMessage = {
       id: Date.now(),
       senderId: user!.id,
       receiverId: selectedUser.id,
       content: msgInput,
       timestamp: new Date().toISOString(),
+      synced: false,
     };
     appendMessage(user!.id, selectedUser.id, msg);
     setLocalMessages((prev) => [...prev, msg]);

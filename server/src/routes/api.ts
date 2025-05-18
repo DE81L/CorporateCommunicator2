@@ -10,6 +10,16 @@ import departmentsRouter from './departments';
 import wikiRouter from './wiki';
 import requestsRouter from './requests';
 
+interface SyncMessage {
+  id: number;
+  senderId: number;
+  receiverId: number;
+  content: string;
+  timestamp: string;
+}
+
+const syncStore = new Map<number, SyncMessage[]>();
+
 const router = Router();
 router.use('/departments', isAuthenticated, departmentsRouter);
 router.use('/requests', isAuthenticated, requestsRouter);
@@ -221,6 +231,21 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
     const detail = error instanceof Error ? error.message : String(error);
     res.status(500).json({ error: 'Server error', detail });
   }
+});
+
+router.post('/sync/messages', isAuthenticated, (req: Request, res: Response) => {
+  const userId = req.session.userId as number;
+  const msgs = Array.isArray(req.body) ? (req.body as SyncMessage[]) : [];
+  if (!syncStore.has(userId)) syncStore.set(userId, []);
+  syncStore.get(userId)!.push(...msgs);
+  res.json({ success: true });
+});
+
+router.get('/sync/messages', isAuthenticated, (req: Request, res: Response) => {
+  const userId = req.session.userId as number;
+  const msgs = syncStore.get(userId) ?? [];
+  syncStore.set(userId, []);
+  res.json(msgs);
 });
 
 export default router;
