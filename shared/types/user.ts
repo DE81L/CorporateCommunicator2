@@ -5,6 +5,8 @@ export interface UserWithoutPassword {
   firstName?: string;
   lastName?: string;
   phone?: string;
+  jobTitle?: string | null;
+  isonline?: number | boolean;
   isAdmin?: number;
 }
 

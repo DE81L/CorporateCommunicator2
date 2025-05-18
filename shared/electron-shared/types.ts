@@ -4,5 +4,7 @@ export interface UserWithoutPassword {
   lastName: string | null;
   email: string;
   phone?: string;
+  jobTitle?: string | null;
+  isonline?: number | boolean;
   isAdmin?: number;   // 0 | 1
 }
