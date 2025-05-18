@@ -32,9 +32,9 @@ export function useWebSocket(): WebSocketHook {
       return;
     }
 
-    const base = api?.isElectron
-      ? `ws://localhost:4269`
-      : `${window.location.origin.replace(/^http/, "ws")}`;
+    const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:4269";
+    const wsBase = apiUrl.replace(/^http/, "ws");
+    const base = wsBase;
 
     socket.current = new WebSocket(`${base}?userId=${user.id}`);
 
