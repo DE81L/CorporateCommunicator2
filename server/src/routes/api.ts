@@ -295,8 +295,8 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
     const senderId = req.session.userId as number;
 
     const insert = await db!.query(
-      `INSERT INTO messages (sender_id, receiver_id, content, timestamp, status)
-       VALUES ($1, $2, $3, NOW(), 'pending')
+      `INSERT INTO messages (sender_id, receiver_id, content, status)
+       VALUES ($1, $2, $3, 'pending')
        RETURNING id, sender_id AS "senderId", receiver_id AS "receiverId", content, timestamp, status`,
       [senderId, receiverId, content]
     );
