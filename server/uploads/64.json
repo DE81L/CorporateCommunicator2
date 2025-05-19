@@ -1,0 +1,27 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES2022",
+    "types": [
+      "vite/client",
+    ],
+    "outDir": "dist",
+    "skipLibCheck": true,
+    "moduleResolution": "Node",
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": [
+        "../shared/src/*"
+      ],
+      "@shared/types/*": [
+        "../shared/types/*"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "../shared/src",
+    "../shared/types"
+  ]
+}
