@@ -305,19 +305,21 @@ export default function MessagesSection({ onStartCall }: Props) {
           to: selectedUser.id,
         });
 
-        // replace temporary message with saved one
-        const updated: StoredMessage = {
-          ...saved,
-          file: (saved.file ?? fileData) || undefined,
-          synced: true,
-        };
-        setLocalMessages((prev) =>
-          prev.map((m) => (m.id === tempId ? updated : m))
-        );
-        const stored = loadMessages(user!.id, selectedUser.id).map((m) =>
-          m.id === tempId ? updated : m
-        );
-        saveMessages(user!.id, selectedUser.id, stored);
+        if (saved) {
+          // replace temporary message with saved one
+          const updated: StoredMessage = {
+            ...saved,
+            file: (saved.file ?? fileData) || undefined,
+            synced: true,
+          };
+          setLocalMessages((prev) =>
+            prev.map((m) => (m.id === tempId ? updated : m))
+          );
+          const stored = loadMessages(user!.id, selectedUser.id).map((m) =>
+            m.id === tempId ? updated : m
+          );
+          saveMessages(user!.id, selectedUser.id, stored);
+        }
       } catch (err) {
         console.error('Failed to send message', err);
       }

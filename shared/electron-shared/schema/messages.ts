@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, date } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, timestamp } from "drizzle-orm/pg-core";
 import { users } from "./users";
 
 /** chat / DM messages */
@@ -8,7 +8,7 @@ export const messages = pgTable("messages", {
   receiverId: integer("receiver_id"),
   groupId: integer("group_id"),
   content: text("content").notNull(),
-  timestamp: date("timestamp").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
   isRead: integer("is_read").default(0),
   status: text("status").default("pending").notNull()
 });
