@@ -299,6 +299,7 @@ export default function MessagesSection({ onStartCall }: Props) {
             file: fileData,
           }),
         });
+        if (!saved) return;
 
         console.info('Message sent to server', {
           from: user!.id,
