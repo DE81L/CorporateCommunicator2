@@ -1,4 +1,11 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslations } from "@/hooks/use-translations";
@@ -39,6 +46,9 @@ export default function CallRequestDialog({
           <DialogTitle>
             {incoming ? t("call.incoming") : t(`call.${callType}`)} {t("call.calling")}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {incoming ? t("call.incoming") : t("call.calling")}
+          </DialogDescription>
         </DialogHeader>
         <div className="p-6 text-center">
           <Avatar className="h-24 w-24 mx-auto bg-primary-700">

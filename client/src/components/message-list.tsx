@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import MessageStatusDot from './message-status-dot';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 export interface MessageItem {
   id: number;
@@ -83,6 +89,10 @@ export function MessageList({ messages, myId }: MessageListProps) {
       {viewerSrc && (
         <Dialog open={true} onOpenChange={() => setViewerSrc(null)}>
           <DialogContent className="p-0 bg-transparent border-none max-w-fit">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Image Preview</DialogTitle>
+              <DialogDescription>Preview of attached image</DialogDescription>
+            </DialogHeader>
             <img
               src={viewerSrc}
               alt="preview"
