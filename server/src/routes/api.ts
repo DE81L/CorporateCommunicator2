@@ -180,6 +180,31 @@ router.patch(
   }
 );
 
+// Для поддержки navigator.sendBeacon, который всегда посылает POST
+// на смену статуса, добавляем эквивалентный POST-эндпоинт
+router.post(
+  '/users/status',
+  isAuthenticated,
+  async (req: Request, res: Response) => {
+    try {
+      const { isonline } = req.body as { isonline: 0 | 1 };
+      const userId = req.session.userId as number;
+      if (isonline !== 0 && isonline !== 1) {
+        return res.status(400).json({ error: 'Invalid isonline value' });
+      }
+      await db!.query(
+        `UPDATE users SET isonline = $1 WHERE id = $2`,
+        [isonline, userId]
+      );
+      broadcastStatus(userId, isonline);
+      res.json({ success: true });
+    } catch (err) {
+      logger.error('Status update error:', err);
+      res.status(500).json({ error: 'Server error' });
+    }
+  }
+);
+
 /**
  * GET /api/contacts
  * Список всех пользователей (кроме себя) с полем isonline.
