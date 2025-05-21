@@ -9,7 +9,7 @@ export interface StoredMessage {
   /** transport used to send the message */
   transport?: 'server' | 'p2p';
   /** delivery status from server */
-  status?: 'pending' | 'delivered' | 'read';
+  status?: 'pending' | 'delivered' | 'read' | 'p2p';
   /** set when sending to server failed */
   error?: boolean;
 }

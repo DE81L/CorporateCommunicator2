@@ -2,7 +2,7 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/comp
 import { useTranslation } from 'react-i18next';
 
 export interface MessageStatusProps {
-  status?: 'pending' | 'delivered' | 'read';
+  status?: 'pending' | 'delivered' | 'read' | 'p2p';
   transport?: 'server' | 'p2p';
   synced?: boolean;
   error?: boolean;
