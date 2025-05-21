@@ -23,7 +23,8 @@ router.post('/login', async (req: Request, res: Response) => {
       );
       await db!.query('UPDATE users SET isonline = 1 WHERE id = $1', [user.id]);
       broadcastStatus(user.id, 1);
-      res.json({ id: user.id, isOnline: 1 });
+      // Возвращаем все данные пользователя, включая флаг админа
+      res.json({ ...user, isOnline: 1 });
     } catch (error) {
       logger.error('Login error:', error);
       res.status(401).json({ message: (error as Error).message });
@@ -71,8 +72,27 @@ router.get('/user', async (req, res) => {
   if (!userId) {
     return res.status(401).json({ error: 'Not authenticated' });
   }
-  // ... get user data
-  res.json({ id: userId });
+  try {
+    const result = await db!.query(
+      `SELECT
+         id,
+         username,
+         email,
+         first_name AS "firstName",
+         last_name  AS "lastName",
+         job_title  AS "jobTitle",
+         avatarurl  AS "avatarUrl",
+         is_admin   AS "isAdmin",
+         isonline   AS "isOnline"
+       FROM users
+       WHERE id = $1`,
+      [userId]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    logger.error('Get current user error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 export default router;
