@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, RefreshCw } from "lucide-react";
 import RequestModal from "./request-modal";
-import { getRequests } from "@/api/requests";
+import { getRequests, acceptRequest } from "@/api/requests";
 
 export interface Request {
   id: number;
@@ -36,6 +36,11 @@ export default function RequestsSection() {
     setLoading(true);
     setData(await getRequests());
     setLoading(false);
+  };
+
+  const handleAccept = async (id: number) => {
+    await acceptRequest(id);
+    load();
   };
 
   useEffect(() => { load(); }, []);
@@ -74,6 +79,16 @@ export default function RequestsSection() {
     { accessorKey: "cabinet", header: "Кабинет" },
     { accessorKey: "deadline", header: "Дедлайн" },
     { accessorKey: "grade", header: "Оценка" },
+    {
+      id: "actions",
+      header: "Действия",
+      cell: ({ row }) =>
+        row.original.status === "новая" ? (
+          <Button size="sm" onClick={() => handleAccept(row.original.id)}>
+            Принять
+          </Button>
+        ) : null,
+    },
   ];
 
   return (
