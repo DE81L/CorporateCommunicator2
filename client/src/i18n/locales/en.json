@@ -146,7 +146,15 @@
     "attachFile": "Attach file",
     "readReceipts": "Read receipts",
     "messageSent": "Message sent",
-    "fileAttached": "File attached"
+    "fileAttached": "File attached",
+    "status": {
+      "pending": "Pending",
+      "synced": "Sent to server",
+      "p2p": "Sent via P2P",
+      "error": "Error",
+      "delivered": "Delivered",
+      "read": "Read"
+    }
   },
   "groups": {
     "title": "Groups",

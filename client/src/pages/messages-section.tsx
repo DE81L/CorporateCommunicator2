@@ -38,6 +38,10 @@ export interface Message {
   receiverId: number;
   content: string;
   timestamp: string;
+  status?: 'pending' | 'delivered' | 'read';
+  transport?: 'server' | 'p2p';
+  synced?: boolean;
+  error?: boolean;
   file?: string;
 }
 
@@ -133,7 +137,14 @@ export default function MessagesSection({ onStartCall }: Props) {
       setLocalMessages((prev) => {
         const merged = Array.from(
           new Map(
-            [...prev, ...messages].map((m) => [m.id, m])
+            [
+              ...prev,
+              ...messages.map((m) => ({
+                ...m,
+                synced: true,
+                transport: 'server' as const,
+              })),
+            ].map((m) => [m.id, m])
           ).values()
         );
         saveMessages(user.id, selectedUser.id, merged);
@@ -214,6 +225,9 @@ export default function MessagesSection({ onStartCall }: Props) {
         content: p2pMsg.content,
         timestamp: new Date().toISOString(),
         file: p2pMsg.file,
+        transport: 'p2p',
+        status: 'delivered',
+        synced: true,
       };
       appendMessage(user!.id, selectedUser!.id, stored);
       setLocalMessages((prev) => [...prev, stored]);
@@ -266,7 +280,8 @@ export default function MessagesSection({ onStartCall }: Props) {
     console.log('Sending message', msgInput);
 
     const tempId = Date.now();
-    if (p2pStatus === 'open') {
+    const viaP2P = p2pStatus === 'open';
+    if (viaP2P) {
       sendP2P({
         senderId: user!.id,
         receiverId: selectedUser.id,
@@ -281,7 +296,9 @@ export default function MessagesSection({ onStartCall }: Props) {
       receiverId: selectedUser.id,
       content: msgInput,
       timestamp: new Date().toISOString(),
-      synced: false,
+      synced: viaP2P ? true : false,
+      transport: viaP2P ? 'p2p' : 'server',
+      status: viaP2P ? 'delivered' : 'pending',
       file: fileData || undefined,
     };
 
@@ -299,6 +316,7 @@ export default function MessagesSection({ onStartCall }: Props) {
             file: fileData,
           }),
         });
+        if (!saved) return;
 
         console.info('Message sent to server', {
           from: user!.id,
@@ -311,6 +329,9 @@ export default function MessagesSection({ onStartCall }: Props) {
             ...saved,
             file: (saved.file ?? fileData) || undefined,
             synced: true,
+            transport: 'server',
+            status: saved.status,
+            error: false,
           };
           setLocalMessages((prev) =>
             prev.map((m) => (m.id === tempId ? updated : m))
@@ -322,6 +343,9 @@ export default function MessagesSection({ onStartCall }: Props) {
         }
       } catch (err) {
         console.error('Failed to send message', err);
+        setLocalMessages((prev) =>
+          prev.map((m) => (m.id === tempId ? { ...m, error: true } : m))
+        );
       }
     }
 
