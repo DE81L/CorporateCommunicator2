@@ -12,7 +12,7 @@ router.get(['/', '/entries'], async (_req, res) => {
 });
 
 // GET /api/wiki/:id and /api/wiki/entries/:id
-router.get(['/entries/:id', '/:id'], async (req, res) => {
+router.get(['/entries/:id', '/:id(\\d+)'], async (req, res) => {
   const entryId = +req.params.id;
   const { rows } = await db!.query('SELECT * FROM wiki_entries WHERE id = $1', [entryId]);
   if (rows.length === 0) {
@@ -33,7 +33,7 @@ router.post(['/', '/entries'], async (req, res) => {
 });
 
 // PUT /api/wiki/:id and /api/wiki/entries/:id
-router.put(['/entries/:id', '/:id'], async (req, res) => {
+router.put(['/entries/:id', '/:id(\\d+)'], async (req, res) => {
   const entryId = +req.params.id;
   const { title, content, categoryId } = req.body;
   const editorId = req.session.userId;
@@ -48,7 +48,7 @@ router.put(['/entries/:id', '/:id'], async (req, res) => {
 });
 
 // DELETE /api/wiki/:id and /api/wiki/entries/:id
-router.delete(['/entries/:id', '/:id'], async (req, res) => {
+router.delete(['/entries/:id', '/:id(\\d+)'], async (req, res) => {
   const entryId = +req.params.id;
   const { rows } = await db!.query('DELETE FROM wiki_entries WHERE id = $1 RETURNING *', [entryId]);
   if (rows.length === 0) {
