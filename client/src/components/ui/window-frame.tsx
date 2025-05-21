@@ -44,7 +44,7 @@ export const WindowFrame = () => {
   );
 };
 
-export const WindowFrameHeader = ({ title = 'Корпоративный Мессенджер' }: { title?: string }) => (
+export const WindowFrameHeader = ({ title = 'Nexus' }: { title?: string }) => (
   <div className="fixed top-0 left-0 right-0 z-50 bg-white/60 backdrop-blur h-9 flex items-center justify-between px-4 select-none">
     <span className="text-sm font-medium truncate">{title}</span>
     <WindowFrame/>

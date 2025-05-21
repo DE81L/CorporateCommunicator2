@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MarkdownPreview } from './markdown-preview';
@@ -11,12 +12,13 @@ interface MarkdownEditorProps {
 
 export function MarkdownEditor({ value, onChange, className }: MarkdownEditorProps) {
   const [tab, setTab] = useState('write');
+  const { t } = useTranslation();
 
   return (
     <Tabs value={tab} onValueChange={setTab} className={className}>
       <TabsList>
-        <TabsTrigger value="write">Write</TabsTrigger>
-        <TabsTrigger value="preview">Preview</TabsTrigger>
+        <TabsTrigger value="write">{t('common.write', 'Write')}</TabsTrigger>
+        <TabsTrigger value="preview">{t('common.preview', 'Preview')}</TabsTrigger>
       </TabsList>
       <TabsContent value="write">
         <Textarea

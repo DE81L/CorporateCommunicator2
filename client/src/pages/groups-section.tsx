@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -45,6 +46,7 @@ type CreateGroupFormValues = z.infer<typeof createGroupSchema>;
 export function GroupsSection({ groupId }: GroupsSectionProps) {
   const apiClient = createApiClient();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
   //Fetch groups
   const {
@@ -218,10 +220,10 @@ export function GroupsSection({ groupId }: GroupsSectionProps) {
                     {createGroupMutation.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating...
+                        {t('auth.pleaseWait')}
                       </>
                     ) : (
-                      "Create Group"
+                      t('groups.createGroup')
                     )}
                   </Button>
                 </DialogFooter>
@@ -237,7 +239,7 @@ export function GroupsSection({ groupId }: GroupsSectionProps) {
         </div>
       ) : groupsError ? (
         <div className="text-center py-10 text-red-500">
-          Error loading groups. Please try again.
+          {t('groups.errorLoading', 'Error loading groups. Please try again.')}
         </div>
       ) : groups && groups.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -291,7 +293,7 @@ export function GroupsSection({ groupId }: GroupsSectionProps) {
                     </Avatar>
                   </div>
                   <Button variant="link" className="text-primary p-0 h-auto">
-                    View
+                    {t('common.view')}
                   </Button>
                   <Button
                     variant="link"
@@ -303,14 +305,14 @@ export function GroupsSection({ groupId }: GroupsSectionProps) {
                       })
                     }
                   >
-                    Update
+                    {t('common.edit')}
                   </Button>
                   <Button
                     variant="destructive"
                     className="p-0 h-auto"
                     onClick={() => deleteGroup(group.id)}
                   >
-                    Delete
+                    {t('common.delete')}
                   </Button>
                 </div>
               </CardContent>
@@ -322,16 +324,14 @@ export function GroupsSection({ groupId }: GroupsSectionProps) {
           <div className="h-20 w-20 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <Users className="h-10 w-10 text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium mb-2">No Groups Found</h3>
-          <p className="text-gray-500 mb-6">
-            Create your first group to start collaborating with your team.
-          </p>
+          <h3 className="text-lg font-medium mb-2">{t('groups.noGroups')}</h3>
+          <p className="text-gray-500 mb-6">{t('groups.addFirst')}</p>
           <Button
             onClick={() => setIsCreateGroupDialogOpen(true)}
             className="flex items-center mx-auto"
           >
             <Plus className="mr-2 h-4 w-4" />
-            Create Group
+            {t('groups.createGroup')}
           </Button>
         </div>
       )}

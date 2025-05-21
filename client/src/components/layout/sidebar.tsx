@@ -109,22 +109,22 @@ export default function Sidebar({
           {connectionStatus === "online" ? (
             <div className="flex items-center text-green-600">
               <WifiIcon className="h-3 w-3 mr-1" />
-              <span>Connected</span>
+              <span>{t("connection.connected")}</span>
             </div>
           ) : connectionStatus === "offline" ? (
             <div className="flex items-center text-blue-600">
               <WifiOffIcon className="h-3 w-3 mr-1" />
-              <span>Offline Mode</span>
+              <span>{t("connection.offlineMode")}</span>
             </div>
           ) : connectionStatus === "connecting" ? (
             <div className="flex items-center text-yellow-600">
               <WifiIcon className="h-3 w-3 mr-1 animate-pulse" />
-              <span>Connecting...</span>
+              <span>{t("connection.connecting")}</span>
             </div>
           ) : (
             <div className="flex items-center text-red-600">
               <WifiOffIcon className="h-3 w-3 mr-1" />
-              <span>Disconnected</span>
+              <span>{t("connection.disconnected")}</span>
             </div>
           )}
         </div>
@@ -170,7 +170,7 @@ export default function Sidebar({
                     {user.email || user.username}
                   </p>
                   <p className="text-xs mt-1">
-                    {user.isOnline ? 'Online' : 'Offline'}
+                    {user.isOnline ? t('profile.online') : t('profile.offline')}
                   </p>
                 </div>
               </Button>
@@ -185,7 +185,7 @@ export default function Sidebar({
                   {user.email || user.username}
                 </p>
                 <p className="text-xs mt-1">
-                  {user.isOnline ? 'Online' : 'Offline'}
+                  {user.isOnline ? t('profile.online') : t('profile.offline')}
                 </p>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />

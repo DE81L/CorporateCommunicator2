@@ -19,7 +19,10 @@
     "sortBy": "Sort by",
     "welcome": "Welcome",
     "enabled": "Enabled",
-    "disabled": "Disabled"
+    "disabled": "Disabled",
+    "write": "Write",
+    "preview": "Preview",
+    "view": "View"
   },
   "auth": {
     "login": "Login",
@@ -148,6 +151,9 @@
     "readReceipts": "Read receipts",
     "messageSent": "Message sent",
     "fileAttached": "File attached",
+    "downloadFile": "Download file",
+    "imagePreview": "Image Preview",
+    "imagePreviewDescription": "Preview of attached image",
     "status": {
       "pending": "Pending",
       "synced": "Sent to server",
@@ -174,7 +180,9 @@
     "groupType": "Group Type",
     "searchGroups": "Search groups",
     "noGroups": "No groups found",
-    "createGroup": "Create Group"
+    "createGroup": "Create Group",
+    "addFirst": "Create your first group to start collaborating with your team.",
+    "errorLoading": "Error loading groups. Please try again."
   },
   "call": {
     "video": "Video call",
@@ -271,7 +279,19 @@
     "searchAnnouncements": "Search announcements",
     "important": "Important",
     "pinned": "Pinned",
-    "createAnnouncement": "Create Announcement"
+    "createAnnouncement": "Create Announcement",
+    "addFirst": "Create your first announcement to communicate with your company.",
+    "errorLoading": "Error loading announcements. Please try again."
+  },
+  "contacts": {
+    "title": "Contacts",
+    "addContact": "Add Contact",
+    "searchPlaceholder": "Search contacts...",
+    "errorLoading": "Error loading contacts. Please try again.",
+    "noResults": "No results found",
+    "noMatch": "No contacts match your search term",
+    "noContacts": "No Contacts Found",
+    "addFirst": "Add your first contact to get started"
   },
   "errors": {
     "required": "Required field",
@@ -288,6 +308,12 @@
     "forbidden": "Access forbidden",
     "languageChangeFailed": "Language Change Failed",
     "tryAgainLater": "Please try again later"
+  },
+  "connection": {
+    "connected": "Connected",
+    "offlineMode": "Offline Mode",
+    "connecting": "Connecting...",
+    "disconnected": "Disconnected"
   },
   "sidebar": {
     "nav": {
