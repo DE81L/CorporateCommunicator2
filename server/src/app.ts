@@ -34,8 +34,8 @@ export function createApp(): Express {
   /* ───────── COMMON MIDDLEWARE ───────── */
   app.use(pinoHttp({ logger: logger as any, autoLogging: false }));
   app.use(morgan('dev'));
-  // Increase JSON body size limit to handle batched messages
-  app.use(express.json({ limit: '5mb' }));
+  // Increase JSON body size limit to handle batched messages and large file uploads
+  app.use(express.json({ limit: '50mb' }));
   app.use(
     cors({
       origin: ['http://localhost:5173', 'app://.*'],
