@@ -10,6 +10,13 @@
     --foreground: 222.2 84% 4.9%;
     --border: 214.3 31.8% 91.4%;
     --muted-foreground: 215.4 16.3% 46.9%;
+    /* Sidebar default colors */
+    --sidebar: var(--background);
+    --sidebar-foreground: var(--foreground);
+    --sidebar-border: var(--border);
+    --sidebar-accent: var(--foreground);
+    --sidebar-accent-foreground: var(--background);
+    --sidebar-ring: var(--foreground);
   }
 
   .dark {
@@ -17,6 +24,12 @@
     --foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
+    --sidebar: var(--background);
+    --sidebar-foreground: var(--foreground);
+    --sidebar-border: var(--border);
+    --sidebar-accent: var(--foreground);
+    --sidebar-accent-foreground: var(--background);
+    --sidebar-ring: var(--foreground);
   }
 
   * {
