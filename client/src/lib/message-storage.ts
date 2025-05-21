@@ -53,6 +53,21 @@ export function markMessagesSynced(myId: number, otherId: number, ids: number[])
   saveMessages(myId, otherId, msgs);
 }
 
+export function markMessagesRead(myId: number, otherId: number): void {
+  const msgs = loadMessages(myId, otherId).map((m) =>
+    m.senderId === otherId && m.status !== 'read'
+      ? ({ ...m, status: 'read' as const })
+      : m,
+  );
+  saveMessages(myId, otherId, msgs);
+}
+
+export function countUnreadMessages(myId: number, otherId: number): number {
+  return loadMessages(myId, otherId).filter(
+    (m) => m.senderId === otherId && m.status !== 'read',
+  ).length;
+}
+
 export function clearMessages(myId: number, otherId: number): void {
   localStorage.removeItem(key(myId, otherId));
 }

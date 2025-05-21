@@ -42,7 +42,7 @@ export function MessageStatusDot({ status, transport, synced, error }: MessageSt
         <TooltipTrigger asChild>
           <span className={`inline-block w-2 h-2 rounded-full ${color}`} />
         </TooltipTrigger>
-        <TooltipContent className="space-y-1">
+        <TooltipContent className="space-y-1 bg-background">
           <div>{t(`messages.status.${key}`)}</div>
           <div className="flex flex-col space-y-1 mt-1">
             {legend.map(({ color, key }) => (
