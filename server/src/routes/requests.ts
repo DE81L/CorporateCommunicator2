@@ -46,6 +46,23 @@ router.post('/', async (req, res) => {
   }
 });
 
+// PATCH /api/requests/:id/accept – взять заявку в работу
+router.patch('/:id/accept', async (req, res) => {
+  const requestId = +req.params.id;
+  const userId = req.session.userId;
+
+  try {
+    const { rows } = await db!.query(
+      "UPDATE requests SET status = 'в работе', who_accepted = $1, taken_at = NOW() WHERE id = $2 RETURNING *",
+      [userId, requestId]
+    );
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('Failed to accept request:', err);
+    res.status(500).json({ error: 'Failed to accept request' });
+  }
+});
+
 // PATCH /api/requests/:id/complete – пометить заявку выполненной (добавить отзыв, оценку)
 router.patch('/:id/complete', async (req, res) => {
   const requestId = +req.params.id;

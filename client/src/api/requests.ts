@@ -14,6 +14,18 @@ export async function getRequests(): Promise<Request[]> {
   return res.json();
 }
 
+// Mark request as taken by current user
+export async function acceptRequest(requestId: number) {
+  const res = await fetch(`${BASE}/api/requests/${requestId}/accept`, {
+    method: 'PATCH',
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    throw new Error(`PATCH /api/requests/${requestId}/accept failed: ${res.status}`);
+  }
+  return res.json();
+}
+
 // Handy helper you can use elsewhere if you want to mark a request “done”.
 export async function completeRequest(
   requestId: number,
