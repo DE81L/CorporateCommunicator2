@@ -42,8 +42,12 @@ export function useUserStatusHeartbeat() {
     }, 10_000);
 
     const setOffline = () => {
+      const envBase = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      const base = envBase.endsWith('/api')
+        ? envBase
+        : `${envBase.replace(/\/+$/, '')}/api`;
       navigator.sendBeacon(
-        `${import.meta.env.VITE_API_URL}/api/users/status`,
+        `${base}/users/status`,
         JSON.stringify({ isonline: 0 })
       );
       queryClient.setQueryData(['/api/user'], (prev: any) =>
