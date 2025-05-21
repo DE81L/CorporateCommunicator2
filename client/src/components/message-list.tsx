@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import MessageStatusDot from './message-status-dot';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export interface MessageItem {
   id: number;
@@ -21,6 +22,7 @@ interface MessageListProps {
 export function MessageList({ messages, myId }: MessageListProps) {
   const endRef = useRef<HTMLDivElement | null>(null);
   const prevMessagesRef = useRef<string | null>(null);
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -38,6 +40,9 @@ export function MessageList({ messages, myId }: MessageListProps) {
     return <p className="text-gray-500 dark:text-gray-400 text-sm">No messages</p>;
   }
 
+  const isImage = (file: string) =>
+    file.startsWith('data:image') || /\.(png|jpe?g|gif|bmp|webp|svg)$/i.test(file);
+
   return (
     <div className="min-h-full flex flex-col space-y-3">
       {messages.map((m) => (
@@ -51,8 +56,13 @@ export function MessageList({ messages, myId }: MessageListProps) {
         >
           <div>{m.content}</div>
           {m.file && (
-            m.file.startsWith('data:image') ? (
-              <img src={m.file} alt="attachment" className="max-w-xs rounded-md" />
+            isImage(m.file) ? (
+              <img
+                src={m.file}
+                alt="attachment"
+                className="max-w-xs rounded-md cursor-pointer"
+                onClick={() => setViewerSrc(m.file!)}
+              />
             ) : (
               <a href={m.file} download className="underline text-blue-600 dark:text-blue-400">
                 Download file
@@ -70,6 +80,17 @@ export function MessageList({ messages, myId }: MessageListProps) {
         </div>
       ))}
       <div ref={endRef} />
+      {viewerSrc && (
+        <Dialog open={true} onOpenChange={() => setViewerSrc(null)}>
+          <DialogContent className="p-0 bg-transparent border-none max-w-fit">
+            <img
+              src={viewerSrc}
+              alt="preview"
+              className="max-w-screen max-h-screen object-contain"
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
