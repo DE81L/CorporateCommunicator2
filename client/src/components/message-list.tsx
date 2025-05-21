@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 
 export interface MessageItem {
   id: number;
@@ -21,7 +20,6 @@ interface MessageListProps {
 export function MessageList({ messages, myId }: MessageListProps) {
   const endRef = useRef<HTMLDivElement | null>(null);
   const prevMessagesRef = useRef<string | null>(null);
-  const { t } = useTranslation();
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -42,17 +40,13 @@ export function MessageList({ messages, myId }: MessageListProps) {
   return (
     <div className="min-h-full flex flex-col space-y-3">
       {messages.map((m) => {
-        const statusText = m.error
-          ? t('messages.status.error')
+        const statusColor = m.error || !m.synced || m.status === 'pending'
+          ? 'bg-red-500'
           : m.transport === 'p2p'
-          ? t('messages.status.p2p')
-          : !m.synced
-          ? t('messages.status.pending')
+          ? 'bg-blue-500'
           : m.status === 'read'
-          ? t('messages.status.read')
-          : m.status === 'delivered'
-          ? t('messages.status.delivered')
-          : t('messages.status.synced');
+          ? 'bg-green-500'
+          : 'bg-gray-400';
 
         return (
           <div
@@ -73,7 +67,9 @@ export function MessageList({ messages, myId }: MessageListProps) {
                 </a>
               )
             )}
-            <div className="text-[0.70rem] text-gray-500 text-right">{statusText}</div>
+            <div className="flex justify-end">
+              <span className={`inline-block w-2 h-2 rounded-full ${statusColor}`} />
+            </div>
           </div>
         );
       })}
