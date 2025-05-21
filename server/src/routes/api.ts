@@ -13,6 +13,7 @@ import { sendEmailNotification } from '../util/email';
 import departmentsRouter from './departments';
 import wikiRouter from './wiki';
 import requestsRouter from './requests';
+import adminRouter from './admin';
 
 interface SyncMessage {
   id: number;
@@ -29,6 +30,7 @@ const router = Router();
 router.use('/departments', isAuthenticated, departmentsRouter);
 router.use('/requests', isAuthenticated, requestsRouter);
 router.use('/wiki', isAuthenticated, wikiRouter);
+router.use('/admin', isAuthenticated, adminRouter);
 /**
  * POST /api/login
  * Логин пользователя.
