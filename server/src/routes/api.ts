@@ -11,6 +11,7 @@ import { isAuthenticated } from '../middleware/auth'; // Уже есть
 import { broadcastStatus, sendChatMessage } from '../ws'; // Уже есть
 import { sendEmailNotification } from '../util/email';
 import departmentsRouter from './departments';
+import jobsRouter from './jobs';
 import wikiRouter from './wiki';
 import requestsRouter from './requests';
 
@@ -27,6 +28,7 @@ const fileStore = new Map<number, string>();
 
 const router = Router();
 router.use('/departments', isAuthenticated, departmentsRouter);
+router.use('/jobs', isAuthenticated, jobsRouter);
 router.use('/requests', isAuthenticated, requestsRouter);
 router.use('/wiki', isAuthenticated, wikiRouter);
 /**
@@ -90,6 +92,7 @@ router.get('/user', isAuthenticated, async (req: Request, res: Response) => {
          email,
          first_name AS "firstName",
          last_name  AS "lastName",
+         job_id     AS "jobId",
          job_title  AS "jobTitle",
          avatarurl  AS "avatarUrl",
          is_admin   AS "isAdmin",
@@ -153,6 +156,31 @@ router.post(
 );
 
 /**
+ * PATCH /api/user/job
+ * Update current user's job position.
+ * Body: { jobId: number | null }
+ */
+router.patch('/user/job', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { jobId } = req.body as { jobId: number | null };
+    const userId = req.session.userId as number;
+    let title: string | null = null;
+    if (jobId) {
+      const { rows } = await db!.query<{ name: string }>(
+        'SELECT name FROM jobs WHERE id = $1',
+        [jobId]
+      );
+      title = rows[0]?.name ?? null;
+    }
+    await db!.query('UPDATE users SET job_id = $1, job_title = $2 WHERE id = $3', [jobId, title, userId]);
+    res.json({ success: true, jobId, jobTitle: title });
+  } catch (err) {
+    logger.error('Update job error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+/**
  * PATCH /api/users/status
  * Обновление online/offline статуса пользователя.
  * Тело: { isonline: 0|1 }
@@ -198,6 +226,8 @@ router.get(
         email: string;
         firstName: string;
         lastName: string;
+        jobId: number | null;
+        jobTitle: string | null;
         isonline: boolean;
       }>(
         `SELECT
@@ -206,6 +236,8 @@ router.get(
            email,
            first_name AS "firstName",
            last_name  AS "lastName",
+           job_id     AS "jobId",
+           job_title  AS "jobTitle",
            isonline
          FROM users
          WHERE id <> $1;`,

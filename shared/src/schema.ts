@@ -12,6 +12,7 @@ export interface User {
   username: string;
   email: string;
   avatarUrl?: string | null;
+  jobId?: number | null;
   jobTitle?: string | null;
   isonline?: number | boolean;
 }

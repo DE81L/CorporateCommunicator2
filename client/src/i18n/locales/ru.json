@@ -102,6 +102,7 @@
     "location": "Местоположение",
     "department": "Отдел",
     "position": "Должность",
+    "selectPosition": "Выберите должность",
     "currentPassword": "Текущий пароль",
     "newPassword": "Новый пароль"
   },

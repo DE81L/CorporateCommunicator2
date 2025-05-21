@@ -4,6 +4,7 @@ exports.departments = exports.insertUserSchema = exports.users = void 0;
 const pg_core_1 = require("drizzle-orm/pg-core");
 const zod_1 = require("zod");
 const departments_1 = require("./departments");
+const jobs_1 = require("./jobs");
 Object.defineProperty(exports, "departments", { enumerable: true, get: function () { return departments_1.departments; } });
 exports.users = (0, pg_core_1.pgTable)("users", {
     id: (0, pg_core_1.serial)("id").primaryKey(),
@@ -15,6 +16,7 @@ exports.users = (0, pg_core_1.pgTable)("users", {
     isOnline: (0, pg_core_1.integer)("isonline").default(0),
     avatarUrl: (0, pg_core_1.text)("avatarurl"),
     departmentId: (0, pg_core_1.integer)('department_id').references(() => departments_1.departments.id),
+    jobId: (0, pg_core_1.integer)('job_id').references(() => jobs_1.jobs.id),
     jobTitle: (0, pg_core_1.text)('job_title'),
     language: (0, pg_core_1.text)('language').default('en'),
     isAdmin: (0, pg_core_1.boolean)('is_admin').default(false).notNull(),

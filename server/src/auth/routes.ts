@@ -32,6 +32,7 @@ router.post('/login', async (req, res) => {
        email,
        first_name AS "firstName",
        last_name  AS "lastName",
+       job_id     AS "jobId",
        job_title  AS "jobTitle",
        avatarurl  AS "avatarUrl",
        is_admin   AS "isAdmin",

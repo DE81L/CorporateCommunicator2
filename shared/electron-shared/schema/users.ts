@@ -1,6 +1,7 @@
 import { pgTable, text, serial, integer, boolean } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { departments } from './departments';
+import { jobs } from './jobs';
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -12,6 +13,7 @@ export const users = pgTable("users", {
   isOnline: integer("isonline").default(0),
   avatarUrl: text("avatarurl"),
   departmentId: integer('department_id').references(() => departments.id),
+  jobId: integer('job_id').references(() => jobs.id),
   jobTitle: text('job_title'),
   language: text('language').default('en'),
   isAdmin: boolean('is_admin').default(false).notNull(),
