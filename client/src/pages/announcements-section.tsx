@@ -1,5 +1,6 @@
 import { createApiClient } from "@/lib/api-client";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
@@ -33,6 +34,7 @@ type CreateAnnouncementFormValues = z.infer<typeof createAnnouncementSchema>;
 export default function AnnouncementsSection() {
   const { toast } = useToast();
   const { } = useAuth();
+  const { t } = useTranslation();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
   const apiClient = createApiClient();
 
@@ -104,20 +106,18 @@ export default function AnnouncementsSection() {
   return (
     <div className="flex-1 overflow-auto p-6">
       <div className="mb-6 flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Announcements</h2>
+        <h2 className="text-xl font-semibold">{t('sidebar.nav.announcements')}</h2>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="flex items-center">
               <Plus className="mr-2 h-4 w-4" />
-              New Announcement
+              {t('announcements.newAnnouncement')}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create Announcement</DialogTitle>
-              <DialogDescription>
-                Post a new company-wide announcement
-              </DialogDescription>
+              <DialogTitle>{t('announcements.newAnnouncement')}</DialogTitle>
+              <DialogDescription>{t('announcements.editAnnouncement')}</DialogDescription>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -178,7 +178,7 @@ export default function AnnouncementsSection() {
         </div>
       ) : announcementsError ? (
         <div className="text-center py-10 text-red-500">
-          Error loading announcements: {announcementsError.message}. Please try again.
+          {t('announcements.errorLoading')}
         </div>
       ) : announcements.length > 0 ? (
         <div className="space-y-4">
@@ -206,14 +206,14 @@ export default function AnnouncementsSection() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
             </svg>
           </div>
-          <h3 className="text-lg font-medium mb-2">No Announcements</h3>
-          <p className="text-gray-500 mb-6">Create your first announcement to communicate with your company.</p>
+          <h3 className="text-lg font-medium mb-2">{t('announcements.noAnnouncements')}</h3>
+          <p className="text-gray-500 mb-6">{t('announcements.addFirst')}</p>
           <Button
             onClick={() => setIsCreateDialogOpen(true)}
             className="flex items-center mx-auto"
           >
             <Plus className="mr-2 h-4 w-4" />
-            Create Announcement
+            {t('announcements.createAnnouncement')}
           </Button>
         </div>
       )}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
 import { useChat } from "../context/ChatContext";
@@ -29,6 +30,7 @@ interface ContactsProps {
 export default function ContactsSection({ onStartCall, onOpenChat }: ContactsProps) {
   const { user } = useAuth();
   const { setChatUser } = useChat();
+  const { t } = useTranslation();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -78,20 +80,20 @@ export default function ContactsSection({ onStartCall, onOpenChat }: ContactsPro
   return (
     <div className="flex-1 overflow-auto p-6">
       <div className="mb-6 flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Contacts</h2>
+        <h2 className="text-xl font-semibold">{t('contacts.title')}</h2>
         <div className="flex space-x-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-              placeholder="Search contacts..."
+              placeholder={t('contacts.searchPlaceholder')}
               className="pl-8"
             />
           </div>
           <Button className="flex items-center">
             <Plus className="mr-2 h-4 w-4" />
-            Add Contact
+            {t('contacts.addContact')}
           </Button>
         </div>
       </div>
@@ -102,7 +104,7 @@ export default function ContactsSection({ onStartCall, onOpenChat }: ContactsPro
         </div>
       ) : error ? (
         <div className="text-center py-10 text-red-500">
-          Error loading contacts. Please try again.
+          {t('contacts.errorLoading')}
         </div>
       ) : filteredUsers && filteredUsers.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -190,9 +192,9 @@ export default function ContactsSection({ onStartCall, onOpenChat }: ContactsPro
               <div className="h-20 w-20 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <Search className="h-10 w-10 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium mb-2">No results found</h3>
+              <h3 className="text-lg font-medium mb-2">{t('contacts.noResults')}</h3>
               <p className="text-gray-500">
-                No contacts match your search term "{searchQuery}"
+                {t('contacts.noMatch')} "{searchQuery}"
               </p>
             </>
           ) : (
@@ -213,13 +215,13 @@ export default function ContactsSection({ onStartCall, onOpenChat }: ContactsPro
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium mb-2">No Contacts Found</h3>
+              <h3 className="text-lg font-medium mb-2">{t('contacts.noContacts')}</h3>
               <p className="text-gray-500 mb-6">
-                Add your first contact to get started
+                {t('contacts.addFirst')}
               </p>
               <Button className="flex items-center mx-auto">
                 <Plus className="mr-2 h-4 w-4" />
-                Add Contact
+                {t('contacts.addContact')}
               </Button>
             </>
           )}
