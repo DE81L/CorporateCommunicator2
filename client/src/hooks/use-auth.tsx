@@ -26,6 +26,7 @@ export interface UserWithoutPassword {
   email: string | null;
   firstName: string | null;
   lastName: string | null;
+  jobId?: number | null;
   jobTitle?: string | null;
   isAdmin?: number;
   isOnline: boolean | number;

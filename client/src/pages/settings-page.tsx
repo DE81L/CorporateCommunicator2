@@ -30,18 +30,46 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bell, Moon, Sun, Globe, User, Lock, Settings as SettingsIcon, ArrowLeft } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { useAuth } from '@/hooks/use-auth';
 
 const SettingsPage: React.FC = () => {
   const { t } = useTranslations();
   const { theme, setTheme, language, setLanguage } = useSettings();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
   const [emailNotifications, setEmailNotifications] = React.useState(true);
   const [pushNotifications, setPushNotifications] = React.useState(true);
   const [desktopNotifications, setDesktopNotifications] = React.useState(true);
+
+  const { data: jobs = [] } = useQuery<{ id: number; name: string }[]>({
+    queryKey: ['/api/jobs'],
+    queryFn: async () => (await fetch('/api/jobs', { credentials: 'include' }).then(r => r.json())) as { id: number; name: string }[],
+  });
+
+  const updateJob = useMutation({
+    mutationFn: async (jobId: number | null) => {
+      await fetch('/api/user/job', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ jobId }),
+      });
+    },
+    onSuccess: (_data, jobId) => {
+      queryClient.setQueryData(['/api/user'], (prev: any) =>
+        prev ? { ...prev, jobId, jobTitle: jobs.find(j => j.id === jobId)?.name ?? null } : prev
+      );
+      toast({ title: t('common.changesApplied') });
+    },
+    onError: (error: Error) => {
+      toast({ variant: 'destructive', title: error.message });
+    },
+  });
 
   const handleThemeChange = (value: 'light' | 'dark' | 'system') => {
     setTheme(value);
@@ -289,6 +317,23 @@ const SettingsPage: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <p>{t('settings.accountSettings')}</p>
+              <div className="space-y-2">
+                <Label htmlFor="position">{t('profile.position')}</Label>
+                <Select
+                  value={user?.jobId ? String(user.jobId) : ''}
+                  onValueChange={(val) => updateJob.mutate(val ? Number(val) : null)}
+                >
+                  <SelectTrigger id="position">
+                    <SelectValue placeholder={t('profile.selectPosition')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">-</SelectItem>
+                    {jobs.map((j) => (
+                      <SelectItem key={j.id} value={String(j.id)}>{j.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <ChangePasswordForm />
             </CardContent>
           </Card>

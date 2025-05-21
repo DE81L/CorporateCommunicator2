@@ -6,6 +6,7 @@ export interface UserWithoutPassword {
   phone?: string;
   firstName: string | null;
   lastName: string | null;
+  jobId?: number | null;
   jobTitle?: string | null;
   isOnline: boolean | number;
   avatarUrl: string | null;

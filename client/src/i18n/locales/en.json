@@ -90,6 +90,7 @@
     "location": "Location",
     "department": "Department",
     "position": "Position",
+    "selectPosition": "Select position",
     "currentPassword": "Current Password",
     "newPassword": "New Password"
   },
