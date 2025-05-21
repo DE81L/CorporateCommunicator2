@@ -320,14 +320,16 @@ const SettingsPage: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="position">{t('profile.position')}</Label>
                 <Select
-                  value={user?.jobId ? String(user.jobId) : ''}
-                  onValueChange={(val) => updateJob.mutate(val ? Number(val) : null)}
+                  value={user?.jobId ? String(user.jobId) : 'none'}
+                  onValueChange={(val) =>
+                    updateJob.mutate(val === 'none' ? null : Number(val))
+                  }
                 >
                   <SelectTrigger id="position">
                     <SelectValue placeholder={t('profile.selectPosition')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">-</SelectItem>
+                    <SelectItem value="none">-</SelectItem>
                     {jobs.map((j) => (
                       <SelectItem key={j.id} value={String(j.id)}>{j.name}</SelectItem>
                     ))}
