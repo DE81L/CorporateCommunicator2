@@ -133,6 +133,9 @@ export default function CallModal({
           <DialogTitle>
             {t(`call.${callType}`)} {t(`call.${stage}`)}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {t(`call.${stage}`)}
+          </DialogDescription>
         </DialogHeader>
         <div className="p-6 text-center">
           <Avatar className="h-24 w-24 mx-auto bg-primary-700">
