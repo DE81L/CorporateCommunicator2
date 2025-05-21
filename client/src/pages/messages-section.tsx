@@ -79,6 +79,7 @@ export default function MessagesSection({ onStartCall }: Props) {
   const [msgInput, setMsgInput] = useState('');
   const [fileData, setFileData] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [dragOver, setDragOver] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [incomingSignal, setIncomingSignal] = useState<any>(null);
   const [contactsCollapsed, setContactsCollapsed] = useState(false);
@@ -584,7 +585,24 @@ export default function MessagesSection({ onStartCall }: Props) {
 
             <form
               onSubmit={sendMessage}
-              className="border-t border-border bg-background p-3 flex flex-col gap-2"
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                const file = e.dataTransfer.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => setFileData(reader.result as string);
+                reader.readAsDataURL(file);
+              }}
+              className={cn(
+                'border-t border-border bg-background p-3 flex flex-col gap-2',
+                dragOver && 'border-blue-500'
+              )}
             >
               {fileData && (
                 <span className="text-xs text-gray-500">{t('messages.fileAttached')}</span>
