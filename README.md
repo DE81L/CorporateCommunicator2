@@ -21,6 +21,10 @@ Install dependencies for all workspaces:
 pnpm install
 ```
 
+If you encounter errors like `Cannot find module 'nodemailer'` when starting the
+server, make sure the dependencies were installed using `pnpm`. Using `npm` or
+`yarn` will not correctly set up the workspace packages.
+
 Start the development environment (server, client and electron will run concurrently):
 
 ```bash

@@ -13,7 +13,9 @@
       // "@/*": ["server/src/*"], // Можно добавить специфичный для сервера алиас
       "@shared/*": ["shared/src/*"] // Должно наследоваться из tsconfig.base.json
     },
-    "typeRoots": ["./server/src/types", "../node_modules/@types"] // Путь к node_modules должен быть относительным
+    // Ensure TypeScript can resolve global type packages. The previous relative
+    // path pointed outside of the repository and failed on some systems.
+    "typeRoots": ["./server/src/types", "./node_modules/@types"]
   },
   "include": ["server/src/**/*", "shared/src/**/*"],
   "exclude": ["node_modules", "dist"]
