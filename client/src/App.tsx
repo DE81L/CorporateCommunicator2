@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import AuthPage from './pages/auth-page';
 import HomePage from "./pages/home-page";
 import SettingsPage from './pages/settings-page';
+import AdminPage from './pages/admin-page';
 import WikiArticlePage from './pages/wiki-article-page';
 import { Route, Switch, Redirect } from 'wouter';
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -38,6 +39,9 @@ function AppContent() {
           </Route>
           <Route path="/settings">
             {user ? <SettingsPage /> : <Redirect to="/auth" />}
+          </Route>
+          <Route path="/admin">
+            {user && user.isAdmin ? <AdminPage /> : <Redirect to="/" />}
           </Route>
           <Route path="/wiki/:id">
             {user ? <WikiArticlePage /> : <Redirect to="/auth" />}
