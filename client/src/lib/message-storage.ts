@@ -6,6 +6,12 @@ export interface StoredMessage {
   timestamp: string;
   file?: string;
   synced?: boolean;
+  /** transport used to send the message */
+  transport?: 'server' | 'p2p';
+  /** delivery status from server */
+  status?: 'pending' | 'delivered' | 'read';
+  /** set when sending to server failed */
+  error?: boolean;
 }
 
 function key(myId: number, otherId: number) {
