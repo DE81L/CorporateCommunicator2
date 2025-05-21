@@ -764,14 +764,16 @@ export default function WikiSection() {
                     <FormLabel>Category</FormLabel>
                     <FormControl>
                       <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
+                        value={field.value || 'none'}
+                        onValueChange={(v) =>
+                          field.onChange(v === 'none' ? '' : v)
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {categories.map((category) => (
                             <SelectItem key={category.id} value={category.name}>
                               {category.name}
@@ -888,16 +890,18 @@ export default function WikiSection() {
                     <FormLabel>Parent Category</FormLabel>
                     <FormControl>
                       <Select
-                        value={field.value?.toString() || ""}
+                        value={field.value?.toString() || 'none'}
                         onValueChange={(value) =>
-                          field.onChange(value ? parseInt(value) : undefined)
+                          field.onChange(
+                            value === 'none' ? undefined : parseInt(value)
+                          )
                         }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a parent category (optional)" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None (Root)</SelectItem>
+                          <SelectItem value="none">None (Root)</SelectItem>
                           {categories
                             .filter((c) => c.id !== editingCategory?.id) // Don't show self as parent
                             .map((category) => (
