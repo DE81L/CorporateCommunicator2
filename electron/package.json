@@ -5,7 +5,7 @@
   "private": true,
   "main": "dist/main.js",
   "scripts": {
-    "dev": "electron -r tsx src/main.ts",
+    "dev": "electron --no-sandbox -r tsx src/main.ts",
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
