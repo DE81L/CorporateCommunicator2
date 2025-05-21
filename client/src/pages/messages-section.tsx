@@ -135,18 +135,17 @@ export default function MessagesSection({ onStartCall }: Props) {
   useEffect(() => {
     if (user && selectedUser && messages.length > 0) {
       setLocalMessages((prev) => {
-        const merged = Array.from(
-          new Map(
-            [
-              ...prev,
-              ...messages.map((m) => ({
-                ...m,
-                synced: true,
-                transport: 'server' as const,
-              })),
-            ].map((m) => [m.id, m])
-          ).values()
-        );
+        const map = new Map(prev.map((m) => [m.id, m]));
+        for (const srv of messages) {
+          const existing = map.get(srv.id);
+          map.set(srv.id, {
+            ...existing,
+            ...srv,
+            synced: true,
+            transport: existing?.transport ?? 'server',
+          });
+        }
+        const merged = Array.from(map.values());
         saveMessages(user.id, selectedUser.id, merged);
         return merged;
       });

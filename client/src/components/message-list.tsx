@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import MessageStatusDot from './message-status-dot';
 
 export interface MessageItem {
   id: number;
@@ -39,43 +40,35 @@ export function MessageList({ messages, myId }: MessageListProps) {
 
   return (
     <div className="min-h-full flex flex-col space-y-3">
-      {messages.map((m) => {
-        let statusColor = 'bg-gray-400';
-        if (m.error) {
-          statusColor = 'bg-red-500';
-        } else if (!m.synced || m.status === 'pending') {
-          statusColor = 'bg-yellow-500';
-        } else if (m.transport === 'p2p') {
-          statusColor = 'bg-blue-500';
-        } else if (m.status === 'read') {
-          statusColor = 'bg-green-500';
-        }
-
-        return (
-          <div
-            key={m.id}
-            className={`max-w-[80%] rounded-xl px-4 py-2 text-sm break-words space-y-2 ${
-              m.senderId === myId
-                ? 'ml-auto bg-primary-100 text-primary-900 dark:bg-primary-700 dark:text-white'
-                : 'mr-auto bg-gray-200 text-black dark:bg-gray-700 dark:text-white'
-            }`}
-          >
-            <div>{m.content}</div>
-            {m.file && (
-              m.file.startsWith('data:image') ? (
-                <img src={m.file} alt="attachment" className="max-w-xs rounded-md" />
-              ) : (
-                <a href={m.file} download className="underline text-blue-600 dark:text-blue-400">
-                  Download file
-                </a>
-              )
-            )}
-            <div className="flex justify-end">
-              <span className={`inline-block w-2 h-2 rounded-full ${statusColor}`} />
-            </div>
+      {messages.map((m) => (
+        <div
+          key={m.id}
+          className={`max-w-[80%] rounded-xl px-4 py-2 text-sm break-words space-y-2 ${
+            m.senderId === myId
+              ? 'ml-auto bg-primary-100 text-primary-900 dark:bg-primary-700 dark:text-white'
+              : 'mr-auto bg-gray-200 text-black dark:bg-gray-700 dark:text-white'
+          }`}
+        >
+          <div>{m.content}</div>
+          {m.file && (
+            m.file.startsWith('data:image') ? (
+              <img src={m.file} alt="attachment" className="max-w-xs rounded-md" />
+            ) : (
+              <a href={m.file} download className="underline text-blue-600 dark:text-blue-400">
+                Download file
+              </a>
+            )
+          )}
+          <div className="flex justify-end">
+            <MessageStatusDot
+              status={m.status}
+              transport={m.transport}
+              synced={m.synced}
+              error={m.error}
+            />
           </div>
-        );
-      })}
+        </div>
+      ))}
       <div ref={endRef} />
     </div>
   );
