@@ -37,13 +37,16 @@ export default function SettingsSection() {
 
       <div className="space-y-2 max-w-xs mt-4">
         <Label htmlFor="audioInput">{t('settings.audioInput')}</Label>
-        <Select value={audioInputId ?? ''} onValueChange={setAudioInputId}>
+        <Select
+          value={audioInputId ?? 'none'}
+          onValueChange={(val) => setAudioInputId(val === 'none' ? null : val)}
+        >
           <SelectTrigger id="audioInput">
             <SelectValue placeholder={t('settings.audioInput')} />
           </SelectTrigger>
           <SelectContent>
             {devices.length === 0 ? (
-              <SelectItem value="">{t('settings.noAudioDevices')}</SelectItem>
+              <SelectItem value="none">{t('settings.noAudioDevices')}</SelectItem>
             ) : (
               devices.map((d) => (
                 <SelectItem key={d.deviceId} value={d.deviceId}>
