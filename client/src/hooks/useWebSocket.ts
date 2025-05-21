@@ -30,6 +30,12 @@ export function useWebSocket() {
   useEffect(() => {
     let cancelled = false
 
+    if (!user) {
+      wsRef.current?.close()
+      setConnectionStatus('closed')
+      return
+    }
+
     const connect = () => {
       console.debug('WS connect attempt', retries.current)
       setConnectionStatus('connecting')
