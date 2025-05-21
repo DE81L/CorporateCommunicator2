@@ -10,6 +10,8 @@ import {
   saveMessages,
   appendMessage,
   StoredMessage,
+  markMessagesRead,
+  countUnreadMessages,
 } from '@/lib/message-storage';
 import {
   Send,
@@ -129,6 +131,7 @@ export default function MessagesSection({ onStartCall }: Props) {
 
   useEffect(() => {
     if (user && selectedUser) {
+      markMessagesRead(user.id, selectedUser.id);
       setLocalMessages(loadMessages(user.id, selectedUser.id));
     }
   }, [user, selectedUser]);
@@ -147,8 +150,11 @@ export default function MessagesSection({ onStartCall }: Props) {
           });
         }
         const merged = Array.from(map.values());
-        saveMessages(user.id, selectedUser.id, merged);
-        return merged;
+        const updated = merged.map((m) =>
+          m.senderId === selectedUser.id ? { ...m, status: 'read' as const } : m,
+        );
+        saveMessages(user.id, selectedUser.id, updated);
+        return updated;
       });
     }
   }, [messages, user, selectedUser]);
@@ -230,7 +236,14 @@ export default function MessagesSection({ onStartCall }: Props) {
         synced: true,
       };
       appendMessage(user!.id, selectedUser!.id, stored);
-      setLocalMessages((prev) => [...prev, stored]);
+      markMessagesRead(user!.id, selectedUser!.id);
+      setLocalMessages((prev) => {
+        const updated = [...prev, stored].map((m) =>
+          m.senderId === selectedUser!.id ? { ...m, status: 'read' as const } : m,
+        );
+        saveMessages(user!.id, selectedUser!.id, updated);
+        return updated;
+      });
     }
   }, [p2pMsg, selectedUser, user]);
 
@@ -244,7 +257,7 @@ export default function MessagesSection({ onStartCall }: Props) {
     new Map(
       [...messages, ...localMessages].map((m) => [m.id, m]),
     ).values(),
-  ).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  ).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
   const trimmedMessages = combinedMessages.slice(0, maxDisplay);
   const visibleMessages = trimmedMessages.slice(0, visibleCount);
@@ -406,45 +419,58 @@ export default function MessagesSection({ onStartCall }: Props) {
         .toLowerCase()
         .includes(contactSearch)
     )
-    .map((u) => (
-      <Card
-        key={u.id}
-        onClick={() => setSelectedUser(u)}
-        className={cn(
-          'm-2 cursor-pointer hover:shadow-md transition-shadow',
-          selectedUser?.id === u.id
-            ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400'
-            : 'hover:bg-muted/50'
-        )}
-        role="button"
-        tabIndex={0}
-      >
-        <CardContent className="p-3 flex items-center gap-3">
-          <Avatar className="h-8 w-8">
-            {u.avatarUrl ? (
-              <img
-                src={u.avatarUrl}
-                alt=""
-                className="h-8 w-8 rounded-full object-cover"
-              />
-            ) : (
-              <AvatarFallback>
-                {getInitials(u.firstName, u.lastName)}
-              </AvatarFallback>
+    .map((u) => {
+      const unread = countUnreadMessages(user.id, u.id);
+      return (
+        <Card
+          key={u.id}
+          onClick={() => setSelectedUser(u)}
+          className={cn(
+            'm-2 cursor-pointer hover:shadow-md transition-shadow',
+            selectedUser?.id === u.id
+              ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400'
+              : 'hover:bg-muted/50'
+          )}
+          role="button"
+          tabIndex={0}
+        >
+          <CardContent className="p-3 flex items-center gap-3">
+            <Avatar className="h-8 w-8 relative">
+              {u.avatarUrl ? (
+                <img
+                  src={u.avatarUrl}
+                  alt=""
+                  className="h-8 w-8 rounded-full object-cover"
+                />
+              ) : (
+                <AvatarFallback>
+                  {getInitials(u.firstName, u.lastName)}
+                </AvatarFallback>
+              )}
+              {unread > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full px-1 text-[10px]">
+                  {unread > 99 ? '99+' : unread}
+                </span>
+              )}
+            </Avatar>
+            <span className="flex-1 truncate">
+              {u.firstName} {u.lastName}
+            </span>
+            {unread > 0 && (
+              <span className="text-xs bg-red-500 text-white rounded-full px-1 mr-1">
+                {unread > 99 ? '99+' : unread}
+              </span>
             )}
-          </Avatar>
-          <span className="flex-1 truncate">
-            {u.firstName} {u.lastName}
-          </span>
-          <span
-            className={cn(
-              'h-2 w-2 rounded-full',
-              u.isonline ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
-            )}
-          />
-        </CardContent>
-      </Card>
-    ))
+            <span
+              className={cn(
+                'h-2 w-2 rounded-full',
+                u.isonline ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+              )}
+            />
+          </CardContent>
+        </Card>
+      );
+    })
 )}
 </aside>
       )}
@@ -460,29 +486,37 @@ export default function MessagesSection({ onStartCall }: Props) {
     </Button>
     {contacts
       .filter((u) => u.id !== user.id)
-      .map((u) => (
-        <Button
-          key={u.id}
-          variant="ghost"
-          size="icon"
-          className="m-2"
-          onClick={() => setSelectedUser(u)}
-        >
-          <Avatar className="h-8 w-8">
-            {u.avatarUrl ? (
-              <img
-                src={u.avatarUrl}
-                alt=""
-                className="h-8 w-8 rounded-full object-cover"
-              />
-            ) : (
-              <AvatarFallback>
-                {getInitials(u.firstName, u.lastName)}
-              </AvatarFallback>
+      .map((u) => {
+        const unread = countUnreadMessages(user.id, u.id);
+        return (
+          <Button
+            key={u.id}
+            variant="ghost"
+            size="icon"
+            className="m-2 relative"
+            onClick={() => setSelectedUser(u)}
+          >
+            <Avatar className="h-8 w-8">
+              {u.avatarUrl ? (
+                <img
+                  src={u.avatarUrl}
+                  alt=""
+                  className="h-8 w-8 rounded-full object-cover"
+                />
+              ) : (
+                <AvatarFallback>
+                  {getInitials(u.firstName, u.lastName)}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            {unread > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full px-1 text-[10px]">
+                {unread > 99 ? '99+' : unread}
+              </span>
             )}
-          </Avatar>
-        </Button>
-      ))}
+          </Button>
+        );
+      })}
   </div>
 )}
 
