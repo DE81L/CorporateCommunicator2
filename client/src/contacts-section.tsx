@@ -83,7 +83,7 @@ export default function ContactsSection() {
       {filtered.length === 0 ? (
         <p className="text-center text-gray-500">Нет контактов</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {filtered.map((c) => (
             <Card key={c.id} className="hover:shadow">
               <CardContent className="flex items-center space-x-4">
