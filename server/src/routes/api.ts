@@ -318,7 +318,9 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
     const delivered = sendChatMessage(receiverId, { ...message, file: filePath });
 
     if (delivered) {
-      await db!.query('UPDATE messages SET status = \"delivered\" WHERE id = $1', [message.id]);
+      await db!.query("UPDATE messages SET status = 'delivered' WHERE id = $1", [
+        message.id,
+      ]);
       message.status = 'delivered';
     }
 
