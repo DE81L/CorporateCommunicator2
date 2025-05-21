@@ -224,7 +224,7 @@ router.get(
 /**
  * GET /api/messages?chatWith={id}
  * Возвращает всю историю между текущим пользователем и chatWith,
- * а также помечает входящие pending-сообщения как delivered.
+ * а также помечает входящие сообщения как прочитанные.
  */
 router.get(
   '/messages',
@@ -247,15 +247,15 @@ router.get(
          FROM messages
         WHERE (sender_id = $1 AND receiver_id = $2)
            OR (sender_id = $2 AND receiver_id = $1)
-        ORDER BY timestamp ASC`,
+        ORDER BY timestamp DESC`,
         [userId, chatWith]
       );
       await db!.query(
         `UPDATE messages
-            SET status = 'delivered'
+            SET status = 'read'
           WHERE sender_id = $2
             AND receiver_id = $1
-            AND status = 'pending'`,
+            AND status <> 'read'`,
         [userId, chatWith]
       );
 
@@ -263,7 +263,7 @@ router.get(
         `DELETE FROM messages
           WHERE sender_id = $2
             AND receiver_id = $1
-            AND status = 'delivered'`,
+            AND status = 'read'`,
         [userId, chatWith]
       );
 

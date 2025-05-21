@@ -38,7 +38,7 @@ export interface Message {
   receiverId: number;
   content: string;
   timestamp: string;
-  status?: 'pending' | 'delivered' | 'read';
+  status?: 'pending' | 'delivered' | 'read' | 'p2p';
   transport?: 'server' | 'p2p';
   synced?: boolean;
   error?: boolean;
@@ -225,7 +225,7 @@ export default function MessagesSection({ onStartCall }: Props) {
         timestamp: new Date().toISOString(),
         file: p2pMsg.file,
         transport: 'p2p',
-        status: 'delivered',
+        status: 'p2p',
         synced: true,
       };
       appendMessage(user!.id, selectedUser!.id, stored);
@@ -243,12 +243,10 @@ export default function MessagesSection({ onStartCall }: Props) {
     new Map(
       [...messages, ...localMessages].map((m) => [m.id, m]),
     ).values(),
-  ).sort(
-    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-  );
+  ).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-  const trimmedMessages = combinedMessages.slice(-maxDisplay);
-  const visibleMessages = trimmedMessages.slice(-visibleCount);
+  const trimmedMessages = combinedMessages.slice(0, maxDisplay);
+  const visibleMessages = trimmedMessages.slice(0, visibleCount);
 
   useEffect(() => {
     setVisibleCount((c) => {
@@ -259,7 +257,11 @@ export default function MessagesSection({ onStartCall }: Props) {
   }, [trimmedMessages.length]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (e.currentTarget.scrollTop < 50) {
+    if (
+      e.currentTarget.scrollHeight - e.currentTarget.scrollTop -
+        e.currentTarget.clientHeight <
+      50
+    ) {
       setVisibleCount((c) =>
         Math.min(c + pageSize, Math.min(trimmedMessages.length, maxDisplay)),
       );
@@ -297,7 +299,7 @@ export default function MessagesSection({ onStartCall }: Props) {
       timestamp: new Date().toISOString(),
       synced: viaP2P ? true : false,
       transport: viaP2P ? 'p2p' : 'server',
-      status: viaP2P ? 'delivered' : 'pending',
+      status: viaP2P ? 'p2p' : 'pending',
       file: fileData || undefined,
     };
 

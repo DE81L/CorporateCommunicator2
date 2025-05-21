@@ -9,7 +9,7 @@ export interface MessageItem {
   file?: string;
   synced?: boolean;
   transport?: 'server' | 'p2p';
-  status?: 'pending' | 'delivered' | 'read';
+  status?: 'pending' | 'delivered' | 'read' | 'p2p';
   error?: boolean;
 }
 
