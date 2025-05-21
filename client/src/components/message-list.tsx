@@ -40,13 +40,16 @@ export function MessageList({ messages, myId }: MessageListProps) {
   return (
     <div className="min-h-full flex flex-col space-y-3">
       {messages.map((m) => {
-        const statusColor = m.error || !m.synced || m.status === 'pending'
-          ? 'bg-red-500'
-          : m.transport === 'p2p'
-          ? 'bg-blue-500'
-          : m.status === 'read'
-          ? 'bg-green-500'
-          : 'bg-gray-400';
+        let statusColor = 'bg-gray-400';
+        if (m.error) {
+          statusColor = 'bg-red-500';
+        } else if (!m.synced || m.status === 'pending') {
+          statusColor = 'bg-yellow-500';
+        } else if (m.transport === 'p2p') {
+          statusColor = 'bg-blue-500';
+        } else if (m.status === 'read') {
+          statusColor = 'bg-green-500';
+        }
 
         return (
           <div
