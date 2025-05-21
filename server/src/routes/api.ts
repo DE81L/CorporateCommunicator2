@@ -9,6 +9,7 @@ import { db } from '../db'; // Уже есть
 import { logger } from '../util/logger'; // Уже есть
 import { isAuthenticated } from '../middleware/auth'; // Уже есть
 import { broadcastStatus, sendChatMessage } from '../ws'; // Уже есть
+import { sendEmailNotification } from '../util/email';
 import departmentsRouter from './departments';
 import wikiRouter from './wiki';
 import requestsRouter from './requests';
@@ -322,6 +323,23 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
         message.id,
       ]);
       message.status = 'delivered';
+    } else {
+      const { rows } = await db!.query<{ email: string; username: string }>(
+        'SELECT email, username FROM users WHERE id = $1',
+        [receiverId]
+      );
+      const recipient = rows[0];
+      if (recipient?.email) {
+        try {
+          await sendEmailNotification(
+            recipient.email,
+            `New message from ${req.session.username}`,
+            `${req.session.username} sent you a message: ${content}`
+          );
+        } catch (err) {
+          logger.error('Failed to send email notification:', err);
+        }
+      }
     }
 
     logger.info({ senderId, receiverId, delivered }, 'Message stored on server');

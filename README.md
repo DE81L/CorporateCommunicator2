@@ -51,3 +51,6 @@ The `LOG_LEVEL` environment variable controls server log verbosity. Leaving it
 unset uses `info` level logging. Set `LOG_LEVEL=debug` for detailed WebSocket
 traces when troubleshooting connection issues.
 
+For email notifications of offline messages configure the `SMTP_*` variables in
+`.env`.
+
