@@ -81,6 +81,7 @@ export default function MessagesSection({ onStartCall }: Props) {
   const [incomingSignal, setIncomingSignal] = useState<any>(null);
   const [contactsCollapsed, setContactsCollapsed] = useState(false);
   const [contacts, setContacts] = useState<User[]>([]);
+  const [contactSearch, setContactSearch] = useState('');
 
   /* ─────────── contacts ─────────── */
   const {
@@ -376,7 +377,13 @@ export default function MessagesSection({ onStartCall }: Props) {
         <aside
           className={`w-64 border-r border-border bg-background overflow-y-auto ${selectedUser ? 'hidden md:block' : ''}`}
         >
-          <div className="hidden md:flex justify-end p-2">
+          <div className="hidden md:flex items-center justify-between gap-2 p-2">
+            <Input
+              value={contactSearch}
+              onChange={(e) => setContactSearch(e.target.value.toLowerCase())}
+              placeholder={t('common.search')}
+              className="h-8"
+            />
             <Button
               variant="ghost"
               size="icon"
@@ -394,6 +401,11 @@ export default function MessagesSection({ onStartCall }: Props) {
 ) : (
   contacts
     .filter((u) => u.id !== user.id)
+    .filter((u) =>
+      `${u.firstName} ${u.lastName}`
+        .toLowerCase()
+        .includes(contactSearch)
+    )
     .map((u) => (
       <Card
         key={u.id}
@@ -437,7 +449,7 @@ export default function MessagesSection({ onStartCall }: Props) {
 </aside>
       )}
 {contactsCollapsed && (
-  <div className="hidden md:flex flex-col border-r border-border">
+  <div className="hidden md:flex w-16 flex-col items-center border-r border-border overflow-y-auto">
     <Button
       variant="ghost"
       size="icon"
@@ -446,6 +458,31 @@ export default function MessagesSection({ onStartCall }: Props) {
     >
       <ChevronRight className="h-5 w-5" />
     </Button>
+    {contacts
+      .filter((u) => u.id !== user.id)
+      .map((u) => (
+        <Button
+          key={u.id}
+          variant="ghost"
+          size="icon"
+          className="m-2"
+          onClick={() => setSelectedUser(u)}
+        >
+          <Avatar className="h-8 w-8">
+            {u.avatarUrl ? (
+              <img
+                src={u.avatarUrl}
+                alt=""
+                className="h-8 w-8 rounded-full object-cover"
+              />
+            ) : (
+              <AvatarFallback>
+                {getInitials(u.firstName, u.lastName)}
+              </AvatarFallback>
+            )}
+          </Avatar>
+        </Button>
+      ))}
   </div>
 )}
 
