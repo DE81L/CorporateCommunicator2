@@ -80,6 +80,18 @@ async function tryConnection(server) {
   await pc2.setLocalDescription(answer);
   await pc1.setRemoteDescription(answer);
 
+  let resolveDone;
+  const done = new Promise((resolve) => {
+    resolveDone = resolve;
+  });
+
+  let cleaned = false;
+  function finish() {
+    if (cleaned) return;
+    cleaned = true;
+    resolveDone(success);
+  }
+
   const timeout = setTimeout(() => {
     console.error('P2P connection timed out');
     cleanup();
@@ -87,9 +99,11 @@ async function tryConnection(server) {
 
   function cleanup() {
     clearTimeout(timeout);
+
     // Ensure the data channel closes so the promise resolves
     try {
       dc1.close();
+
     } catch (_) {
       // ignore errors if channel is not open
     }
@@ -98,13 +112,15 @@ async function tryConnection(server) {
     if (success) {
       console.log('cleanup after success');
     }
+    finish();
   }
-  return new Promise((resolve) => {
-    dc1.onclose = () => {
-      console.log('peer1 data channel closed');
-      resolve(success);
-    };
-  });
+
+  dc1.onclose = () => {
+    console.log('peer1 data channel closed');
+    finish();
+  };
+
+  return done;
 }
 
 async function run() {
