@@ -87,6 +87,12 @@ async function tryConnection(server) {
 
   function cleanup() {
     clearTimeout(timeout);
+    // Ensure the data channel closes so the promise resolves
+    try {
+      dc1.close();
+    } catch (_) {
+      // ignore errors if channel is not open
+    }
     pc1.close();
     pc2.close();
     if (success) {
