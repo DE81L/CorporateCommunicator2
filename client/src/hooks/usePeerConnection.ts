@@ -26,10 +26,20 @@ export function usePeerConnection(
   useEffect(() => {
     if (!enabled) return;
     console.debug('P2P creating connection', { initiator });
+    const stun = import.meta.env.VITE_STUN_SERVER;
+    const iceServers =
+      !stun || stun === 'none'
+        ? []
+        : stun
+            .split(',')
+            .map((url) => url.trim())
+            .filter(Boolean)
+            .map((url) => ({ urls: url }));
+
     const peer = new SimplePeer({
       initiator,
       trickle: true,
-      config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] },
+      config: { iceServers },
     });
 
     peer.on('signal', (sig) => {
