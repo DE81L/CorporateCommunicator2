@@ -77,3 +77,7 @@ traces when troubleshooting connection issues.
 For email notifications of offline messages configure the `SMTP_*` variables in
 `.env`.
 
+Set `VITE_STUN_SERVER` in `.env` to override the STUN server used by the client
+for peer connections. Use `VITE_STUN_SERVER=none` to disable STUN entirely when
+both peers are on the same local network.
+
