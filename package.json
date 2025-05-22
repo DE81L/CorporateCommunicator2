@@ -17,6 +17,7 @@
     "dev:proxy": "node ./proxy.mjs",
     "rehash-passwords": "node ./scripts/rehash-passwords.cjs",
     "seed:dev": "node ./scripts/seed-dev-users.cjs",
+    "check:p2p": "node ./scripts/check-p2p.cjs",
     "type-check": "tsc -p shared/tsconfig.json && tsc -p client/tsconfig.json && tsc -p ./tsconfig.server.json"
   },
   "engines": {
@@ -82,6 +83,7 @@
     "path-to-regexp": "1.7.0",
     "pg": "latest",
     "pino-http": "^10.4.0",
+    "pnpm": "^10.11.0",
     "process": "^0.11.10",
     "react": "18.3.1",
     "react-day-picker": "^9.6.7",
