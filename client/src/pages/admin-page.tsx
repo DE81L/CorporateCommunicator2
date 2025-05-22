@@ -101,73 +101,81 @@ export default function AdminPage() {
   const columns = rows.length ? Object.keys(rows[0]) : [];
 
   return (
-    <div className="min-h-screen flex flex-col items-center p-4 space-y-4">
-      <h1 className="text-2xl font-bold">{t('nav.admin')} Panel</h1>
+    <div className="min-h-screen p-6 bg-gray-50 dark:bg-background">
+      <div className="max-w-5xl mx-auto space-y-6">
+        <h1 className="text-3xl font-bold text-center">
+          {t('nav.admin')} Panel
+        </h1>
 
-      <div className="w-full flex items-center space-x-2">
-        <select
-          className="border p-2"
-          value={selectedTable}
-          onChange={e => setSelectedTable(e.target.value)}
-        >
-          <option value="">Select table</option>
-          {tables.map(t => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
-        <Button variant="secondary" onClick={() => setLocation('/')}>{t('common.back')}</Button>
-      </div>
-
-      {selectedTable && (
-        <div className="overflow-auto w-full">
-          <table className="min-w-full border">
-            <thead>
-              <tr>
-                {columns.map(col => (
-                  <th key={col} className="border px-2 py-1 text-left">{col}</th>
-                ))}
-                <th className="border px-2 py-1">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {editedRows.map((row, rowIndex) => (
-                <tr key={row.id ?? rowIndex}>
-                  {columns.map(col => (
-                    <td key={col} className="border px-2 py-1">
-                      <Input
-                        value={row[col] ?? ''}
-                        onChange={e => handleChange(rowIndex, col, e.target.value)}
-                      />
-                    </td>
-                  ))}
-                  <td className="border px-2 py-1 text-center">
-                    <Button size="sm" onClick={() => saveRow(rowIndex)}>Save</Button>
-                  </td>
-                </tr>
+        <div className="bg-white dark:bg-primary-950 border border-border rounded-lg shadow p-4 space-y-4">
+          <div className="flex items-center space-x-2">
+            <select
+              className="border rounded p-2 flex-1"
+              value={selectedTable}
+              onChange={e => setSelectedTable(e.target.value)}
+            >
+              <option value="">Select table</option>
+              {tables.map(t => (
+                <option key={t} value={t}>{t}</option>
               ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            </select>
+            <Button variant="secondary" onClick={() => setLocation('/')}>{t('common.back')}</Button>
+          </div>
 
-      <div className="w-full mt-4">
-        <textarea
-          className="w-full border p-2 mb-2"
-          rows={4}
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-        />
-        <div className="flex space-x-2 mb-4">
-          <Button onClick={runQuery}>Run Query</Button>
+          {selectedTable && (
+            <div className="overflow-auto">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-primary-100 dark:bg-primary-900/30">
+                  <tr>
+                    {columns.map(col => (
+                      <th key={col} className="px-3 py-2 text-left text-sm font-semibold">
+                        {col}
+                      </th>
+                    ))}
+                    <th className="px-3 py-2 text-sm font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {editedRows.map((row, rowIndex) => (
+                    <tr key={row.id ?? rowIndex} className="odd:bg-background">
+                      {columns.map(col => (
+                        <td key={col} className="px-3 py-2">
+                          <Input
+                            value={row[col] ?? ''}
+                            onChange={e => handleChange(rowIndex, col, e.target.value)}
+                          />
+                        </td>
+                      ))}
+                      <td className="px-3 py-2 text-center">
+                        <Button size="sm" onClick={() => saveRow(rowIndex)}>Save</Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white dark:bg-primary-950 border border-border rounded-lg shadow p-4 space-y-4">
+          <textarea
+            className="w-full border rounded p-2"
+            rows={4}
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+          />
+          <div className="flex space-x-2">
+            <Button onClick={runQuery}>Run Query</Button>
+          </div>
+
+          {error && <p className="text-red-600">{error}</p>}
+          {result.length > 0 && (
+            <pre className="w-full bg-gray-100 dark:bg-primary-900/30 p-2 overflow-auto whitespace-pre-wrap rounded">
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          )}
         </div>
       </div>
-
-      {error && <p className="text-red-600 mb-2">{error}</p>}
-      {result.length > 0 && (
-        <pre className="w-full bg-gray-100 p-2 overflow-auto whitespace-pre-wrap">
-          {JSON.stringify(result, null, 2)}
-        </pre>
-      )}
     </div>
   );
 }
