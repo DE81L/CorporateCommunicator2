@@ -100,9 +100,17 @@ async function tryConnection() {
   await pc1.setLocalDescription(offer);
 
   await new Promise(resolve => {
-    if (pc1.iceGatheringState === 'complete') return resolve();
+    const timer = setTimeout(() => {
+      console.error('pc1 ICE gathering timed out');
+      resolve();
+    }, 5000);
+    if (pc1.iceGatheringState === 'complete') {
+      clearTimeout(timer);
+      return resolve();
+    }
     pc1.onicegatheringstatechange = () => {
       if (pc1.iceGatheringState === 'complete') {
+        clearTimeout(timer);
         console.log('pc1 ICE gathering complete');
         resolve();
       }
