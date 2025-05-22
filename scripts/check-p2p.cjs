@@ -8,26 +8,43 @@ const STUN_LIST = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'stun-servers.json'), 'utf8'),
 );
 
+function addUdpTransport(url) {
+  if (!url) return url;
+  return url.includes('?') ? url : `${url}?transport=udp`;
+}
+
+const STUN_LIST_UDP = STUN_LIST.map(addUdpTransport);
+
 async function tryConnection(server) {
-  const iceServers = server ? [{ urls: server }] : [];
+  const iceServers = server ? [{ urls: addUdpTransport(server) }] : [];
   console.log(
     server ? `Using STUN server: ${server}` : 'Running without STUN server'
   );
 
   // give both peers the same configuration
-  const config = { iceServers };
+  const config = { iceServers, iceTransportPolicy: 'all' };
   const pc1 = new RTCPeerConnection(config);
   const pc2 = new RTCPeerConnection(config);
 
   pc1.onicecandidate = ({ candidate }) => {
     if (candidate) {
-      console.log('pc1 -> pc2 candidate', candidate.candidate);
+      console.log(
+        'pc1 -> pc2 candidate',
+        candidate.candidate,
+        'type',
+        candidate.type
+      );
       pc2.addIceCandidate(candidate);
     }
   };
   pc2.onicecandidate = ({ candidate }) => {
     if (candidate) {
-      console.log('pc2 -> pc1 candidate', candidate.candidate);
+      console.log(
+        'pc2 -> pc1 candidate',
+        candidate.candidate,
+        'type',
+        candidate.type
+      );
       pc1.addIceCandidate(candidate);
     }
   };
@@ -36,6 +53,10 @@ async function tryConnection(server) {
     console.log('pc1 state', pc1.connectionState);
   pc2.onconnectionstatechange = () =>
     console.log('pc2 state', pc2.connectionState);
+  pc1.onicegatheringstatechange = () =>
+    console.log('pc1 gathering', pc1.iceGatheringState);
+  pc2.onicegatheringstatechange = () =>
+    console.log('pc2 gathering', pc2.iceGatheringState);
 
   const dc1 = pc1.createDataChannel('test');
   let success = false;
@@ -97,9 +118,9 @@ async function run() {
   const serversToTry =
     STUN_SERVER !== undefined
       ? STUN_SERVER === 'none'
-        ? [null, ...STUN_LIST]
-        : [STUN_SERVER, ...STUN_LIST]
-      : STUN_LIST;
+        ? [null, ...STUN_LIST_UDP]
+        : [addUdpTransport(STUN_SERVER), ...STUN_LIST_UDP]
+      : STUN_LIST_UDP;
 
   for (const server of serversToTry) {
     const ok = await tryConnection(server);
