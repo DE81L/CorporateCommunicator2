@@ -258,10 +258,11 @@ export default function MessagesSection({ onStartCall }: Props) {
     new Map(
       [...messages, ...localMessages].map((m) => [m.id, m]),
     ).values(),
-  ).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-
+  ).sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+  );
   const trimmedMessages = combinedMessages.slice(0, maxDisplay);
-  const visibleMessages = trimmedMessages.slice(0, visibleCount);
+  const visibleMessages = trimmedMessages.slice(0, visibleCount).reverse();
 
   useEffect(() => {
     setVisibleCount((c) => {
