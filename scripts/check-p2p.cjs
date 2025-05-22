@@ -3,7 +3,7 @@ const { RTCPeerConnection } = require('werift-webrtc');
 const fs = require('fs');
 const path = require('path');
 
-const STUN_SERVER = process.env.STUN_SERVER;
+const STUN_SERVER = process.env.STUN_SERVER || process.env.VITE_STUN_SERVER;
 const TURN_SERVER = process.env.TURN_SERVER;
 const STUN_LIST = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'stun-servers.json'), 'utf8'),
