@@ -47,6 +47,13 @@ Tests are written with Jest and located in the `tests/` directory. Run them with
 pnpm exec jest
 ```
 
+To verify that WebRTC connectivity works in your environment run the P2P
+connection check script:
+
+```bash
+pnpm run check:p2p
+```
+
 ## Environment variables
 
 Copy `.env.example` to `.env` and fill in the required values before running the application.
