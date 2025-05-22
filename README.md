@@ -60,18 +60,11 @@ pnpm add -w werift-webrtc
 pnpm run check:p2p
 ```
 
-By default the script cycles through a list of STUN servers from
-`scripts/stun-servers.json` until a connection succeeds. When the
-`STUN_SERVER` environment variable is set the script tries that server first and
-falls back to the list on failure. Use `STUN_SERVER=none` to try without STUN
-before moving on to the configured servers:
-
-```bash
-STUN_SERVER=none pnpm run check:p2p
-```
-
-The checker automatically appends `?transport=udp` to each STUN URL and prints
-ICE candidate types for easier debugging.
+The script merges any `STUN_SERVER` or `TURN_SERVER` values from the
+environment with Google’s public STUN server and the list in
+`scripts/stun-servers.json`. Candidate gathering is awaited before signalling
+to improve reliability. The checker automatically appends `?transport=udp` to
+each ICE server URL and prints candidate types for easier debugging.
 
 ## Environment variables
 

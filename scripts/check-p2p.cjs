@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const STUN_SERVER = process.env.STUN_SERVER;
+const TURN_SERVER = process.env.TURN_SERVER;
 const STUN_LIST = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'stun-servers.json'), 'utf8'),
 );
@@ -15,11 +16,22 @@ function addUdpTransport(url) {
 
 const STUN_LIST_UDP = STUN_LIST.map(addUdpTransport);
 
-async function tryConnection(server) {
-  const iceServers = server ? [{ urls: addUdpTransport(server) }] : [];
-  console.log(
-    server ? `Using STUN server: ${server}` : 'Running without STUN server'
-  );
+const envStun =
+  STUN_SERVER && STUN_SERVER !== 'none' ? [addUdpTransport(STUN_SERVER)] : [];
+const envTurn = TURN_SERVER ? [addUdpTransport(TURN_SERVER)] : [];
+const DEFAULT_STUN = ['stun:stun.l.google.com:19302'];
+
+const ICE_SERVERS = [
+  ...envTurn.map(url => ({ urls: url })),
+  ...envStun.map(url => ({ urls: url })),
+  ...DEFAULT_STUN.map(url => ({ urls: url })),
+  ...STUN_LIST_UDP.map(url => ({ urls: url })),
+];
+
+async function tryConnection() {
+  console.log('ICE servers:', ICE_SERVERS.map(s => s.urls).join(', '));
+
+  const iceServers = ICE_SERVERS;
 
   // give both peers the same configuration
   const config = { iceServers, iceTransportPolicy: 'all' };
@@ -86,6 +98,17 @@ async function tryConnection(server) {
   console.log('creating offer...');
   const offer = await pc1.createOffer();
   await pc1.setLocalDescription(offer);
+
+  await new Promise(resolve => {
+    if (pc1.iceGatheringState === 'complete') return resolve();
+    pc1.onicegatheringstatechange = () => {
+      if (pc1.iceGatheringState === 'complete') {
+        console.log('pc1 ICE gathering complete');
+        resolve();
+      }
+    };
+  });
+
   await pc2.setRemoteDescription(offer);
 
   console.log('creating answer...');
@@ -115,21 +138,8 @@ async function tryConnection(server) {
 }
 
 async function run() {
-  const serversToTry =
-    STUN_SERVER !== undefined
-      ? STUN_SERVER === 'none'
-        ? [null, ...STUN_LIST_UDP]
-        : [addUdpTransport(STUN_SERVER), ...STUN_LIST_UDP]
-      : STUN_LIST_UDP;
-
-  for (const server of serversToTry) {
-    const ok = await tryConnection(server);
-    if (ok) return process.exit(0);
-    console.error('Retrying with next STUN server…');
-  }
-
-  console.error('All STUN servers failed');
-  process.exit(1);
+  const ok = await tryConnection();
+  process.exit(ok ? 0 : 1);
 }
 
 run();
