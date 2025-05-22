@@ -60,7 +60,11 @@ pnpm add -w werift-webrtc
 pnpm run check:p2p
 ```
 
-By default the script cycles through a list of STUN servers from `scripts/stun-servers.json` until a connection succeeds. Set the `STUN_SERVER` environment variable to use a custom server or `none` to disable STUN entirely when running the check:
+By default the script cycles through a list of STUN servers from
+`scripts/stun-servers.json` until a connection succeeds. When the
+`STUN_SERVER` environment variable is set the script tries that server first and
+falls back to the list on failure. Use `STUN_SERVER=none` to try without STUN
+before moving on to the configured servers:
 
 ```bash
 STUN_SERVER=none pnpm run check:p2p

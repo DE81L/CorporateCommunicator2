@@ -10,14 +10,14 @@ const STUN_LIST = JSON.parse(
 
 async function tryConnection(server) {
   const iceServers = server ? [{ urls: server }] : [];
-  if (server) {
-    console.log('Using STUN server:', server);
-  } else {
-    console.log('Running without STUN server');
-  }
+  console.log(
+    server ? `Using STUN server: ${server}` : 'Running without STUN server'
+  );
 
-  const pc1 = new RTCPeerConnection({ iceServers });
-  const pc2 = new RTCPeerConnection();
+  // give both peers the same configuration
+  const config = { iceServers };
+  const pc1 = new RTCPeerConnection(config);
+  const pc2 = new RTCPeerConnection(config);
 
   pc1.onicecandidate = ({ candidate }) => {
     if (candidate) {
@@ -32,25 +32,18 @@ async function tryConnection(server) {
     }
   };
 
-
   pc1.onconnectionstatechange = () =>
     console.log('pc1 state', pc1.connectionState);
   pc2.onconnectionstatechange = () =>
     console.log('pc2 state', pc2.connectionState);
 
   const dc1 = pc1.createDataChannel('test');
-
   let success = false;
 
   dc1.onopen = () => {
     console.log('peer1 data channel open');
     dc1.send('ping');
   };
-
-  dc1.onclose = () => {
-    console.log('peer1 data channel closed');
-  };
-
   dc1.onmessage = ({ data }) => {
     console.log('peer1 got:', data);
     if (data === 'pong') {
@@ -63,7 +56,6 @@ async function tryConnection(server) {
   pc2.ondatachannel = ({ channel }) => {
     console.log('peer2 data channel created');
     channel.onopen = () => console.log('peer2 data channel open');
-    channel.onclose = () => console.log('peer2 data channel closed');
     channel.onmessage = ({ data }) => {
       console.log('peer2 got:', data);
       if (data === 'ping') channel.send('pong');
@@ -80,18 +72,6 @@ async function tryConnection(server) {
   await pc2.setLocalDescription(answer);
   await pc1.setRemoteDescription(answer);
 
-  let resolveDone;
-  const done = new Promise((resolve) => {
-    resolveDone = resolve;
-  });
-
-  let cleaned = false;
-  function finish() {
-    if (cleaned) return;
-    cleaned = true;
-    resolveDone(success);
-  }
-
   const timeout = setTimeout(() => {
     console.error('P2P connection timed out');
     cleanup();
@@ -99,42 +79,34 @@ async function tryConnection(server) {
 
   function cleanup() {
     clearTimeout(timeout);
-
-    // Ensure the data channel closes so the promise resolves
-    try {
-      dc1.close();
-
-    } catch (_) {
-      // ignore errors if channel is not open
-    }
+    try { dc1.close(); } catch (_) {}
     pc1.close();
     pc2.close();
-    if (success) {
-      console.log('cleanup after success');
-    }
-    finish();
+    if (success) console.log('cleanup after success');
   }
 
-  dc1.onclose = () => {
-    console.log('peer1 data channel closed');
-    finish();
-  };
-
-  return done;
+  return new Promise(resolve => {
+    dc1.onclose = () => {
+      console.log('peer1 data channel closed');
+      resolve(success);
+    };
+  });
 }
 
 async function run() {
-  if (STUN_SERVER !== undefined) {
-    const server = STUN_SERVER === 'none' ? null : STUN_SERVER;
+  const serversToTry =
+    STUN_SERVER !== undefined
+      ? STUN_SERVER === 'none'
+        ? [null, ...STUN_LIST]
+        : [STUN_SERVER, ...STUN_LIST]
+      : STUN_LIST;
+
+  for (const server of serversToTry) {
     const ok = await tryConnection(server);
-    process.exit(ok ? 0 : 1);
+    if (ok) return process.exit(0);
+    console.error('Retrying with next STUN server…');
   }
 
-  for (const server of STUN_LIST) {
-    const ok = await tryConnection(server);
-    if (ok) return;
-    console.error('Retrying with next STUN server');
-  }
   console.error('All STUN servers failed');
   process.exit(1);
 }
