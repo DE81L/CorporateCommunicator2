@@ -101,10 +101,12 @@
     "tslog": "4.9.3",
     "util": "^0.12.5",
     "vaul": "^1.1.2",
+    "werift": "^0.22.1",
     "wouter": "^3.7.0",
+    "wrtc": "^0.4.7",
     "ws": "^8.18.2",
     "zod": "^3.23.8",
-    "werift-webrtc": "^11.0.0"
+    "werift-webrtc": "^0.0.6"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
