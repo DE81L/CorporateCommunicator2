@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 
-const DEFAULT_STUN = 'stun:stun.l.google.com:19302';
+const DEFAULT_STUN = 'stun:stun.nextcloud.com:443';
 const STUN_SERVER = process.env.STUN_SERVER;
 
 async function run() {
