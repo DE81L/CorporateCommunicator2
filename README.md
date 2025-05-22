@@ -78,8 +78,7 @@ For email notifications of offline messages configure the `SMTP_*` variables in
 `.env`.
 
 Set `VITE_STUN_SERVER` in `.env` to override the STUN server used by the client
-for peer connections. The `check:p2p` script also reads `STUN_SERVER` and falls
-back to `VITE_STUN_SERVER` if present. Use `VITE_STUN_SERVER=none` (or
-`STUN_SERVER=none`) to disable STUN entirely when both peers are on the same
-local network.
+for peer connections. Use `VITE_STUN_SERVER=none` to disable STUN entirely when
+both peers are on the same local network.
+
 
