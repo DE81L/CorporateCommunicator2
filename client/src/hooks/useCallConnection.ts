@@ -29,7 +29,16 @@ export function useCallConnection(
           initiator,
           trickle: true,
           stream,
-          config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] },
+          config: {
+            iceServers:
+              !import.meta.env.VITE_STUN_SERVER ||
+              import.meta.env.VITE_STUN_SERVER === 'none'
+                ? []
+                : import.meta.env.VITE_STUN_SERVER.split(',')
+                    .map((u) => u.trim())
+                    .filter(Boolean)
+                    .map((u) => ({ urls: u })),
+          },
         });
         peer.on('signal', (sig) => onSignalRef.current(sig));
         if (incomingSignal) peer.signal(incomingSignal);
