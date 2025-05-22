@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 const { RTCPeerConnection } = require('werift-webrtc');
+const fs = require('fs');
+const path = require('path');
+
 
 const DEFAULT_STUN = 'stun:stun.l.google.com:19302';
 const STUN_SERVER = process.env.STUN_SERVER;
@@ -31,12 +34,14 @@ async function run() {
     }
   };
 
+
   pc1.onconnectionstatechange = () =>
     console.log('pc1 state', pc1.connectionState);
   pc2.onconnectionstatechange = () =>
     console.log('pc2 state', pc2.connectionState);
 
   const dc1 = pc1.createDataChannel('test');
+
   let success = false;
 
   dc1.onopen = () => {
@@ -92,7 +97,9 @@ async function run() {
       console.error('cleanup after failure');
       process.exit(1);
     }
+
   }
+  if (!allOk) process.exit(1);
 }
 
 run();
