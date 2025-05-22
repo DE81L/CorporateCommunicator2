@@ -3,17 +3,15 @@ const { RTCPeerConnection } = require('werift-webrtc');
 const fs = require('fs');
 const path = require('path');
 
-
-const DEFAULT_STUN = 'stun:stun.nextcloud.com:443';
 const STUN_SERVER = process.env.STUN_SERVER;
+const STUN_LIST = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'stun-servers.json'), 'utf8'),
+);
 
-async function run() {
-  const iceServers =
-    STUN_SERVER === 'none'
-      ? []
-      : [{ urls: STUN_SERVER || DEFAULT_STUN }];
-  if (iceServers.length) {
-    console.log('Using STUN server:', iceServers[0].urls);
+async function tryConnection(server) {
+  const iceServers = server ? [{ urls: server }] : [];
+  if (server) {
+    console.log('Using STUN server:', server);
   } else {
     console.log('Running without STUN server');
   }
@@ -93,12 +91,30 @@ async function run() {
     pc2.close();
     if (success) {
       console.log('cleanup after success');
-    } else {
-      console.error('cleanup after failure');
-      process.exit(1);
     }
-
   }
+  return new Promise((resolve) => {
+    dc1.onclose = () => {
+      console.log('peer1 data channel closed');
+      resolve(success);
+    };
+  });
+}
+
+async function run() {
+  if (STUN_SERVER !== undefined) {
+    const server = STUN_SERVER === 'none' ? null : STUN_SERVER;
+    const ok = await tryConnection(server);
+    process.exit(ok ? 0 : 1);
+  }
+
+  for (const server of STUN_LIST) {
+    const ok = await tryConnection(server);
+    if (ok) return;
+    console.error('Retrying with next STUN server');
+  }
+  console.error('All STUN servers failed');
+  process.exit(1);
 }
 
 run();
