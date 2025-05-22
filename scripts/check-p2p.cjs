@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 const SimplePeer = require('simple-peer');
+const wrtc = require('wrtc');
 
 function createPeer(initiator) {
   return new SimplePeer({
     initiator,
     trickle: false,
     config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] },
+    wrtc,
   });
 }
 
