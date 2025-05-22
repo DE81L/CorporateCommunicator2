@@ -99,8 +99,11 @@ async function tryConnection(server) {
 
   function cleanup() {
     clearTimeout(timeout);
+
+    // Ensure the data channel closes so the promise resolves
     try {
-      if (dc1.readyState !== 'closed') dc1.close();
+      dc1.close();
+
     } catch (_) {
       // ignore errors if channel is not open
     }
