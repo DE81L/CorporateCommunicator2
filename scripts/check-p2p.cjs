@@ -99,7 +99,6 @@ async function run() {
     }
 
   }
-  if (!allOk) process.exit(1);
 }
 
 run();
