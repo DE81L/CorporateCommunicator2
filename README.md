@@ -60,6 +60,13 @@ pnpm add -w werift-webrtc
 pnpm run check:p2p
 ```
 
+Set the `STUN_SERVER` environment variable to use a custom STUN server or `none`
+to disable STUN entirely when running the check:
+
+```bash
+STUN_SERVER=none pnpm run check:p2p
+```
+
 ## Environment variables
 
 Copy `.env.example` to `.env` and fill in the required values before running the application.

@@ -1,25 +1,51 @@
 #!/usr/bin/env node
 const { RTCPeerConnection } = require('werift-webrtc');
 
+const DEFAULT_STUN = 'stun:stun.l.google.com:19302';
+const STUN_SERVER = process.env.STUN_SERVER;
+
 async function run() {
-  const pc1 = new RTCPeerConnection({
-    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-  });
+  const iceServers =
+    STUN_SERVER === 'none'
+      ? []
+      : [{ urls: STUN_SERVER || DEFAULT_STUN }];
+  if (iceServers.length) {
+    console.log('Using STUN server:', iceServers[0].urls);
+  } else {
+    console.log('Running without STUN server');
+  }
+
+  const pc1 = new RTCPeerConnection({ iceServers });
   const pc2 = new RTCPeerConnection();
 
   pc1.onicecandidate = ({ candidate }) => {
-    if (candidate) pc2.addIceCandidate(candidate);
+    if (candidate) {
+      console.log('pc1 -> pc2 candidate', candidate.candidate);
+      pc2.addIceCandidate(candidate);
+    }
   };
   pc2.onicecandidate = ({ candidate }) => {
-    if (candidate) pc1.addIceCandidate(candidate);
+    if (candidate) {
+      console.log('pc2 -> pc1 candidate', candidate.candidate);
+      pc1.addIceCandidate(candidate);
+    }
   };
+
+  pc1.onconnectionstatechange = () =>
+    console.log('pc1 state', pc1.connectionState);
+  pc2.onconnectionstatechange = () =>
+    console.log('pc2 state', pc2.connectionState);
 
   const dc1 = pc1.createDataChannel('test');
   let success = false;
 
   dc1.onopen = () => {
-    console.log('peer1 connected');
+    console.log('peer1 data channel open');
     dc1.send('ping');
+  };
+
+  dc1.onclose = () => {
+    console.log('peer1 data channel closed');
   };
 
   dc1.onmessage = ({ data }) => {
@@ -32,21 +58,27 @@ async function run() {
   };
 
   pc2.ondatachannel = ({ channel }) => {
+    console.log('peer2 data channel created');
+    channel.onopen = () => console.log('peer2 data channel open');
+    channel.onclose = () => console.log('peer2 data channel closed');
     channel.onmessage = ({ data }) => {
       console.log('peer2 got:', data);
       if (data === 'ping') channel.send('pong');
     };
   };
 
+  console.log('creating offer...');
   const offer = await pc1.createOffer();
   await pc1.setLocalDescription(offer);
   await pc2.setRemoteDescription(offer);
+
+  console.log('creating answer...');
   const answer = await pc2.createAnswer();
   await pc2.setLocalDescription(answer);
   await pc1.setRemoteDescription(answer);
 
   const timeout = setTimeout(() => {
-    console.error('P2P connection failed');
+    console.error('P2P connection timed out');
     cleanup();
   }, 5000);
 
@@ -54,7 +86,12 @@ async function run() {
     clearTimeout(timeout);
     pc1.close();
     pc2.close();
-    if (!success) process.exit(1);
+    if (success) {
+      console.log('cleanup after success');
+    } else {
+      console.error('cleanup after failure');
+      process.exit(1);
+    }
   }
 }
 
