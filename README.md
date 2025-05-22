@@ -70,6 +70,9 @@ before moving on to the configured servers:
 STUN_SERVER=none pnpm run check:p2p
 ```
 
+The checker automatically appends `?transport=udp` to each STUN URL and prints
+ICE candidate types for easier debugging.
+
 ## Environment variables
 
 Copy `.env.example` to `.env` and fill in the required values before running the application.
