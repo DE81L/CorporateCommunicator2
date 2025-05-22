@@ -1,53 +1,61 @@
 #!/usr/bin/env node
-const SimplePeer = require('simple-peer');
-const wrtc = require('wrtc');
+const { RTCPeerConnection } = require('werift-webrtc');
 
-function createPeer(initiator) {
-  return new SimplePeer({
-    initiator,
-    trickle: false,
-    config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] },
-    wrtc,
+async function run() {
+  const pc1 = new RTCPeerConnection({
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
   });
-}
+  const pc2 = new RTCPeerConnection();
 
-const peer1 = createPeer(true);
-const peer2 = createPeer(false);
+  pc1.onicecandidate = ({ candidate }) => {
+    if (candidate) pc2.addIceCandidate(candidate);
+  };
+  pc2.onicecandidate = ({ candidate }) => {
+    if (candidate) pc1.addIceCandidate(candidate);
+  };
 
-peer1.on('signal', data => peer2.signal(data));
-peer2.on('signal', data => peer1.signal(data));
+  const dc1 = pc1.createDataChannel('test');
+  let success = false;
 
-let success = false;
+  dc1.onopen = () => {
+    console.log('peer1 connected');
+    dc1.send('ping');
+  };
 
-peer1.on('connect', () => {
-  console.log('peer1 connected');
-  peer1.send('ping');
-});
+  dc1.onmessage = ({ data }) => {
+    console.log('peer1 got:', data);
+    if (data === 'pong') {
+      success = true;
+      console.log('P2P connection OK');
+      cleanup();
+    }
+  };
 
-peer2.on('data', data => {
-  console.log('peer2 got:', data.toString());
-  if (data.toString() === 'ping') {
-    peer2.send('pong');
-  }
-});
+  pc2.ondatachannel = ({ channel }) => {
+    channel.onmessage = ({ data }) => {
+      console.log('peer2 got:', data);
+      if (data === 'ping') channel.send('pong');
+    };
+  };
 
-peer1.on('data', data => {
-  console.log('peer1 got:', data.toString());
-  if (data.toString() === 'pong') {
-    success = true;
-    console.log('P2P connection OK');
+  const offer = await pc1.createOffer();
+  await pc1.setLocalDescription(offer);
+  await pc2.setRemoteDescription(offer);
+  const answer = await pc2.createAnswer();
+  await pc2.setLocalDescription(answer);
+  await pc1.setRemoteDescription(answer);
+
+  const timeout = setTimeout(() => {
+    console.error('P2P connection failed');
     cleanup();
+  }, 5000);
+
+  function cleanup() {
+    clearTimeout(timeout);
+    pc1.close();
+    pc2.close();
+    if (!success) process.exit(1);
   }
-});
-
-const timeout = setTimeout(() => {
-  console.error('P2P connection failed');
-  cleanup();
-}, 5000);
-
-function cleanup() {
-  clearTimeout(timeout);
-  peer1.destroy();
-  peer2.destroy();
-  if (!success) process.exit(1);
 }
+
+run();
