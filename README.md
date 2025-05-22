@@ -60,8 +60,8 @@ pnpm add -w werift-webrtc
 pnpm run check:p2p
 ```
 
-The script merges any `STUN_SERVER` or `TURN_SERVER` values from the
-environment with Google’s public STUN server and the list in
+The script merges any `STUN_SERVER`, `VITE_STUN_SERVER` or `TURN_SERVER`
+values from the environment with Google’s public STUN server and the list in
 `scripts/stun-servers.json`. Candidate gathering is awaited before signalling
 to improve reliability. The checker automatically appends `?transport=udp` to
 each ICE server URL and prints candidate types for easier debugging.
@@ -80,4 +80,5 @@ For email notifications of offline messages configure the `SMTP_*` variables in
 Set `VITE_STUN_SERVER` in `.env` to override the STUN server used by the client
 for peer connections. Use `VITE_STUN_SERVER=none` to disable STUN entirely when
 both peers are on the same local network.
+
 
