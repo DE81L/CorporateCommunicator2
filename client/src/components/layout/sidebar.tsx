@@ -13,6 +13,7 @@ import {
   LucideIcon,
   BookOpenIcon,
   LogOutIcon,
+  ShieldIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -199,7 +200,8 @@ export default function Sidebar({
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setLocation('/admin')}>
-                    Admin Panel
+                    <ShieldIcon className="mr-2 h-4 w-4" />
+                    {t('nav.admin')}
                   </DropdownMenuItem>
                 </>
               )}
