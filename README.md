@@ -48,16 +48,23 @@ pnpm exec jest
 ```
 
 To verify that WebRTC connectivity works in your environment run the P2P
-connection check script. Node does not include WebRTC APIs by default, so if
-the script fails with `ERR_WEBRTC_SUPPORT` install the optional `wrtc`
-dependency first:
+connection check script. Node does not include WebRTC APIs by default. Install
+the optional `werift-webrtc` dependency if you want to run the check under Node
+without built‑in WebRTC support:
 
 ```bash
-pnpm add -w wrtc
+pnpm add -w werift-webrtc
 ```
 
 ```bash
 pnpm run check:p2p
+```
+
+Set the `STUN_SERVER` environment variable to use a custom STUN server or `none`
+to disable STUN entirely when running the check:
+
+```bash
+STUN_SERVER=none pnpm run check:p2p
 ```
 
 ## Environment variables
