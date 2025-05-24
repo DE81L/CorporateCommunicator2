@@ -12,6 +12,7 @@ import { ChatProvider } from "./context/ChatContext";
 import { WindowFrameHeader } from "./components/ui/window-frame";
 import { useElectron } from "./hooks/use-electron";
 import { useEffect, useState } from "react";
+import { showError } from "@/lib/error-toast";
 import { useUserStatusHeartbeat } from "./hooks/useUserStatus";
 
 function AppContent() {
@@ -75,7 +76,7 @@ export default function App() {
     fetch(`${API_BASE}/api/hello`)
       .then(res => res.json())
       .then(data => setMessage(data.message))
-      .catch(console.error);
+      .catch(err => showError(err));
   }, [API_BASE]);
 
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { showError } from '@/lib/error-toast';
 import {
   Dialog,
   DialogContent,
@@ -100,7 +101,7 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
   useEffect(() => {
     if (departmentsError) {
       setIsError(true);
-      console.error("Failed to load departments", departmentsError);
+      showError(departmentsError, 'Failed to load departments');
     }
   }, [departmentsError]);
 

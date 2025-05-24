@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import { showError } from '@/lib/error-toast';
 
 // Import translations
 import translationEN from './locales/en.json';
@@ -35,7 +36,7 @@ i18n
     debug: import.meta.env.DEV // Enable debug in development
   })
   .catch(error => {
-    console.error('i18n initialization error:', error);
+    showError(error, 'i18n initialization error');
   });
   
 // Set language to Russian by default if not detected

@@ -1,5 +1,6 @@
 import { createApiClient } from "@/lib/api-client";
 import { useState } from "react";
+import { showError } from "@/lib/error-toast";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
@@ -88,7 +89,7 @@ export default function AnnouncementsSection() {
   };
 
   if (announcementsError) {
-    console.error("Error fetching announcements:", announcementsError);
+    showError(announcementsError, 'Error fetching announcements');
   }
 
   // Mock function to get department name for demo

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { showError } from '@/lib/error-toast';
 import i18n from '@/i18n';
 
 export type Theme = 'light' | 'dark' | 'system';
@@ -39,7 +40,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
     if (storedLang) {
       setLanguageState(storedLang);
-      i18n.changeLanguage(storedLang).catch(console.error);
+      i18n.changeLanguage(storedLang).catch(showError);
     }
     if (storedAudio) {
       setAudioInputIdState(storedAudio);
