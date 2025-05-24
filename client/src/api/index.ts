@@ -1,4 +1,3 @@
-import * as clientAPI from "../apiClient";
 import type { ElectronAPI } from "@/lib/electron-types";
 
 export type { ElectronAPI };
