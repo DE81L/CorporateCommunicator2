@@ -151,6 +151,7 @@
     "readReceipts": "Read receipts",
     "messageSent": "Message sent",
     "fileAttached": "File attached",
+    "removeFile": "Remove file",
     "downloadFile": "Download file",
     "imagePreview": "Image Preview",
     "imagePreviewDescription": "Preview of attached image",
