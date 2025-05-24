@@ -163,6 +163,7 @@
     "readReceipts": "Отчеты о прочтении",
     "messageSent": "Сообщение отправлено",
     "fileAttached": "Файл прикреплен",
+    "removeFile": "Удалить файл",
     "downloadFile": "Скачать файл",
     "imagePreview": "Просмотр изображения",
     "imagePreviewDescription": "Просмотр прикрепленного изображения",

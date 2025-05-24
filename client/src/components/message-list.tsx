@@ -51,6 +51,26 @@ export function MessageList({ messages, myId }: MessageListProps) {
   const isImage = (file: string) =>
     file.startsWith('data:image') || /\.(png|jpe?g|gif|bmp|webp|svg)$/i.test(file);
 
+  const FileIcon = ({ ext }: { ext: string }) => {
+    ext = ext.toLowerCase();
+    const common = 'h-6 w-6';
+    switch (ext) {
+      case 'pdf':
+        return <span className={common}>📄</span>;
+      case 'zip':
+      case 'rar':
+        return <span className={common}>🗜️</span>;
+      case 'mp3':
+      case 'wav':
+        return <span className={common}>🎵</span>;
+      case 'mp4':
+      case 'mov':
+        return <span className={common}>🎬</span>;
+      default:
+        return <span className={common}>{ext.slice(0, 3).toUpperCase()}</span>;
+    }
+  };
+
   return (
     <div className="min-h-full flex flex-col space-y-3">
       {messages.map((m) => (
@@ -72,7 +92,12 @@ export function MessageList({ messages, myId }: MessageListProps) {
                 onClick={() => setViewerSrc(m.file!)}
               />
             ) : (
-              <a href={m.file} download className="underline text-blue-600 dark:text-blue-400">
+              <a
+                href={m.file}
+                download
+                className="underline text-blue-600 dark:text-blue-400 flex items-center gap-1"
+              >
+                <FileIcon ext={(m.file.split('.').pop() || '').split('?')[0]} />
                 {t('messages.downloadFile')}
               </a>
             )

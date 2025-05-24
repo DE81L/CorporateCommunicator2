@@ -22,6 +22,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  Smile,
+  X,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,6 +33,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { MessageList } from '@/components/message-list';
+import EmojiPicker from '@/components/emoji-picker';
 
 /* ──────────────── TYPES ──────────────── */
 
@@ -77,7 +80,7 @@ export default function MessagesSection({ onStartCall }: Props) {
 
   const { chatUser: selectedUser, setChatUser: setSelectedUser } = useChat();
   const [msgInput, setMsgInput] = useState('');
-  const [fileData, setFileData] = useState<string | null>(null);
+  const [files, setFiles] = useState<{ name: string; data: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -85,6 +88,7 @@ export default function MessagesSection({ onStartCall }: Props) {
   const [contactsCollapsed, setContactsCollapsed] = useState(false);
   const [contacts, setContacts] = useState<User[]>([]);
   const [contactSearch, setContactSearch] = useState('');
+  const [showPicker, setShowPicker] = useState(false);
 
   /* ─────────── contacts ─────────── */
   const {
@@ -289,37 +293,31 @@ export default function MessagesSection({ onStartCall }: Props) {
 
 
   /* ───── send ───── */
-  const sendMessage = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!msgInput.trim() && !fileData) return;
-    if (!selectedUser) return;
-
-    console.log('Sending message', msgInput);
-
-    const tempId = Date.now();
+  const sendSingle = async (content: string, file?: string) => {
+    const tempId = Date.now() + Math.random();
     const viaP2P = p2pStatus === 'open';
     if (viaP2P) {
       sendP2P({
         senderId: user!.id,
-        receiverId: selectedUser.id,
-        content: msgInput,
-        file: fileData || undefined,
+        receiverId: selectedUser!.id,
+        content,
+        file,
       });
     }
 
     const tempMsg: StoredMessage = {
       id: tempId,
       senderId: user!.id,
-      receiverId: selectedUser.id,
-      content: msgInput,
+      receiverId: selectedUser!.id,
+      content,
       timestamp: new Date().toISOString(),
       synced: viaP2P ? true : false,
       transport: viaP2P ? 'p2p' : 'server',
       status: viaP2P ? 'p2p' : 'pending',
-      file: fileData || undefined,
+      file: file,
     };
 
-    appendMessage(user!.id, selectedUser.id, tempMsg);
+    appendMessage(user!.id, selectedUser!.id, tempMsg);
     setLocalMessages((prev) => [...prev, tempMsg]);
 
     if (p2pStatus !== 'open') {
@@ -328,36 +326,26 @@ export default function MessagesSection({ onStartCall }: Props) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            receiverId: selectedUser.id,
-            content: msgInput,
-            file: fileData,
+            receiverId: selectedUser!.id,
+            content,
+            file,
           }),
         });
         if (!saved) return;
 
-        console.info('Message sent to server', {
-          from: user!.id,
-          to: selectedUser.id,
-        });
-
-        if (saved) {
-          // replace temporary message with saved one
-          const updated: StoredMessage = {
-            ...saved,
-            file: (saved.file ?? fileData) || undefined,
-            synced: true,
-            transport: 'server',
-            status: saved.status,
-            error: false,
-          };
-          setLocalMessages((prev) =>
-            prev.map((m) => (m.id === tempId ? updated : m))
-          );
-          const stored = loadMessages(user!.id, selectedUser.id).map((m) =>
-            m.id === tempId ? updated : m
-          );
-          saveMessages(user!.id, selectedUser.id, stored);
-        }
+        const updated: StoredMessage = {
+          ...saved,
+          file: (saved.file ?? file) || undefined,
+          synced: true,
+          transport: 'server',
+          status: saved.status,
+          error: false,
+        };
+        setLocalMessages((prev) => prev.map((m) => (m.id === tempId ? updated : m)));
+        const stored = loadMessages(user!.id, selectedUser!.id).map((m) =>
+          m.id === tempId ? updated : m
+        );
+        saveMessages(user!.id, selectedUser!.id, stored);
       } catch (err) {
         console.error('Failed to send message', err);
         setLocalMessages((prev) =>
@@ -365,9 +353,20 @@ export default function MessagesSection({ onStartCall }: Props) {
         );
       }
     }
+  };
+
+  const sendMessage = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!msgInput.trim() && files.length === 0) return;
+    if (!selectedUser) return;
+
+    await sendSingle(msgInput, files[0]?.data);
+    for (let i = 1; i < files.length; i++) {
+      await sendSingle('', files[i].data);
+    }
 
     setMsgInput('');
-    setFileData(null);
+    setFiles([]);
     refetchHistory();
   };
 
@@ -594,19 +593,45 @@ export default function MessagesSection({ onStartCall }: Props) {
               onDrop={(e) => {
                 e.preventDefault();
                 setDragOver(false);
-                const file = e.dataTransfer.files?.[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = () => setFileData(reader.result as string);
-                reader.readAsDataURL(file);
+                const dropped = Array.from(e.dataTransfer.files || []);
+                dropped.forEach((file) => {
+                  const reader = new FileReader();
+                  reader.onload = () =>
+                    setFiles((f) => [...f, { name: file.name, data: reader.result as string }]);
+                  reader.readAsDataURL(file);
+                });
               }}
               className={cn(
                 'border-t border-border bg-background p-3 flex flex-col gap-2',
                 dragOver && 'border-blue-500'
               )}
             >
-              {fileData && (
-                <span className="text-xs text-gray-500">{t('messages.fileAttached')}</span>
+              {files.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {files.map((f, idx) => {
+                    const isImg = f.data.startsWith('data:image');
+                    const ext = f.name.split('.').pop() || '';
+                    return (
+                      <div key={idx} className="relative">
+                        {isImg ? (
+                          <img src={f.data} alt="" className="h-16 w-16 object-cover rounded" />
+                        ) : (
+                          <div className="h-16 w-16 flex items-center justify-center bg-muted rounded text-xs">
+                            {ext.toUpperCase()}
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setFiles((fs) => fs.filter((_, i) => i !== idx))}
+                          className="absolute -top-1 -right-1 bg-background rounded-full border border-border"
+                        >
+                          <span className="sr-only">{t('messages.removeFile')}</span>
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
               <div className="flex gap-3 items-end">
                 <Button
@@ -617,6 +642,22 @@ export default function MessagesSection({ onStartCall }: Props) {
                 >
                   <Plus className="h-5 w-5" />
                 </Button>
+                <div className="relative">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowPicker((s) => !s)}
+                  >
+                    <Smile className="h-5 w-5" />
+                  </Button>
+                  {showPicker && (
+                    <EmojiPicker
+                      onSelect={(e) => setMsgInput((m) => m + e)}
+                      onClose={() => setShowPicker(false)}
+                    />
+                  )}
+                </div>
                 <Textarea
                   ref={textareaRef}
                   className="flex-1 resize-none max-h-24 overflow-y-auto"
@@ -627,16 +668,21 @@ export default function MessagesSection({ onStartCall }: Props) {
                 <input
                   ref={fileInputRef}
                   type="file"
+                  multiple
                   className="hidden"
                   onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return setFileData(null);
-                    const reader = new FileReader();
-                    reader.onload = () => setFileData(reader.result as string);
-                    reader.readAsDataURL(file);
+                    const selected = Array.from(e.target.files || []);
+                    if (selected.length === 0) return;
+                    selected.forEach((file) => {
+                      const reader = new FileReader();
+                      reader.onload = () =>
+                        setFiles((f) => [...f, { name: file.name, data: reader.result as string }]);
+                      reader.readAsDataURL(file);
+                    });
+                    e.target.value = '';
                   }}
                 />
-                <Button type="submit" disabled={!msgInput.trim() && !fileData}>
+                <Button type="submit" disabled={!msgInput.trim() && files.length === 0}>
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
