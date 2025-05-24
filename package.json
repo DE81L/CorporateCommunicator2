@@ -4,7 +4,7 @@
   "scripts": {
     "build": "pnpm -r run build",
     "check-deps": "node tools/check-workspaces.cjs",
-    "dev": "concurrently -k -n server,client,electron -c green,blue,magenta \"pnpm run dev:server\" \"pnpm run dev:client\" \"pnpm run dev:electron\"",
+    "dev": "node ./scripts/run-dev.cjs",
     "dev:client": "pnpm --filter client run dev",
     "dev:debug": "cross-env NODE_OPTIONS=\"--inspect=9229\" pnpm run dev",
     "dev:electron": "pnpm --filter ccnew-electron run dev",
