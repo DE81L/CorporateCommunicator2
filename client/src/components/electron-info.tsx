@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { showError } from '@/lib/error-toast';
 import {
   Cpu, 
   Database,
@@ -56,7 +57,7 @@ export default function ElectronInfo({ compact = false }: ElectronInfoProps) {
       const info = await api.system.getSystemInfo();
       setSystemInfo(info);
     } catch (error) {
-      console.error("Failed to fetch system info:", error);
+      showError(error, 'Failed to fetch system info');
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +70,7 @@ export default function ElectronInfo({ compact = false }: ElectronInfoProps) {
       const version = (await api.app.getVersion()) as string;
       setAppVersion(version);
     } catch (error) {
-      console.error("Failed to fetch app version:", error);
+      showError(error, 'Failed to fetch app version');
     }
   };
 
@@ -80,7 +81,7 @@ export default function ElectronInfo({ compact = false }: ElectronInfoProps) {
       const online = await api.system.isOnline();
       setIsOnline(online);
     } catch (error) {
-      console.error("Failed to check online status:", error);
+      showError(error, 'Failed to check online status');
       setIsOnline(false);
     }
   };

@@ -11,8 +11,8 @@ import {
 } from '@tanstack/react-query';
 import { z } from 'zod';
 import { createApiClient } from '@/lib/api-client';
-import { useToast } from '@/hooks/use-toast';
 import { useTranslations } from '@/hooks/use-translations';
+import { showError } from '@/lib/error-toast';
 
 const loginSchema = z.object({
   username: z.string().min(1),
@@ -47,7 +47,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const apiClient = createApiClient();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const { t } = useTranslations();
 
   /* ─── CURRENT USER ────────────────────────────────────── */
@@ -79,31 +78,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     Error,
     LoginCredentials
   >({
-    mutationFn: async (credentials) => {
-      const res = await fetch('/api/login', {
+    mutationFn: async (credentials) =>
+      (await apiClient.request<UserWithoutPassword>('/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           usernameOrEmail: credentials.username,
           password: credentials.password,
         }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Login failed');
-      }
-      return (await res.json()) as UserWithoutPassword;
-    },
+        headers: { 'Content-Type': 'application/json' },
+      }))!,
     onSuccess: (user) => {
       queryClient.setQueryData(['/api/user'], user);
     },
     onError: (error) => {
-      toast({
-        variant: 'destructive',
-        title: t('auth.loginFailed'),
-        description: error.message,
-      });
+      showError(error, t('auth.loginFailed'));
     },
   });
 
@@ -117,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       queryClient.invalidateQueries();
     },
     onError: (error) => {
-      console.error('Logout failed:', error);
+      showError(error, 'Logout failed');
       queryClient.setQueryData(['/api/user'], null);
       queryClient.invalidateQueries();
     },

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { createApiClient } from '@/lib/api-client';
+import { showError } from '@/lib/error-toast';
 import {
   getUnsyncedMessages,
   markMessagesSynced,
@@ -27,7 +28,7 @@ export function useMessageSync() {
           });
           markMessagesSynced(user.id, otherId, messages.map((m) => m.id));
         } catch (err) {
-          console.error('Message sync failed', err);
+          showError(err, 'Message sync failed');
         }
       }
 
