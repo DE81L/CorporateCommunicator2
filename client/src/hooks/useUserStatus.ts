@@ -1,5 +1,6 @@
 // client/src/hooks/useUserStatus.ts
 import { useEffect } from 'react';
+import { showError } from '@/lib/error-toast';
 import { useAuth } from './use-auth';
 import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -23,7 +24,7 @@ export function useUserStatusHeartbeat() {
           prev ? { ...prev, isOnline: 1 } : prev
         );
       })
-      .catch(console.error);
+      .catch(showError);
 
     const interval = setInterval(() => {
       apiClient
@@ -38,7 +39,7 @@ export function useUserStatusHeartbeat() {
             prev ? { ...prev, isOnline: 1 } : prev
           );
         })
-        .catch(console.error);
+        .catch(showError);
     }, 10_000);
 
     const setOffline = () => {

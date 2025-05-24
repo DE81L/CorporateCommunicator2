@@ -40,7 +40,7 @@ export function useMessageSync() {
           }
         }
       } catch (err) {
-        console.error('Fetch sync messages failed', err);
+        showError(err, 'Fetch sync messages failed');
       }
     };
 

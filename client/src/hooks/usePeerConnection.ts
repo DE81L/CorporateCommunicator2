@@ -1,5 +1,6 @@
 // client/src/hooks/usePeerConnection.ts
 import { useState, useEffect, useRef } from 'react';
+import { showError } from '@/lib/error-toast';
 import SimplePeer, { Instance as Peer } from 'simple-peer';
 
 export type PeerStatus = 'init' | 'connecting' | 'open' | 'closed' | 'error';
@@ -71,7 +72,7 @@ export function usePeerConnection(
       setStatus('closed');
     });
     peer.on('error', (err) => {
-      console.error('P2P error', err);
+      showError(err, 'P2P error');
       setStatus('closed');
     });
 
@@ -89,7 +90,7 @@ export function usePeerConnection(
       try {
         peerRef.current.signal(incomingSignal);
       } catch (err) {
-        console.error('P2P signal error', err);
+        showError(err, 'P2P signal error');
       }
     }
   }, [incomingSignal]);

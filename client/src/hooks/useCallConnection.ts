@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { showError } from '@/lib/error-toast';
 import SimplePeer, { Instance as Peer, SignalData } from 'simple-peer';
 
 export type CallStatus = 'init' | 'connecting' | 'open' | 'closed' | 'error';
@@ -49,7 +50,7 @@ export function useCallConnection(
         peerRef.current = peer;
         setStatus('connecting');
       } catch (err) {
-        console.error('getUserMedia failed', err);
+        showError(err, 'getUserMedia failed');
         setStatus('error');
       }
     };

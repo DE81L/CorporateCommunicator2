@@ -1,6 +1,7 @@
 // client/src/hooks/useWebSocket.ts
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { showError } from '@/lib/error-toast'
 import { useAuth } from '@/hooks/use-auth'
 
 export type WSMessage<T = any> = { type: string; payload: T }
@@ -59,7 +60,7 @@ export function useWebSocket() {
         try {
           setLastRawMessage(JSON.parse(evt.data))
         } catch (err) {
-          console.error('Failed to parse WS message:', err)
+          showError(err, 'Failed to parse WS message')
         }
       })
 
@@ -79,7 +80,7 @@ export function useWebSocket() {
       })
 
       ws.addEventListener('error', (err) => {
-        console.error('WebSocket error:', err)
+        showError(err, 'WebSocket error')
         setConnectionStatus('error')
       })
     }
@@ -106,7 +107,7 @@ export function useWebSocket() {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(msg))
     } else {
-      console.error('WS not open:', wsRef.current?.readyState)
+      showError('WS not open')
     }
   }
 

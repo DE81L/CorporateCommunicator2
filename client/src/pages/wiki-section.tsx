@@ -1,5 +1,6 @@
 import { getWikiEntries } from "../api/wiki";
 import { useState, useMemo } from "react";
+import { showError } from "@/lib/error-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../hooks/use-auth";
 import { createApiClient } from "@/lib/api-client";
@@ -195,7 +196,7 @@ export default function WikiSection() {
         description: "Failed to create wiki entry",
         variant: "destructive",
       });
-      console.error(error);
+      showError(error);
     },
   });
 
@@ -231,7 +232,7 @@ export default function WikiSection() {
         description: "Failed to update wiki entry",
         variant: "destructive",
       });
-      console.error(error);
+      showError(error);
     },
   });
 
@@ -256,7 +257,7 @@ export default function WikiSection() {
         description: "Failed to delete wiki entry",
         variant: "destructive",
       });
-      console.error(error);
+      showError(error);
     },
   });
 
@@ -292,7 +293,7 @@ export default function WikiSection() {
         description: "Failed to create category",
         variant: "destructive",
       });
-      console.error(error);
+      showError(error);
     },
   });
 
@@ -321,7 +322,7 @@ export default function WikiSection() {
         description: "Failed to update category",
         variant: "destructive",
       });
-      console.error(error);
+      showError(error);
     },
   });
 
@@ -346,7 +347,7 @@ export default function WikiSection() {
         description: "Failed to delete category",
         variant: "destructive",
       });
-      console.error(error);
+      showError(error);
     },
   });
 

@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { showError } from "@/lib/error-toast";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/use-auth"; // Import useAuth from hooks
 import {NotificationsPane} from "../NotificationsPane";
@@ -25,7 +26,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
       await logout();
       setLocation("/auth");
     } catch (error) {
-      console.error("Logout failed:", error);
+      showError(error, "Logout failed");
     }
   }, [logout, setLocation]);
 

@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState, useCallback, useRef } from 'react';
+import { showError } from '@/lib/error-toast';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 import { useChat } from '@/context/ChatContext';
@@ -363,7 +364,7 @@ export default function MessagesSection({ onStartCall }: Props) {
         );
         saveMessages(user!.id, selectedUser!.id, stored);
       } catch (err) {
-        console.error('Failed to send message', err);
+        showError(err, 'Failed to send message');
         setLocalMessages((prev) =>
           prev.map((m) => (m.id === tempId ? { ...m, error: true } : m))
         );
