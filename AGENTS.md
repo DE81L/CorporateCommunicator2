@@ -8,6 +8,8 @@
 - **Node version**: Node.js 20 or higher is required.
 - **Pull Requests**: Include a summary of changes and testing results when creating PRs.
 - **API**: The `/api/departments` endpoint should return a list of departments for the request modal.
+- **Client errors**: Use `showError` from `client/src/lib/error-toast.ts` instead of `console.error`.
+- **API client**: Prefer `createApiClient()` for all `fetch` calls.
 Feel free to add new things to the guidelines. This may be your notes on the project. See `docs/DEVELOPER_CHECKLIST_RU.md` for a high level TODO list in Russian.
 
 Note: Message bubbles use a lighter primary color for sent messages on the right and a darker gray for received messages on the left.
