@@ -11,6 +11,7 @@ import WikiSection from "@/pages/wiki-section";
 import CallModal from "@/components/call-modal";
 import CallRequestDialog from "@/components/call-request-dialog";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import ConnectionBanner from "@/components/connection-banner";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
@@ -34,7 +35,7 @@ export default function HomePage() {
     name: string;
   } | null>(null);
   const { user } = useAuth();
-  const { connectionStatus, sendRaw, lastRawMessage } = useWebSocket();
+  const { connectionStatus, sendRaw, lastRawMessage, retriesLeft, reconnect } = useWebSocket();
   const { chatUser, setChatUser } = useChat();
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -211,6 +212,10 @@ export default function HomePage() {
           participant={{ name: callRecipient.name }}
           onDecline={cancelOutgoingCall}
         />
+      )}
+
+      {retriesLeft === 0 && connectionStatus !== 'open' && (
+        <ConnectionBanner onReconnect={reconnect} />
       )}
     </div>
   );

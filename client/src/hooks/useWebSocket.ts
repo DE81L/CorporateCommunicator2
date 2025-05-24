@@ -1,6 +1,6 @@
 // client/src/hooks/useWebSocket.ts
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useAuth } from '@/hooks/use-auth'
 
 export type WSMessage<T = any> = { type: string; payload: T }
@@ -19,14 +19,17 @@ const WS_URL = _raw
   : `${window.location.protocol.replace(/^http/, 'ws')}//${window.location.host}/ws`
 
 export function useWebSocket() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
 
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('closed')
   const [lastRawMessage, setLastRawMessage] = useState<WSMessage | null>(null)
+  const MAX_RETRIES = 5
+  const [retriesLeft, setRetriesLeft] = useState(MAX_RETRIES)
 
   const wsRef = useRef<WebSocket | null>(null)
   const retries = useRef(0)
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const connectRef = useRef<() => void>(() => {})
 
   useEffect(() => {
     let cancelled = false
@@ -42,11 +45,13 @@ export function useWebSocket() {
       setConnectionStatus('connecting')
       const ws = new WebSocket(WS_URL)
       wsRef.current = ws
+      connectRef.current = connect
 
       ws.addEventListener('open', () => {
         console.info('WebSocket open')
         setConnectionStatus('open')
         retries.current = 0
+        setRetriesLeft(MAX_RETRIES)
       })
 
       ws.addEventListener('message', (evt) => {
@@ -60,10 +65,15 @@ export function useWebSocket() {
 
       ws.addEventListener('close', (evt) => {
         console.info('WebSocket closed', evt.code, evt.reason)
+        if (evt.code === 4401) {
+          logout()
+          return
+        }
         setConnectionStatus('closed')
-        if (!cancelled && retries.current < 5) {
+        if (!cancelled && retries.current < MAX_RETRIES) {
           const backoff = Math.pow(2, retries.current) * 1000
           retries.current += 1
+          setRetriesLeft(MAX_RETRIES - retries.current)
           reconnectTimer.current = setTimeout(connect, backoff)
         }
       })
@@ -100,5 +110,15 @@ export function useWebSocket() {
     }
   }
 
-  return { connectionStatus, lastRawMessage, sendRaw }
+  const reconnect = useCallback(() => {
+    if (reconnectTimer.current) {
+      clearTimeout(reconnectTimer.current)
+      reconnectTimer.current = null
+    }
+    retries.current = 0
+    setRetriesLeft(MAX_RETRIES)
+    connectRef.current()
+  }, [])
+
+  return { connectionStatus, lastRawMessage, sendRaw, retriesLeft, reconnect }
 }

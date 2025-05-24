@@ -22,12 +22,23 @@ export function createApp(): Express {
   app.set('etag', false);
 
   /* ───────── SESSIONS ───────── */
+  const store = new session.MemoryStore();
   const sess = session({
+    store,
     secret: process.env.SESSION_SECRET ?? 'dev‑secret',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, httpOnly: true, sameSite: 'lax' },
+    rolling: true,
+    cookie: {
+      secure: false,
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 1000,
+    },
   });
+  if (typeof (store as any).prune === 'function') {
+    setInterval(() => (store as any).prune(), 60 * 60 * 1000);
+  }
   app.use(sess);
   app.set('session-middleware', sess as RequestHandler); 
 
