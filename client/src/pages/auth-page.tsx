@@ -154,9 +154,9 @@ export default function AuthPage() {
         }
         return await res.json();
       },
-      onSuccess: () => {
+      onSuccess: (_user, variables) => {
         toast({ title: "Registration successful!" });
-        setActiveTab("login"); // switch to login tab after registration
+        loginFn({ username: variables.username, password: variables.password });
       },
       onError: (error: Error) => {
         toast({

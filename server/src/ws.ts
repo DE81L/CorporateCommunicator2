@@ -24,7 +24,9 @@ export function initWebSocket(
       const userId = (req as any).session?.userId as number | undefined;
       if (!userId) {
         logger.warn('WS upgrade без аутентифицированной сессии — отклоняю');
-        socket.destroy();
+        wss.handleUpgrade(req, socket, head, (ws) => {
+          ws.close(4401, 'Unauthorized');
+        });
         return;
       }
       logger.debug(`WS upgrade success for user ${userId}`);
