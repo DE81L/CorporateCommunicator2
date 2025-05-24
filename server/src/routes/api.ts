@@ -319,13 +319,6 @@ router.get(
         [userId, chatWith]
       );
 
-      await db!.query(
-        `DELETE FROM messages
-          WHERE sender_id = $2
-            AND receiver_id = $1
-            AND status = 'read'`,
-        [userId, chatWith]
-      );
 
       const withFiles = history.rows.map((m) => ({
         ...m,
@@ -408,6 +401,57 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
     logger.error({ err: error }, 'Error sending message');
     const detail = error instanceof Error ? error.message : String(error);
     res.status(500).json({ error: 'Server error', detail });
+  }
+});
+
+/**
+ * PATCH /api/messages/:id
+ * Edit message content or mark it as deleted.
+ * Body: { content?: string; deleted?: boolean }
+ */
+router.patch('/messages/:id', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const messageId = Number(req.params.id);
+    if (!messageId) {
+      return res.status(400).json({ error: 'Invalid id' });
+    }
+
+    const { content, deleted }: { content?: string; deleted?: boolean } = req.body;
+
+    if (content === undefined && deleted === undefined) {
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    const userId = req.session.userId as number;
+    const { rows } = await db!.query<{ sender_id: number }>(
+      'SELECT sender_id FROM messages WHERE id = $1',
+      [messageId]
+    );
+    const msg = rows[0];
+    if (!msg) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+    if (msg.sender_id !== userId) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const sets: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+    if (content !== undefined) {
+      sets.push(`content = $${i++}`);
+      values.push(content);
+    }
+    if (deleted !== undefined) {
+      sets.push(`status = 'deleted'`);
+    }
+    values.push(messageId);
+    const query = `UPDATE messages SET ${sets.join(', ')} WHERE id = $${i} RETURNING id, sender_id AS "senderId", receiver_id AS "receiverId", content, timestamp, status`;
+    const updated = await db!.query(query, values);
+    res.json(updated.rows[0]);
+  } catch (err) {
+    logger.error('PATCH /messages/:id error:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
