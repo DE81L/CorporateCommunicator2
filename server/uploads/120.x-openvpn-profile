@@ -1,0 +1,164 @@
+client
+proto udp
+explicit-exit-notify
+dev tun
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+remote-cert-tls server
+verify-x509-name server name
+auth SHA256
+
+auth-user-pass
+cipher AES-128-GCM
+tls-client
+tls-version-min 1.2
+tls-cipher TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256
+ignore-unknown-option block-outside-dns
+setenv opt block-outside-dns # Prevent Windows 10 DNS leak
+verb 3
+remote sto2.vpntype.dev 8534
+<ca>
+-----BEGIN CERTIFICATE-----
+MIIDSzCCAjOgAwIBAgIUTXYq2qVIdXoLn8Xst9kC/KfjZLYwDQYJKoZIhvcNAQEL
+BQAwFjEUMBIGA1UEAwwLRWFzeS1SU0EgQ0EwHhcNMjQwMjAyMTEwNjI1WhcNMzQw
+MTMwMTEwNjI1WjAWMRQwEgYDVQQDDAtFYXN5LVJTQSBDQTCCASIwDQYJKoZIhvcN
+AQEBBQADggEPADCCAQoCggEBAK2sErXO3fjuubawttNQEunbl7ot7dO7kgfM2C26
+L/OvesswTLTRFy/vwlF2zUm57YdHy55dtCjHSCV+XskFMCLnaMPt1TJZI28Fd6u8
+TRK/qi8woulWBDxSQygOLPaJyVo1R+9vvtdVqADNzu3Y3Ig7o8IUzon4kQLaDMt1
+dwpdfzpNjqTQt5dce4nZCOGfYZVHMPYW0HLql2SlqSkzPcMDILX4eIq6xsFRohx/
+S8n+qYuOcTmHgYbLiZKx7ko8yo5VnghYQxnUG7oZtr5Hh2c49Yq/a7578VYx6X3j
+hF4/WXH9FjT9jPsxU7Qd8upUA15KrpDn+J7aW0nbLP7Li2cCAwEAAaOBkDCBjTAd
+BgNVHQ4EFgQU9AppauyDVKagDyyhKPKoq2/YSb4wUQYDVR0jBEowSIAU9AppauyD
+VKagDyyhKPKoq2/YSb6hGqQYMBYxFDASBgNVBAMMC0Vhc3ktUlNBIENBghRNdira
+pUh1egufxey32QL8p+NktjAMBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjANBgkq
+hkiG9w0BAQsFAAOCAQEAhKjUI+48bgfYcGUBMG0BwXHUU9idBktp3fCms/nO+job
+Cuqq4G45FEJ8tP3VWQAGZ+6TexMas+7tvEvDn9bcD8DSiiHj7liydjz2BWwxAztF
+T9dw6AqmH8YSwSKaQ+YCSUhaCAB+wTE0OgKfOAEyC5D2Z+PeSW2GyJme4CMcUNIS
+DBwxD8jULkuk3cYZSFnR/06vIg3t87Okr528++SDdgeRoqcLsKQoE2iYtX+GvSYn
+5A52sZKSoe8qQ0vFXmKdHOCDGJZbcdAXK0DWycwWiggXnG7eJf5FQS7FsIOSAQBY
+8wSCTfzMoyuz7ZvcU8Yg0Nm37szpGjxrfBGC1pCJLg==
+-----END CERTIFICATE-----
+</ca>
+<cert>
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            f0:11:ce:63:f7:e3:57:cd:e0:45:71:2c:5f:b8:58:af
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN=Easy-RSA CA
+        Validity
+            Not Before: Feb  2 11:06:26 2024 GMT
+            Not After : May  7 11:06:26 2026 GMT
+        Subject: CN=llEz54p5xQCVaprzuBI0BBqC85qQKWqg
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                RSA Public-Key: (2048 bit)
+                Modulus:
+                    00:ba:91:b9:1a:fb:b4:98:62:50:91:22:26:29:f6:
+                    e3:a9:08:38:c8:b3:34:aa:bd:32:f7:83:81:b1:83:
+                    4d:3e:0f:f5:bf:3b:60:15:ec:6e:d6:21:01:8b:ee:
+                    fd:c3:ae:f6:4a:41:6f:0a:95:83:22:24:6e:b8:62:
+                    76:e8:d0:f8:ec:d3:f5:5c:34:c5:43:a2:02:ad:5c:
+                    f0:39:ba:64:2d:55:62:3f:f9:27:98:a1:47:bb:5c:
+                    a9:d3:05:af:a3:58:be:a0:b0:49:bf:c0:49:06:24:
+                    e8:07:18:b8:2a:0b:50:9f:b9:d1:ef:c5:2f:d4:2f:
+                    6e:77:d5:6c:25:21:e5:6d:42:88:84:ee:a0:3e:15:
+                    26:1d:b6:5b:c8:1a:9e:2f:e5:ee:91:32:16:d0:0a:
+                    ab:aa:cd:95:b5:24:bf:78:2c:94:cf:13:40:f9:05:
+                    81:80:77:c4:dd:4a:62:45:33:56:32:02:5b:d0:d0:
+                    10:21:f2:0c:ce:ed:6c:19:02:7d:ea:7e:9c:4a:34:
+                    8f:8a:21:90:44:af:28:9a:bc:fd:0a:6d:c0:df:c6:
+                    25:c6:d5:b8:59:67:4f:be:f1:3d:7d:bf:a1:98:8a:
+                    a8:f9:4b:de:1a:92:cd:92:b4:06:94:62:0b:f9:e4:
+                    3e:82:d2:24:36:94:04:ab:ac:6b:6e:63:3d:0a:70:
+                    72:69
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            X509v3 Subject Key Identifier: 
+                E6:5D:02:D0:41:F9:11:38:26:BF:54:05:59:CC:B2:CF:AA:75:2F:3E
+            X509v3 Authority Key Identifier: 
+                keyid:F4:0A:69:6A:EC:83:54:A6:A0:0F:2C:A1:28:F2:A8:AB:6F:D8:49:BE
+                DirName:/CN=Easy-RSA CA
+                serial:4D:76:2A:DA:A5:48:75:7A:0B:9F:C5:EC:B7:D9:02:FC:A7:E3:64:B6
+
+            X509v3 Extended Key Usage: 
+                TLS Web Client Authentication
+            X509v3 Key Usage: 
+                Digital Signature
+    Signature Algorithm: sha256WithRSAEncryption
+         67:61:d7:28:b3:61:c8:0e:ec:0e:2c:e7:67:28:a7:bc:b0:51:
+         c8:12:38:25:9a:35:b2:cc:f6:ed:05:d7:e9:f3:b0:64:2a:63:
+         a5:b1:80:d4:07:46:43:d8:3a:59:0b:f6:fd:c5:ba:03:fd:bf:
+         e9:61:dc:a9:5e:da:58:c4:74:d6:03:43:3a:9c:5e:81:08:ef:
+         45:2d:18:7c:17:b1:38:68:78:68:4e:de:4d:9b:8e:1d:ef:4c:
+         4c:bc:dd:46:5c:54:ff:b6:c8:f0:29:42:97:d4:1a:cc:38:64:
+         11:b7:64:50:72:cf:d5:cc:d2:04:92:6d:60:f5:81:e7:8d:64:
+         2e:1e:cd:d4:b0:5f:37:65:05:1e:f3:e6:3f:2d:c6:37:f5:fa:
+         8d:ff:a6:0f:50:49:3b:a3:d0:b9:2e:c8:d7:c5:2b:a6:9c:db:
+         12:bb:3b:5e:e3:2c:b2:8c:3f:d2:90:8b:b8:05:c3:fa:4d:02:
+         bf:b9:7a:c0:f3:c8:d1:1e:8c:da:96:8b:52:f7:14:0d:fa:4a:
+         7c:33:db:11:16:d7:ab:dc:d2:fa:04:3b:20:65:e2:0f:64:66:
+         7f:9a:ef:8b:ce:3a:08:7e:cf:e4:e0:ab:45:83:bb:74:f5:ad:
+         28:fd:93:00:c0:9c:a7:41:70:1e:47:80:cc:64:f5:75:f1:2e:
+         f0:bd:38:07
+-----BEGIN CERTIFICATE-----
+MIIDbzCCAlegAwIBAgIRAPARzmP341fN4EVxLF+4WK8wDQYJKoZIhvcNAQELBQAw
+FjEUMBIGA1UEAwwLRWFzeS1SU0EgQ0EwHhcNMjQwMjAyMTEwNjI2WhcNMjYwNTA3
+MTEwNjI2WjArMSkwJwYDVQQDDCBsbEV6NTRwNXhRQ1ZhcHJ6dUJJMEJCcUM4NXFR
+S1dxZzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALqRuRr7tJhiUJEi
+Jin246kIOMizNKq9MveDgbGDTT4P9b87YBXsbtYhAYvu/cOu9kpBbwqVgyIkbrhi
+dujQ+OzT9Vw0xUOiAq1c8Dm6ZC1VYj/5J5ihR7tcqdMFr6NYvqCwSb/ASQYk6AcY
+uCoLUJ+50e/FL9QvbnfVbCUh5W1CiITuoD4VJh22W8gani/l7pEyFtAKq6rNlbUk
+v3gslM8TQPkFgYB3xN1KYkUzVjICW9DQECHyDM7tbBkCfep+nEo0j4ohkESvKJq8
+/QptwN/GJcbVuFlnT77xPX2/oZiKqPlL3hqSzZK0BpRiC/nkPoLSJDaUBKusa25j
+PQpwcmkCAwEAAaOBojCBnzAJBgNVHRMEAjAAMB0GA1UdDgQWBBTmXQLQQfkROCa/
+VAVZzLLPqnUvPjBRBgNVHSMESjBIgBT0Cmlq7INUpqAPLKEo8qirb9hJvqEapBgw
+FjEUMBIGA1UEAwwLRWFzeS1SU0EgQ0GCFE12KtqlSHV6C5/F7LfZAvyn42S2MBMG
+A1UdJQQMMAoGCCsGAQUFBwMCMAsGA1UdDwQEAwIHgDANBgkqhkiG9w0BAQsFAAOC
+AQEAZ2HXKLNhyA7sDiznZyinvLBRyBI4JZo1ssz27QXX6fOwZCpjpbGA1AdGQ9g6
+WQv2/cW6A/2/6WHcqV7aWMR01gNDOpxegQjvRS0YfBexOGh4aE7eTZuOHe9MTLzd
+RlxU/7bI8ClCl9QazDhkEbdkUHLP1czSBJJtYPWB541kLh7N1LBfN2UFHvPmPy3G
+N/X6jf+mD1BJO6PQuS7I18UrppzbErs7XuMssow/0pCLuAXD+k0Cv7l6wPPI0R6M
+2paLUvcUDfpKfDPbERbXq9zS+gQ7IGXiD2Rmf5rvi846CH7P5OCrRYO7dPWtKP2T
+AMCcp0FwHkeAzGT1dfEu8L04Bw==
+-----END CERTIFICATE-----
+</cert>
+<key>
+-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC6kbka+7SYYlCR
+IiYp9uOpCDjIszSqvTL3g4Gxg00+D/W/O2AV7G7WIQGL7v3DrvZKQW8KlYMiJG64
+Ynbo0Pjs0/VcNMVDogKtXPA5umQtVWI/+SeYoUe7XKnTBa+jWL6gsEm/wEkGJOgH
+GLgqC1CfudHvxS/UL2531WwlIeVtQoiE7qA+FSYdtlvIGp4v5e6RMhbQCquqzZW1
+JL94LJTPE0D5BYGAd8TdSmJFM1YyAlvQ0BAh8gzO7WwZAn3qfpxKNI+KIZBEryia
+vP0KbcDfxiXG1bhZZ0++8T19v6GYiqj5S94aks2StAaUYgv55D6C0iQ2lASrrGtu
+Yz0KcHJpAgMBAAECggEAVfyloJ8TrAvb8BgaGMs2QAiPC0k04+BRZixREPxgFFOM
+wrdd4JzYtI3/xXu/r3mq/6xKvkkMaCb8dLTE8yalI5nJAtc7d6FqtHYaLbEPTKmG
+n894hWsHwX3Cs4RyX8meCjdVti+sOE24NtUYxB/057jf3i82jQfTVR2jOzX1JLZ0
+4VYDqUExgH1FDx8EhG76ZRXJY8VJNs2wqfQy8Igpoh/57ZkjTFWr0GW4v6xIUVD9
+FtcldGCiPsqw+iYiIWp5he+dw5n3LA5lF9rEx8c4Z1Gr2015JYnx8n45RLsa4i6u
+e4GeleJL/wmGrKTXNHzjKFeog1dQt4NfOEJzYsuShQKBgQDhqYL6MBo7J9ogsUrH
+G/cmeQyhYCDkmv+GdDzmzpcN4w/QAEJTGMtbHoPIb7w42SjeTxxvv6iT1HWB7owG
+8cUZO/G7jLVDGxdrz4aIo5aZBprGFbWxFVtf+J0AQ9QEmsWH7KS3FauwTQtAzxo8
+Vp7TGspRMERZlUntFTUee2Q89wKBgQDTpsWoWWMd3c8ZBelHJyjFmh2Fj6gIrXt/
+H6QLPM9JHeLYKd5SCBixmWczS35i+dzrW6Uhi3w6AJ9Ccno5tw96hqULNJeC0fXo
+FYjqRfBZ/ifQCKXgeUV/XrlesAWrgdrJYMvISyo9nIlORjZyPGMlVpB1L1EVTYZq
+JWXsrcnTnwKBgBm0PkgTPJmqY20/5J2jcNaACVFEatq/UQXWra04sPoS+BUgQm3G
+sDsz0Zz+JTlwevg/mKSd9yzHkY74RhjwZxwFuPY9A9Sd/F/6Zn+f6qKJnw2bIXQH
+U74tymxiTX8sxf1ClkyIemL9k5+RN5LR5wtyzMLMtaxileYceU18jqFnAoGBAJo5
+fPAmamYZ+c2nFAxICZqrqXVob64bE9FXMgcKQZVq1KBlKd4mji/js2KaUTc4EPXj
+atmdtWDikSovFsc1kG7c7CjVIs4txn1eK81iNzisTUB2/MAsPisI0BSiOQ93aQCy
+quuBcf9BMIA8A3KMdEaB5HOvjery+c4hADtNi7LLAoGAaKBWqPMpgugVhAD5YgIf
+/V/mk6d+1E8zhjIXduQNGY9uyiCqat9kQSDjmE1yPeE5O7WTJZ0HZfsJdb1b2mFo
+R8x3bEEHIBp+wHkEQw74ryLg6q2WQO4FHd/hxB8Q76GsMfUo7NpH6Lp5O4Gu9+BB
+DdOtpKfhZMV0ZCFTIPmNT/Q=
+-----END PRIVATE KEY-----
+</key>
+<auth-user-pass>
+user3342510
+dsuYealXj5FmYpBPMDGpDWJjCDvJTWSC
+</auth-user-pass>
