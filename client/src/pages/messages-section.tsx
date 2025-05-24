@@ -118,7 +118,7 @@ export default function MessagesSection({ onStartCall }: Props) {
       console.log('Fetching messages for', selectedUser?.id);
       return (
         (await apiClient.request<Message[]>(
-          `/messages?chatWith=${selectedUser!.id}`,
+          `/messages?chatWith=${selectedUser!.id}&limit=${maxDisplay}`,
         )) ?? []
       );
     },

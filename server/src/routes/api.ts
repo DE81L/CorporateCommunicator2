@@ -293,6 +293,12 @@ router.get(
       if (!chatWith) {
         return res.status(400).json({ error: 'chatWith is required' });
       }
+
+      const limit = Math.min(Number(req.query.limit) || 50, 100);
+      const before = req.query.before
+        ? new Date(req.query.before as string)
+        : new Date();
+
       const history = await db!.query(
         `SELECT
            id,
@@ -302,10 +308,12 @@ router.get(
            timestamp,
            status
          FROM messages
-        WHERE (sender_id = $1 AND receiver_id = $2)
-           OR (sender_id = $2 AND receiver_id = $1)
-        ORDER BY timestamp DESC`,
-        [userId, chatWith]
+        WHERE ((sender_id = $1 AND receiver_id = $2)
+           OR (sender_id = $2 AND receiver_id = $1))
+          AND timestamp < $3
+        ORDER BY timestamp DESC
+        LIMIT $4`,
+        [userId, chatWith, before, limit]
       );
       await db!.query(
         `UPDATE messages
