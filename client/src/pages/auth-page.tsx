@@ -142,7 +142,7 @@ export default function AuthPage() {
     const registerMutation = useMutation({
       mutationFn: async (data: z.infer<typeof registerSchema>) => {
         const { confirmPassword, ...payload } = data;
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/register`, {
+        const res = await fetch(`${baseURL}/api/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -150,7 +150,7 @@ export default function AuthPage() {
         });
         if (!res.ok) {
           const errorData = await res.json();
-          throw new Error(errorData.message || 'Registration failed');
+          throw new Error(errorData.error || 'Registration failed');
         }
         return await res.json();
       },

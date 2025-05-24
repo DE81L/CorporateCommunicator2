@@ -27,14 +27,19 @@ export function usePeerConnection(
     if (!enabled) return;
     console.debug('P2P creating connection', { initiator });
     const stun = import.meta.env.VITE_STUN_SERVER;
-    const iceServers =
+    const turnUrl = import.meta.env.VITE_TURN_URL as string | undefined;
+    const turnUser = import.meta.env.VITE_TURN_USER as string | undefined;
+    const turnPass = import.meta.env.VITE_TURN_PASS as string | undefined;
+
+    const stunUrls =
       !stun || stun === 'none'
-        ? []
-        : stun
-            .split(',')
-            .map((url) => url.trim())
-            .filter(Boolean)
-            .map((url) => ({ urls: url }));
+        ? ['stun:stun.l.google.com:19302']
+        : stun.split(',').map((u) => u.trim()).filter(Boolean);
+
+    const iceServers: RTCIceServer[] = stunUrls.map((url) => ({ urls: url }));
+    if (turnUrl) {
+      iceServers.push({ urls: turnUrl, username: turnUser, credential: turnPass });
+    }
 
     const peer = new SimplePeer({
       initiator,
@@ -67,7 +72,7 @@ export function usePeerConnection(
     });
     peer.on('error', (err) => {
       console.error('P2P error', err);
-      setStatus('error');
+      setStatus('closed');
     });
 
     peerRef.current = peer;
