@@ -1,9 +1,10 @@
 import type { WikiEntry, InsertWikiEntry } from '@shared/schema/wiki';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "./use-toast";
+import { createApiClient } from "@/lib/api-client";
 
-
-const API_BASE = "/api/wiki";
+const api = createApiClient();
+const API_BASE = "/wiki";
 
 export function useWiki() {
   const queryClient = useQueryClient();
@@ -12,34 +13,22 @@ export function useWiki() {
   // Query for fetching all wiki entries
   const { data: entries = [], isLoading: isLoadingEntries } = useQuery<WikiEntry[]>({
     queryKey: [API_BASE],
-    queryFn: async () => {
-      const res = await fetch(API_BASE, { credentials: "include" });
-      if (!res.ok) throw new Error(`GET ${API_BASE} → ${res.status}`);
-      return res.json();
-    },
+    queryFn: async () => api.request<WikiEntry[]>(API_BASE) as Promise<WikiEntry[]>,
   });
 
   // Query for fetching entries by category
   const getCategoryEntries = async (categoryId: number) => {
-    const res = await fetch(`${API_BASE}/categories/${categoryId}/entries`, { 
-      credentials: "include" 
-    });
-    if (!res.ok) throw new Error(`GET ${API_BASE}/categories/${categoryId}/entries → ${res.status}`);
-    return res.json();
+    return api.request<WikiEntry[]>(`${API_BASE}/categories/${categoryId}/entries`) as Promise<WikiEntry[]>;
   };
 
   // Mutation for creating entries
   const createEntry = useMutation({
-    mutationFn: async (entry: InsertWikiEntry) => {
-      const res = await fetch(API_BASE, {
+    mutationFn: async (entry: InsertWikiEntry) =>
+      api.request<WikiEntry>(API_BASE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(entry),
-      });
-      if (!res.ok) throw new Error(`POST ${API_BASE} → ${res.status}`);
-      return res.json();
-    },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [API_BASE] });
       toast({
@@ -58,16 +47,12 @@ export function useWiki() {
 
   // Mutation for updating entries
   const updateEntry = useMutation({
-    mutationFn: async ({ id, patch }: { id: number; patch: Partial<InsertWikiEntry> }) => {
-      const res = await fetch(`${API_BASE}/${id}`, {
+    mutationFn: async ({ id, patch }: { id: number; patch: Partial<InsertWikiEntry> }) =>
+      api.request<WikiEntry>(`${API_BASE}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(patch),
-      });
-      if (!res.ok) throw new Error(`PUT ${API_BASE}/${id} → ${res.status}`);
-      return res.json();
-    },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [API_BASE] });
       toast({
@@ -86,13 +71,8 @@ export function useWiki() {
 
   // Mutation for deleting entries
   const deleteEntry = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await fetch(`${API_BASE}/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error(`DELETE ${API_BASE}/${id} → ${res.status}`);
-    },
+    mutationFn: async (id: number) =>
+      api.request(`${API_BASE}/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [API_BASE] });
       toast({
