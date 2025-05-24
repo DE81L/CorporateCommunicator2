@@ -15,17 +15,14 @@ import jobsRouter from './jobs';
 import wikiRouter from './wiki';
 import requestsRouter from './requests';
 import adminRouter from './admin';
-
-interface SyncMessage {
-  id: number;
-  senderId: number;
-  receiverId: number;
-  content: string;
-  timestamp: string;
-}
-
-const syncStore = new Map<number, SyncMessage[]>();
-const fileStore = new Map<number, string>();
+import {
+  addSyncMessages,
+  takeSyncMessages,
+  storeFile,
+  getFile,
+  clearFile,
+  type SyncMessage,
+} from '../store/messageStore';
 
 const router = Router();
 router.use('/departments', isAuthenticated, departmentsRouter);
@@ -320,10 +317,11 @@ router.get(
       );
 
 
-      const withFiles = history.rows.map((m) => ({
-        ...m,
-        file: fileStore.get(m.id) ?? null,
-      }));
+      const withFiles = history.rows.map((m) => {
+        const f = getFile(m.id);
+        if (f) clearFile(m.id);
+        return { ...m, file: f ?? null };
+      });
       res.json(withFiles);
     } catch (err) {
       logger.error('GET /messages error:', err);
@@ -365,7 +363,7 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
       const name = `${message.id}.${ext}`;
       fs.writeFileSync(path.join(uploadDir, name), Buffer.from(base64Data, 'base64'));
       filePath = `/uploads/${name}`;
-      fileStore.set(message.id, filePath);
+      storeFile(message.id, filePath);
     }
 
     const delivered = sendChatMessage(receiverId, { ...message, file: filePath });
@@ -458,15 +456,13 @@ router.patch('/messages/:id', isAuthenticated, async (req: Request, res: Respons
 router.post('/sync/messages', isAuthenticated, (req: Request, res: Response) => {
   const userId = req.session.userId as number;
   const msgs = Array.isArray(req.body) ? (req.body as SyncMessage[]) : [];
-  if (!syncStore.has(userId)) syncStore.set(userId, []);
-  syncStore.get(userId)!.push(...msgs);
+  addSyncMessages(userId, msgs);
   res.json({ success: true });
 });
 
 router.get('/sync/messages', isAuthenticated, (req: Request, res: Response) => {
   const userId = req.session.userId as number;
-  const msgs = syncStore.get(userId) ?? [];
-  syncStore.set(userId, []);
+  const msgs = takeSyncMessages(userId);
   res.json(msgs);
 });
 

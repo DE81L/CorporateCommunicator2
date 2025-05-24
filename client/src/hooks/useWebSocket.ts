@@ -26,6 +26,7 @@ export function useWebSocket() {
 
   const wsRef = useRef<WebSocket | null>(null)
   const retries = useRef(0)
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -63,7 +64,7 @@ export function useWebSocket() {
         if (!cancelled && retries.current < 5) {
           const backoff = Math.pow(2, retries.current) * 1000
           retries.current += 1
-          setTimeout(connect, backoff)
+          reconnectTimer.current = setTimeout(connect, backoff)
         }
       })
 
@@ -77,7 +78,17 @@ export function useWebSocket() {
 
     return () => {
       cancelled = true
-      wsRef.current?.close()
+      if (reconnectTimer.current) {
+        clearTimeout(reconnectTimer.current)
+        reconnectTimer.current = null
+      }
+      if (wsRef.current) {
+        wsRef.current.onopen = null
+        wsRef.current.onmessage = null
+        wsRef.current.onerror = null
+        wsRef.current.onclose = null
+        wsRef.current.close()
+      }
     }
   }, [user])
 
