@@ -43,6 +43,18 @@ export async function register(userData: {
   firstName: string;
   lastName: string;
 }) {
+  // Check if username or email already exist to return a proper error
+  const existing = await db?.query(
+    'SELECT id FROM users WHERE username = $1 OR email = $2',
+    [userData.username, userData.email]
+  );
+  if (existing && (existing.rowCount ?? 0) > 0) {
+    const err = new Error('User already exists');
+    // Attach custom code so the route can map to 409 status
+    (err as any).code = 'DUPLICATE';
+    throw err;
+  }
+
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(userData.password, salt);
 

@@ -44,8 +44,11 @@ router.post('/register', async (req: Request, res: Response) => {
      await db!.query('UPDATE users SET isonline = 1 WHERE id = $1', [newUser.id]);
      broadcastStatus(newUser.id, 1);
      res.json({ id: newUser.id, isOnline: 1 });
-  } catch (error) {
+  } catch (error: any) {
      logger.error('Register failed:', error);
+     if (error && error.code === 'DUPLICATE') {
+       return res.status(409).json({ error: 'Username or email already exists' });
+     }
      res.status(500).json({ error: 'Registration error' });
    }
 });
