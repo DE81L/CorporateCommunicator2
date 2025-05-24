@@ -149,6 +149,9 @@ export default function AuthPage() {
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
+          if (res.status === 409) {
+            throw new Error('Username or email already taken');
+          }
           const errorData = await res.json();
           throw new Error(errorData.error || 'Registration failed');
         }
