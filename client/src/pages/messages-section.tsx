@@ -85,6 +85,7 @@ export default function MessagesSection({ onStartCall }: Props) {
   const [dragOver, setDragOver] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [incomingSignal, setIncomingSignal] = useState<any>(null);
+  const signalQueueRef = useRef<Map<number, any[]>>(new Map());
   const [contactsCollapsed, setContactsCollapsed] = useState(false);
   const [contacts, setContacts] = useState<User[]>([]);
   const [contactSearch, setContactSearch] = useState('');
@@ -132,6 +133,15 @@ export default function MessagesSection({ onStartCall }: Props) {
 
   useEffect(() => {
     setVisibleCount(pageSize);
+  }, [selectedUser]);
+
+  useEffect(() => {
+    if (selectedUser) {
+      const q = signalQueueRef.current.get(selectedUser.id);
+      if (q && q.length > 0) {
+        setIncomingSignal(q.shift());
+      }
+    }
   }, [selectedUser]);
 
   useEffect(() => {
@@ -206,8 +216,14 @@ export default function MessagesSection({ onStartCall }: Props) {
       }
     }
 
-    if (type === 'p2p-signal' && payload.from === selectedUser?.id) {
-      setIncomingSignal(payload.signal);
+    if (type === 'p2p-signal') {
+      const q = signalQueueRef.current.get(payload.from) || [];
+      q.push(payload.signal);
+      signalQueueRef.current.set(payload.from, q);
+      if (payload.from === selectedUser?.id) {
+        const sig = q.shift();
+        if (sig) setIncomingSignal(sig);
+      }
     }
 
     if (
