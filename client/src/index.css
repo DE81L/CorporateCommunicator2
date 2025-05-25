@@ -15,6 +15,8 @@
     --input: 214.3 31.8% 91.4%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
     --ring: 215 20.2% 65.1%;
     /* Sidebar default colors */
     --sidebar: var(--background);
@@ -35,6 +37,8 @@
     --input: 217.2 32.6% 17.5%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
     --ring: 216 34% 17.9%;
     --sidebar: var(--background);
     --sidebar-foreground: var(--foreground);
