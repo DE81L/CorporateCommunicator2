@@ -10,7 +10,7 @@ export function useUserStatusHeartbeat() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
     // сразу помечаем online
     apiClient
       .request('/users/status', {
@@ -67,5 +67,5 @@ export function useUserStatusHeartbeat() {
       setOffline();
       window.removeEventListener('beforeunload', setOffline);
     };
-  }, [user, queryClient]);
+  }, [user?.id, queryClient]);
 }
