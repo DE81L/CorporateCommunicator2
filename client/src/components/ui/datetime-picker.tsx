@@ -1,23 +1,28 @@
-import { useState } from "react"
+import * as React from "react"
 import { Calendar } from "./calendar"
 
-export interface DateTimePickerProps {
+export interface DateTimePickerProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    "onChange" | "value"
+  > {
   value?: Date
   onChange?: (date: Date | undefined) => void
   disabled?: boolean
 }
 
-export const DateTimePicker = ({
-  value,
-  onChange,
-  disabled,
-}: DateTimePickerProps) => {
-  const [date, setDate] = useState<Date | undefined>(value)
+const DateTimePicker = React.forwardRef<HTMLInputElement, DateTimePickerProps>(
+  ({ value, onChange, disabled, ...props }, ref) => {
+    const [date, setDate] = React.useState<Date | undefined>(value)
+    React.useEffect(() => {
+      setDate(value)
+    }, [value])
 
   const handleDateChange = (newDate?: Date) => {
     setDate(newDate)
     onChange?.(newDate)
   }
+
 
   return (
     <div className="flex flex-col gap-2">
@@ -51,3 +56,7 @@ export const DateTimePicker = ({
     </div>
   )
 }
+
+DateTimePicker.displayName = "DateTimePicker"
+
+export { DateTimePicker }
