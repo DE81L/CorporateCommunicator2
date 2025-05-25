@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { SectionType } from "@/types/sections";
 import { useChat } from "@/context/ChatContext";
 import { useMessageSync } from "@/hooks/useMessageSync";
+import { showDesktopNotification } from "@/lib/desktop-notify";
 
 export default function HomePage() {
   const [activeSection, setActiveSection] = useState<SectionType>("messages");
@@ -145,6 +146,9 @@ export default function HomePage() {
       if (msg.senderId === user.id) return;
       if (chatUser && msg.senderId === chatUser.id) return;
       toast({ title: t('messages.newMessage'), description: msg.content });
+      if (!document.hasFocus()) {
+        showDesktopNotification(t('messages.newMessage'), { body: msg.content });
+      }
       return;
     }
 
@@ -159,6 +163,11 @@ export default function HomePage() {
         name: payload.fromName,
         callType: payload.callType,
       });
+      if (!document.hasFocus()) {
+        showDesktopNotification(payload.fromName, {
+          body: t(`call.${payload.callType}`),
+        });
+      }
     }
 
     if (lastRawMessage.type === 'p2p-signal') {
