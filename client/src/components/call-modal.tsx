@@ -34,6 +34,7 @@ interface CallModalProps {
     name: string;
     avatarUrl?: string;
   };
+  incomingSignal?: any;
 }
 
 export default function CallModal({
@@ -41,6 +42,7 @@ export default function CallModal({
   onClose,
   callType,
   recipient,
+  incomingSignal: initialSignal,
 }: CallModalProps) {
   const [callDuration, setCallDuration] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
@@ -49,7 +51,18 @@ export default function CallModal({
   const { user } = useAuth();
   const { sendRaw, lastRawMessage } = useWebSocket();
   const { audioInputId } = useSettings();
-  const [incomingSignal, setIncomingSignal] = useState<any>();
+  const [incomingSignal, setIncomingSignal] = useState<any>(initialSignal);
+  useEffect(() => {
+    if (initialSignal) setIncomingSignal(initialSignal);
+  }, [initialSignal]);
+  useEffect(() => {
+    (window as any).__CALL_TYPE = callType;
+    return () => {
+      delete (window as any).__CALL_TYPE;
+    };
+  }, [callType]);
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [stage, setStage] = useState<'calling' | 'connecting' | 'connected' | 'in_call'>('calling');
 
@@ -86,13 +99,20 @@ export default function CallModal({
       audioRef.current.srcObject = remoteStream;
       audioRef.current.play().catch(() => {});
     }
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
   }, [remoteStream]);
 
   useEffect(() => {
     if (localStream) {
       localStream.getAudioTracks().forEach((t) => (t.enabled = !isMuted));
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = localStream;
+      }
+      localStream.getVideoTracks().forEach((t) => (t.enabled = !isVideoOff));
     }
-  }, [isMuted, localStream]);
+  }, [isMuted, isVideoOff, localStream]);
 
   // Запускаем таймер, когда звонок активен
   useEffect(() => {
@@ -196,15 +216,21 @@ export default function CallModal({
           <audio ref={audioRef} className="hidden" />
         </div>
 
-        {/* Video placeholder - in a real app this would connect to WebRTC */}
         {callType === "video" && !isVideoOff && (
           <div className="relative">
-            <div className="w-full h-40 bg-primary-900 flex items-center justify-center">
-              <UserIcon className="h-12 w-12 text-primary-700" />
-            </div>
-            <div className="absolute bottom-2 right-2 w-20 h-20 bg-primary-700 rounded border border-primary-600 flex items-center justify-center">
-              <UserIcon className="h-8 w-8 text-primary-500" />
-            </div>
+            <video
+              ref={remoteVideoRef}
+              autoPlay
+              playsInline
+              className="w-full h-40 bg-black object-cover"
+            />
+            <video
+              ref={localVideoRef}
+              autoPlay
+              muted
+              playsInline
+              className="absolute bottom-2 right-2 w-24 h-24 rounded object-cover"
+            />
           </div>
         )}
         <DialogFooter>

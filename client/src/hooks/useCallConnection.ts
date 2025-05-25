@@ -22,24 +22,41 @@ export function useCallConnection(
     let peer: Peer | undefined;
     const start = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: audioDeviceId ? { deviceId: { exact: audioDeviceId } } : true,
-        });
+        const constraints =
+          (window as any).__CALL_TYPE === 'video'
+            ? {
+                video: { width: 1280, height: 720, facingMode: 'user' },
+                audio: audioDeviceId
+                  ? { deviceId: { exact: audioDeviceId } }
+                  : true,
+              }
+            : {
+                audio: audioDeviceId
+                  ? { deviceId: { exact: audioDeviceId } }
+                  : true,
+              };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
         setLocalStream(stream);
+        const stun = import.meta.env.VITE_STUN_SERVER;
+        const turnUrl = import.meta.env.VITE_TURN_URL as string | undefined;
+        const turnUser = import.meta.env.VITE_TURN_USER as string | undefined;
+        const turnPass = import.meta.env.VITE_TURN_PASS as string | undefined;
+
+        const stunUrls =
+          !stun || stun === 'none'
+            ? ['stun:stun.l.google.com:19302']
+            : stun.split(',').map((u) => u.trim()).filter(Boolean);
+
+        const iceServers: RTCIceServer[] = stunUrls.map((url) => ({ urls: url }));
+        if (turnUrl) {
+          iceServers.push({ urls: turnUrl, username: turnUser, credential: turnPass });
+        }
+
         peer = new SimplePeer({
           initiator,
           trickle: true,
           stream,
-          config: {
-            iceServers:
-              !import.meta.env.VITE_STUN_SERVER ||
-              import.meta.env.VITE_STUN_SERVER === 'none'
-                ? []
-                : import.meta.env.VITE_STUN_SERVER.split(',')
-                    .map((u) => u.trim())
-                    .filter(Boolean)
-                    .map((u) => ({ urls: u })),
-          },
+          config: { iceServers },
         });
         peer.on('signal', (sig) => onSignalRef.current(sig));
         if (incomingSignal) peer.signal(incomingSignal);
