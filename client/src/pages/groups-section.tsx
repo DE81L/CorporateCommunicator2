@@ -34,6 +34,7 @@ import { Switch } from "@/components/ui/switch";
 import { useElectron } from "@/hooks/use-electron";
 import { queryClient } from "@/lib/queryClient";
 import { createApiClient } from "@/lib/api-client";
+import GroupChatSection from "@/pages/group-chat-section";
 
 const createGroupSchema = z.object({
   name: z.string().min(1, "Group name is required"),
@@ -48,6 +49,7 @@ export function GroupsSection({ groupId }: GroupsSectionProps) {
   const { toast } = useToast();
   const { t } = useTranslation();
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   //Fetch groups
   const {
     data: groups = [],
@@ -137,6 +139,17 @@ export function GroupsSection({ groupId }: GroupsSectionProps) {
   const onSubmit = (data: CreateGroupFormValues) => {
     createGroup(data);
   };
+  if (selectedGroup) {
+    return (
+      <div className="flex-1 overflow-auto">
+        <Button className="m-2" variant="ghost" onClick={() => setSelectedGroup(null)}>
+          {t('common.back', 'Back')}
+        </Button>
+        <GroupChatSection group={selectedGroup} />
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-auto p-6">
       <div className="mb-6 flex justify-between items-center">
@@ -292,7 +305,11 @@ export function GroupsSection({ groupId }: GroupsSectionProps) {
                       </AvatarFallback>
                     </Avatar>
                   </div>
-                  <Button variant="link" className="text-primary p-0 h-auto">
+                  <Button
+                    variant="link"
+                    className="text-primary p-0 h-auto"
+                    onClick={() => setSelectedGroup(group)}
+                  >
                     {t('common.view')}
                   </Button>
                   <Button
