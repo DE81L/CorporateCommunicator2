@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useTranslation } from 'react-i18next';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createApiClient } from '@/lib/api-client';
 
 export default function AdminPage() {
@@ -99,7 +99,7 @@ export default function AdminPage() {
   if (!user) return <Redirect to="/auth" />;
   if (!user.isAdmin) return <Redirect to="/" />;
 
-  const columns = rows.length ? Object.keys(rows[0]) : [];
+  const columns = useMemo(() => (rows.length ? Object.keys(rows[0]) : []), [rows]);
   function handleResize(index: number, startX: number) {
     const startWidth = columnWidths[index] ?? 150;
     const onMove = (e: MouseEvent) => {
