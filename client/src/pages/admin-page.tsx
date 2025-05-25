@@ -3,6 +3,13 @@ import { Redirect, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Card,
   CardContent,
   CardHeader,
@@ -134,16 +141,18 @@ export default function AdminPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center space-x-2">
-              <select
-                className="border rounded p-2 flex-1"
-                value={selectedTable}
-                onChange={e => setSelectedTable(e.target.value)}
-              >
-                <option value="">Select table</option>
-                {tables.map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
+              <Select value={selectedTable} onValueChange={setSelectedTable}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Select table" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tables.map(t => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button variant="secondary" onClick={() => setLocation('/')}>{t('common.back')}</Button>
             </div>
 
