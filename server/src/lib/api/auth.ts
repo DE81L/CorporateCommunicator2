@@ -42,6 +42,7 @@ export async function register(userData: {
   password: string;
   firstName: string;
   lastName: string;
+  isAdmin?: boolean;
 }) {
   // Check if username or email already exist to return a proper error
   const existing = await db?.query(
@@ -59,10 +60,17 @@ export async function register(userData: {
   const hashedPassword = await bcrypt.hash(userData.password, salt);
 
   const result = await db?.query(
-    `INSERT INTO users (username, email, password, first_name, last_name)
-     VALUES ($1, $2, $3, $4, $5)
-     RETURNING id, username, email, first_name, last_name`,
-    [userData.username, userData.email, hashedPassword, userData.firstName, userData.lastName]
+    `INSERT INTO users (username, email, password, first_name, last_name, is_admin)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     RETURNING id, username, email, first_name, last_name, is_admin AS "isAdmin"`,
+    [
+      userData.username,
+      userData.email,
+      hashedPassword,
+      userData.firstName,
+      userData.lastName,
+      userData.isAdmin ? 1 : 0,
+    ]
   );
 
   return result?.rows[0];

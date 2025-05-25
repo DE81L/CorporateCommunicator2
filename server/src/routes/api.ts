@@ -63,18 +63,19 @@ router.post('/login', async (req: Request, res: Response) => {
  * Регистрация нового пользователя.
  * Тело: { username, email, password, firstName, lastName }
  */
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', isAuthenticated, async (req: Request, res: Response) => {
   try {
-    const newUser = await register(req.body);
-    // логин в сессии сразу после регистрации
-    req.session.userId = newUser.id;
-    req.session.username = newUser.username;
-    await new Promise<void>((resolve, reject) =>
-      req.session.save(err => (err ? reject(err) : resolve()))
+    const userId = req.session.userId as number;
+    const { rows } = await db!.query<{ is_admin: boolean }>(
+      'SELECT is_admin FROM users WHERE id = $1',
+      [userId]
     );
-    await db!.query('UPDATE users SET isonline = 1 WHERE id = $1', [newUser.id]);
-    broadcastStatus(newUser.id, 1);
-    res.status(201).json({ ...newUser, isOnline: 1 });
+    if (!rows[0]?.is_admin) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const newUser = await register(req.body);
+    res.status(201).json(newUser);
   } catch (err) {
     logger.error('Register error:', err);
     res.status(400).json({ error: 'Invalid request' });
