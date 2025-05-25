@@ -37,7 +37,12 @@ export const insertRequestSchema = z.object({
   receiverDepartmentId: z.number(), // <-- изменено имя
   taskId: z.number(),
   cabinet: z.string().optional(),
-  phone: z.string().optional(),
+  phone: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^\+?[0-9]{10,15}$/.test(val), {
+      message: 'Invalid phone number',
+    }),
   isUrgent: z.boolean().default(false),
   deadline: z.string().optional(),
   comment: z.string().optional(),
