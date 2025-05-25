@@ -47,7 +47,9 @@ export function MessageList({ messages, myId, groupMode = false, users = {} }: M
     }
   }, [messages]);
 
-  if (messages.length === 0) {
+  const filtered = messages.filter((m) => m.content.trim() !== '' || !!m.file);
+
+  if (filtered.length === 0) {
     return <p className="text-gray-500 dark:text-gray-400 text-sm">{t('messages.noMessages')}</p>;
   }
 
@@ -78,7 +80,7 @@ export function MessageList({ messages, myId, groupMode = false, users = {} }: M
 
   return (
     <div className="min-h-full flex flex-col space-y-3">
-      {messages.map((m) => (
+      {filtered.map((m) => (
         <div
           key={m.id}
           className={`max-w-[80%] rounded-xl px-4 py-2 text-sm break-words space-y-2 ${
