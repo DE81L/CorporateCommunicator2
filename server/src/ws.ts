@@ -10,6 +10,16 @@ import { db } from './db';
 let wss: WebSocketServer;
 const connections = new Map<number, Set<WebSocket>>();
 
+function sendToUser(id: number, message: any): boolean {
+  const targets = connections.get(id);
+  if (!targets || targets.size === 0) return false;
+  const data = JSON.stringify(message);
+  targets.forEach((ws) => {
+    if (ws.readyState === WebSocket.OPEN) ws.send(data);
+  });
+  return true;
+}
+
 export function initWebSocket(
   server: http.Server,
   sessionMiddleware: RequestHandler // Тип RequestHandler из express
@@ -71,20 +81,11 @@ export function initWebSocket(
         }
         if (msg.type === 'p2p-signal') {
           const { to, signal } = msg.payload as { to: number; signal: any };
-          const targets = connections.get(to);
-          if (targets?.size) {
-            logger.debug(`Forwarding p2p-signal from ${userId} to ${to}`);
-            targets.forEach((target) => {
-              if (target.readyState === WebSocket.OPEN) {
-                target.send(
-                  JSON.stringify({
-                    type: 'p2p-signal',
-                    payload: { from: userId, signal },
-                  })
-                );
-              }
-            });
-          } else {
+          logger.debug(`Forwarding p2p-signal from ${userId} to ${to}`);
+          if (!sendToUser(to, {
+            type: 'p2p-signal',
+            payload: { from: userId, signal },
+          })) {
             logger.debug(`Target ${to} not connected for p2p-signal`);
           }
         } else if (msg.type === 'call-request') {
@@ -93,36 +94,15 @@ export function initWebSocket(
             callType: 'video' | 'audio';
             fromName: string;
           };
-          const targets = connections.get(to);
-          if (targets?.size) {
-            targets.forEach((target) => {
-              if (target.readyState === WebSocket.OPEN) {
-                target.send(
-                  JSON.stringify({
-                    type: 'call-request',
-                    payload: { from: userId, fromName, callType },
-                  })
-                );
-              }
-            });
-          } else {
+          if (!sendToUser(to, {
+            type: 'call-request',
+            payload: { from: userId, fromName, callType },
+          })) {
             logger.debug(`Target ${to} not connected for call-request`);
           }
         } else if (msg.type === 'call-accept' || msg.type === 'call-reject') {
           const { to } = msg.payload as { to: number };
-          const targets = connections.get(to);
-          if (targets?.size) {
-            targets.forEach((target) => {
-              if (target.readyState === WebSocket.OPEN) {
-                target.send(
-                  JSON.stringify({
-                    type: msg.type,
-                    payload: { from: userId },
-                  })
-                );
-              }
-            });
-          } else {
+          if (!sendToUser(to, { type: msg.type, payload: { from: userId } })) {
             logger.debug(`Target ${to} not connected for ${msg.type}`);
           }
         }
@@ -176,21 +156,18 @@ export function broadcastStatus(
  */
 export function sendChatMessage(
   receiverId: number,
-  message: any
+  message: any,
 ): boolean {
-  const targets = connections.get(receiverId);
-  if (targets && targets.size > 0) {
+  const ok = sendToUser(receiverId, {
+    type: 'chat',
+    payload: message,
+  });
+  if (!ok) {
+    logger.debug(`Chat recipient ${receiverId} offline, skipping WS send`);
+  } else {
     logger.debug(`Sending chat message from ${message.senderId} to ${receiverId}`);
-    targets.forEach((ws) => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'chat', payload: message }));
-      }
-    });
-    return true;
   }
-
-  logger.debug(`Chat recipient ${receiverId} offline, skipping WS send`);
-  return false;
+  return ok;
 }
 
 /**
