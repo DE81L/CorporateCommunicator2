@@ -36,7 +36,13 @@ export function MessageList({ messages, myId, groupMode = false, users = {} }: M
   const [viewerSrc, setViewerSrc] = useState<string | null>(null);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = endRef.current?.parentElement;
+    if (!container) return;
+    const nearBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight < 50;
+    if (nearBottom) {
+      endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   useEffect(() => {
