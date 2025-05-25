@@ -5,11 +5,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MicOffIcon, VideoOffIcon, PhoneOffIcon, UserIcon } from "lucide-react";
+import {
+  MicIcon,
+  MicOffIcon,
+  VideoOffIcon,
+  VideoIcon,
+  PhoneOffIcon,
+} from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { useAuth } from "@/hooks/use-auth";
 import { useWebSocket } from "@/hooks/useWebSocket";
@@ -181,7 +186,7 @@ export default function CallModal({
               {isMuted ? (
                 <MicOffIcon className="h-5 w-5" />
               ) : (
-                <span className="material-icons">mic</span>
+                <MicIcon className="h-5 w-5" />
               )}
             </Button>
 
@@ -195,7 +200,7 @@ export default function CallModal({
                 {isVideoOff ? (
                   <VideoOffIcon className="h-5 w-5" />
                 ) : (
-                  <span className="material-icons">videocam</span>
+                  <VideoIcon className="h-5 w-5" />
                 )}
               </Button>
             )}
@@ -233,11 +238,6 @@ export default function CallModal({
             />
           </div>
         )}
-        <DialogFooter>
-          <Button variant="destructive" onClick={onClose}>
-            {t("common.cancel")}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
