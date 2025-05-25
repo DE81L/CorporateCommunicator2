@@ -68,14 +68,14 @@ import { MarkdownPreview } from "../components/wiki/markdown-preview";
 import { MarkdownEditor } from "../components/wiki/markdown-editor";
 import { getExcerpt } from "../lib/markdown";
 
-// Form schema for wiki entries
+// Схема формы для статей wiki
 const wikiEntryFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   content: z.string().min(1, "Content is required"),
   category: z.string().optional(),
 });
 
-// Form schema for categories
+// Схема формы для категорий
 const categoryFormSchema = z.object({
   name: z.string().min(1, "Category name is required"),
   description: z.string().optional(),
@@ -101,7 +101,7 @@ export default function WikiSection() {
   );
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
 
-  // Wiki categories query
+  // Запрос категорий wiki
   const {
     data: categories = [],
     isLoading: isLoadingCategories,
@@ -113,7 +113,7 @@ export default function WikiSection() {
     enabled: true,
   });
 
-  // Derived breadcrumbs for current category path
+  // Получаем хлебные крошки для текущей категории
   const breadcrumbs = useMemo(() => {
     if (!activeCategoryId) {
       return [] as WikiCategory[];
@@ -133,7 +133,7 @@ export default function WikiSection() {
   }, [activeCategoryId, categories]);
   const [viewEntry, setViewEntry] = useState<WikiEntry | null>(null);
 
-  // Wiki entries query
+  // Запрос статей wiki
   const {
     data: entries = [],
     isLoading: isLoadingEntries,
@@ -145,7 +145,7 @@ export default function WikiSection() {
       (await apiClient.request<WikiEntry[]>("/api/wiki/entries")) ?? [],
   });
 
-  // Category entries query
+  // Запрос статей выбранной категории
   const {
     data: categoryEntries = [],
     isLoading: isLoadingCategoryEntries,
@@ -159,7 +159,7 @@ export default function WikiSection() {
     enabled: !!activeCategoryId,
   });
 
-  // Create wiki entry mutation
+  // Мутация создания статьи
   const createEntryMutation = useMutation({
     mutationFn: (data: WikiEntryFormValues) => {
       const payload = {
@@ -200,7 +200,7 @@ export default function WikiSection() {
     },
   });
 
-  // Update wiki entry mutation
+  // Мутация обновления статьи
   const updateEntryMutation = useMutation({
     mutationFn: (data: WikiEntryFormValues & { id: number }) => {
       const { id, ...rest } = data;
@@ -236,7 +236,7 @@ export default function WikiSection() {
     },
   });
 
-  // Delete wiki entry mutation
+  // Мутация удаления статьи
   const deleteEntryMutation = useMutation({
     mutationFn: (id: number) => {
       return request(`/api/wiki/${id}`, { method: "DELETE" });
@@ -261,7 +261,7 @@ export default function WikiSection() {
     },
   });
 
-  // Create category mutation
+  // Мутация создания категории
   const createCategoryMutation = useMutation({
     mutationFn: (data: CategoryFormValues) => {
       const payload = {
@@ -297,7 +297,7 @@ export default function WikiSection() {
     },
   });
 
-  // Update category mutation
+  // Мутация обновления категории
   const updateCategoryMutation = useMutation({
     mutationFn: (data: CategoryFormValues & { id: number }) => {
       const { id, ...rest } = data;
@@ -326,7 +326,7 @@ export default function WikiSection() {
     },
   });
 
-  // Delete category mutation
+  // Мутация удаления категории
   const deleteCategoryMutation = useMutation({
     mutationFn: (id: number) => {
       return request(`/api/wiki/categories/${id}`, { method: "DELETE" });

@@ -7,11 +7,11 @@
 
 import type { ElectronAPI } from './electron-types';
 
-// File system operations
+// Операции с файловой системой
 export const fileSystem = {
-  // Read file - uses IndexedDB in web environment
+  // Читаем файл – в вебе используем IndexedDB
   readFile: async (filePath: string): Promise<string> => {
-    // In web, we'd use IndexedDB or localStorage - simplified example:
+    // В вебе использовали бы IndexedDB или localStorage – упрощённый пример:
     const storedData = localStorage.getItem(`file:${filePath}`);
     if (!storedData) {
       throw new Error(`File not found: ${filePath}`);
@@ -19,30 +19,30 @@ export const fileSystem = {
     return storedData;
   },
   
-  // Write file - uses IndexedDB in web environment
+  // Запись файла – в вебе используем IndexedDB
   writeFile: async (filePath: string, data: string): Promise<void> => {
-    // In web, we'd use IndexedDB or localStorage - simplified example:
+    // В вебе использовали бы IndexedDB или localStorage – упрощённый пример:
     localStorage.setItem(`file:${filePath}`, data);
     return;
   },
   
-  // Check if file exists - uses IndexedDB in web environment
+  // Проверяем наличие файла – в вебе через IndexedDB
   fileExists: async (filePath: string): Promise<boolean> => {
     // In web, we'd use IndexedDB or localStorage - simplified example:
     return localStorage.getItem(`file:${filePath}`) !== null;
   }
 };
 
-// Dialog operations
+// Операции диалога
 export const dialog = {
-  // Show open dialog - uses file input in web environment
+  // Показать диалог открытия – в вебе используется input type="file"
   showOpenDialog: async (options: any): Promise<{canceled: boolean; filePaths: string[]}> => {
     return new Promise((resolve) => {
-      // Create temporary file input
+      // Создаем временный input для выбора файла
       const input = document.createElement('input');
       input.type = 'file';
       
-      // Set attributes based on options
+      // Настраиваем атрибуты согласно опциям
       if (options.properties?.includes('openDirectory')) {
         input.setAttribute('webkitdirectory', '');
       }
@@ -58,7 +58,7 @@ export const dialog = {
         input.accept = accept;
       }
       
-      // Handle file selection
+      // Обрабатываем выбор файла
       input.onchange = (event) => {
         const files = (event.target as HTMLInputElement).files;
         if (!files || files.length === 0) {
@@ -70,24 +70,24 @@ export const dialog = {
         resolve({ canceled: false, filePaths });
       };
       
-      // Handle cancellation
+      // Обрабатываем отмену
       input.oncancel = () => {
         resolve({ canceled: true, filePaths: [] });
       };
       
-      // Trigger file dialog
+      // Запускаем диалог выбора файла
       input.click();
     });
   },
   
-  // Show save dialog - uses download in web environment
+  // Показать диалог сохранения – в вебе просто инициируем загрузку
   showSaveDialog: async (options: any): Promise<{canceled: boolean; filePath?: string}> => {
-    // In web, we'd trigger a download - simplified implementation:
+    // В браузере просто запускаем загрузку – упрощённая реализация:
     return new Promise((resolve) => {
       const defaultPath = options.defaultPath || 'download.txt';
-      // In a real implementation, you'd show a modal asking for the file name
+      // В реальной реализации показали бы модальное окно с именем файла
       
-      // Simulate a successful save
+      // Симулируем успешное сохранение
       resolve({ canceled: false, filePath: defaultPath });
     });
   },

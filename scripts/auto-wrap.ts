@@ -4,7 +4,7 @@ module.exports = function transformer(file: FileInfo, api: API) {
   const j = api.jscodeshift;
   const root = j(file.source);
 
-  // only touch .ts/.tsx server files
+  // обрабатываем только серверные файлы .ts/.tsx
   if (!file.path.includes('/server/src/')) return null;
 
   const withLoggingImport = j.importDeclaration(
@@ -34,7 +34,7 @@ module.exports = function transformer(file: FileInfo, api: API) {
     }
   });
 
-  // inject import if not present
+  // добавляем импорт, если его нет
   if (!root.find(j.ImportDeclaration, { source: { value: '../util/withLogging' } }).size()) {
     root.get().node.program.body.unshift(withLoggingImport);
   }

@@ -1,5 +1,5 @@
 export interface ElectronAPI {
-  // Core APIs
+  // Основные API
   ipcRenderer: {
     invoke: (channel: string, ...args: any[]) => Promise<any>;
     send: (channel: string, ...args: any[]) => void;
@@ -7,7 +7,7 @@ export interface ElectronAPI {
     removeListener: (channel: string, listener: Function) => void;
   };
 
-  // System APIs
+  // Системные API
   system: {
     getSystemInfo: () => Promise<{
       platform: string;
@@ -21,7 +21,7 @@ export interface ElectronAPI {
     isOnline: () => Promise<boolean>;
   };
 
-  // App APIs
+  // API приложения
   app: {
     getVersion: () => Promise<string>;
     getPath: (name: string) => Promise<string>;
@@ -32,14 +32,14 @@ export interface ElectronAPI {
     openDevTools: () => Promise<void>;
   };
 
-  // File system operations
+  // Операции файловой системы
   fs: {
     readFile: (path: string) => Promise<string>;
     writeFile: (path: string, data: string) => Promise<void>;
     fileExists: (path: string) => Promise<boolean>;
   };
 
-  // Dialog operations
+  // Операции диалогов
   dialog: {
     showOpenDialog: (options: any) => Promise<{
       canceled: boolean;
@@ -55,13 +55,13 @@ export interface ElectronAPI {
     }>;
   };
 
-  // Clipboard operations
+  // Операции буфера обмена
   clipboard: {
     writeText: (text: string) => Promise<void>;
     readText: () => Promise<string>;
   };
 
-  // Storage operations 
+  // Операции хранилища
   storage: {
     getUserData: () => Promise<any>;
     setUserData: (data: any) => Promise<void>;
@@ -70,7 +70,7 @@ export interface ElectronAPI {
     deleteMessage: (id: number) => Promise<void>;
   };
 
-  // Add the api property that matches the preload script structure
+  // Добавляем свойство api, соответствующее структуре preload-скрипта
   api?: {
     system: {
       getSystemInfo: () => Promise<any>;

@@ -3,7 +3,7 @@
 interface ImportMetaEnv {
     readonly VITE_API_URL: string;
     readonly VITE_STUN_SERVER?: string;
-    // add other VITE_... vars here as needed
+    // добавляйте сюда другие переменные VITE_... по необходимости
   }
   
   interface ImportMeta {

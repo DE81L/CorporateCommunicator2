@@ -8,8 +8,8 @@ export const users = pgTable("users", {
   username: text("username").notNull(),
   email: text("email").notNull(),
   password: text("password").notNull(),
-  firstName: text("first_name").notNull(),  // Updated column name
-  lastName: text("last_name").notNull(),    // Updated column name
+  firstName: text("first_name").notNull(),  // обновлённое имя столбца
+  lastName: text("last_name").notNull(),    // обновлённое имя столбца
   isOnline: integer("isonline").default(0),
   avatarUrl: text("avatarurl"),
   departmentId: integer('department_id').references(() => departments.id),

@@ -1,15 +1,15 @@
 import { useState, useCallback } from "react";
 import { showError } from "@/lib/error-toast";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../../hooks/use-auth"; // Import useAuth from hooks
+import { useAuth } from "../../hooks/use-auth"; // импортируем useAuth из хуков
 import {NotificationsPane} from "../NotificationsPane";
 import { useLocation } from "wouter";
 import {
   BellIcon,
   MenuIcon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button"; // Updated import
-import { Badge } from "@/components/ui/badge"; // Updated import
+import { Button } from "@/components/ui/button"; // обновлённый импорт
+import { Badge } from "@/components/ui/badge"; // обновлённый импорт
 
 interface HeaderProps {  
   toggleSidebar: () => void;

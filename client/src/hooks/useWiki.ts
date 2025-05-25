@@ -10,18 +10,18 @@ export function useWiki() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Query for fetching all wiki entries
+  // Запрос для получения всех записей wiki
   const { data: entries = [], isLoading: isLoadingEntries } = useQuery<WikiEntry[]>({
     queryKey: [API_BASE],
     queryFn: async () => api.request<WikiEntry[]>(API_BASE) as Promise<WikiEntry[]>,
   });
 
-  // Query for fetching entries by category
+  // Запрос для получения записей по категории
   const getCategoryEntries = async (categoryId: number) => {
     return api.request<WikiEntry[]>(`${API_BASE}/categories/${categoryId}/entries`) as Promise<WikiEntry[]>;
   };
 
-  // Mutation for creating entries
+  // Мутация для создания записей
   const createEntry = useMutation({
     mutationFn: async (entry: InsertWikiEntry) =>
       api.request<WikiEntry>(API_BASE, {
@@ -45,7 +45,7 @@ export function useWiki() {
     },
   });
 
-  // Mutation for updating entries
+  // Мутация для обновления записей
   const updateEntry = useMutation({
     mutationFn: async ({ id, patch }: { id: number; patch: Partial<InsertWikiEntry> }) =>
       api.request<WikiEntry>(`${API_BASE}/${id}`, {
@@ -69,7 +69,7 @@ export function useWiki() {
     },
   });
 
-  // Mutation for deleting entries
+  // Мутация для удаления записей
   const deleteEntry = useMutation({
     mutationFn: async (id: number) =>
       api.request(`${API_BASE}/${id}`, { method: "DELETE" }),

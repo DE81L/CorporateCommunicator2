@@ -7,10 +7,10 @@ import { useAuth } from '@/hooks/use-auth'
 export type WSMessage<T = any> = { type: string; payload: T }
 export type ConnectionStatus = 'connecting' | 'open' | 'closing' | 'closed' | 'error'
 
-// build the final WebSocket URL:
-//  • if VITE_WS_URL is set and absolute, use it
-//  • if VITE_WS_URL starts with '/', proxy through the current host
-//  • otherwise fall back to ws(s)://<current host>/ws
+// формируем итоговый URL WebSocket:
+//  • если VITE_WS_URL задан и абсолютный — используем его
+//  • если VITE_WS_URL начинается с '/', проксируем через текущий хост
+//  • иначе используем ws(s)://<текущий хост>/ws
 const _raw = (import.meta.env.VITE_WS_URL as string | undefined)
 
 const WS_URL = _raw

@@ -3,7 +3,7 @@ import * as RechartsPrimitive from "recharts"
 
 import { cn } from "@/lib/utils";
 
-// Format: { THEME_NAME: CSS_SELECTOR };
+// Формат: { THEME_NAME: CSS_SELECTOR };
 const THEMES = { light: "", dark: ".dark" } as const
 
 export type ChartConfig = {
@@ -305,7 +305,7 @@ const ChartLegendContent = React.forwardRef<
 );
 ChartLegendContent.displayName = "ChartLegend"
 
-// Helper to extract item config from a payload.
+// Вспомогательная функция для получения конфигурации из payload.
 function getPayloadConfigFromPayload(
   config: ChartConfig,
   payload: unknown,

@@ -1,4 +1,4 @@
-import { useAuth } from "@/hooks/use-auth"; // Import useAuth
+import { useAuth } from "@/hooks/use-auth"; // импортируем useAuth
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -44,7 +44,7 @@ export default function Sidebar({
   setIsOpen,
   connectionStatus,
 }: SidebarProps) {
-  const { user, logout } = useAuth(); // Use useAuth here
+  const { user, logout } = useAuth(); // используем useAuth здесь
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
 

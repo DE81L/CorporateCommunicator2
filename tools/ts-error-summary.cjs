@@ -1,4 +1,4 @@
-// Usage: pnpm run type-check 2>&1 | node tools/ts-error-summary.cjs
+// Использование: pnpm run type-check 2>&1 | node tools/ts-error-summary.cjs
 const fs = require('fs');
 
 const input = fs.readFileSync(0, 'utf8');

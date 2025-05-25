@@ -1,8 +1,8 @@
 export function stripMarkdown(md: string): string {
   return md
-    .replace(/!\[.*?\]\(.*?\)/g, '') // remove images
-    .replace(/\[(.*?)\]\(.*?\)/g, '$1') // remove links
-    .replace(/[\*`_>#{}/+-]/g, '') // remove markdown syntax chars
+    .replace(/!\[.*?\]\(.*?\)/g, '') // убираем изображения
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1') // убираем ссылки
+    .replace(/[\*`_>#{}/+-]/g, '') // убираем символы markdown
     .replace(/\n+/g, ' ')
     .trim();
 }

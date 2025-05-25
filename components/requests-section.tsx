@@ -14,7 +14,7 @@ export default function RequestsSection() {
         open={open}
         onOpenChange={setOpen}
         onSuccess={() => {
-          // TODO: invalidate react-query etc.
+          // TODO: сбросить кэш react-query и т.п.
           setOpen(false);
         }}
       />
