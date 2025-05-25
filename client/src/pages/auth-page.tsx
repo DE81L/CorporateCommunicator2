@@ -1,42 +1,26 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
-import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Redirect } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslation } from 'react-i18next'; 
 import { LanguageSwitcher } from '@/components/language-switcher';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+
 import { Card, CardHeader, CardTitle, CardDescription, CardContent
 } from '@/components/ui/card';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { createApiClient } from '@/lib/api-client';
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
 });
 
-const registerSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  firstName: z.string().min(1, "First name is required"), // Already camelCase
-  lastName: z.string().min(1, "Last name is required"),   // Already camelCase
-  email: z.string().email("Invalid email"),
-  password: z.string().min(6, "Password too short"),
-  confirmPassword: z.string(),
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords must match", 
-  path: ["confirmPassword"],
-});
-
 export default function AuthPage() {
   const { user, login: loginFn } = useAuth();
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<"login"|"register">("login");
 
   if (user) return <Redirect to="/" />;
 
@@ -47,36 +31,10 @@ export default function AuthPage() {
       </div>
       <div className="flex justify-center bg-primary-50 dark:bg-primary-800/40 py-4 border-b w-full">
         <div className="w-full max-w-md">
-          <Tabs
-            defaultValue={activeTab}
-            onValueChange={(v) => setActiveTab(v as "login" | "register")}
-            className="w-full"
-          >
-              <Card className="bg-background/80 backdrop-blur">
-              <TabsList className="space-x-4 bg-background w-full flex">
-                <TabsTrigger value="login" className="flex-1">
-                  {t('auth.login')}
-                </TabsTrigger>
-                <TabsTrigger value="register" className="flex-1">
-                  {t('auth.register')}
-                </TabsTrigger>
-              </TabsList>
-                
-              <CardContent className='p-0'>
-                  {/* LOGIN */}
-                  <TabsContent value="login">
-                    <LoginForm />
-                  </TabsContent>
-                  {/* REGISTER */}
-                  <TabsContent value="register">
-                    <RegisterForm />
-                  </TabsContent>
-              </CardContent>
-              </Card>
-            </Tabs>
+          <LoginForm />
         </div>
       </div>
-    </div>    
+    </div>
   );
 
   // ───────────────────────────────────────────────────
@@ -134,137 +92,5 @@ export default function AuthPage() {
   }
 
   // ───────────────────────────────────────────────────
-  function RegisterForm() {
-    const form = useForm<z.infer<typeof registerSchema>>({
-      resolver: zodResolver(registerSchema)
-    });
-    const { toast } = useToast();
-    const apiClient = createApiClient();
-    const registerMutation = useMutation({
-      mutationFn: async (data: z.infer<typeof registerSchema>) => {
-        const { confirmPassword, ...payload } = data;
-        try {
-          const res = await apiClient.request('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          return res;
-        } catch (err: any) {
-          if (err instanceof Error && err.message.includes('409')) {
-            throw new Error('Username or email already taken');
-          }
-          throw err;
-        }
-      },
-      onSuccess: (_user, variables) => {
-        toast({ title: "Registration successful!" });
-        loginFn({ username: variables.username, password: variables.password });
-      },
-      onError: (error: Error) => {
-        toast({
-          variant: "destructive",
-          title: "Registration failed",
-          description: error.message
-        });
-      },
-    });
-
-    const onSubmit = (data: z.infer<typeof registerSchema>) => {
-     registerMutation.mutate(data);
-    }
-
-    return (
-      <Form {...form}>
-        <Card className='p-4 bg-background/80 backdrop-blur'>
-        <CardHeader>
-          <CardTitle>{t('auth.register')}</CardTitle>
-          <CardDescription>{t('auth.registerDescription')}</CardDescription>
-         </CardHeader>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <CardContent className="space-y-4">
-            <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('auth.username')}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t('auth.enterUsername')} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('auth.firstName')}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t('auth.enterFirstName')} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('auth.lastName')}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t('auth.enterLastName')} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('auth.email')}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t('auth.enterEmail')} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('auth.password')}</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder={t('auth.enterPassword')} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('auth.confirmPassword')}</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder={t('auth.enterConfirmPassword')} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            <Button type="submit" className="w-full">
-                {t('auth.register')}
-              </Button>
-            </CardContent>
-          </form>
-        </Card>
-      </Form>
-
-    );
-  }
 }
 

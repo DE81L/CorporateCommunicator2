@@ -33,6 +33,15 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const apiClient = createApiClient();
 
+  const [newUser, setNewUser] = useState({
+    username: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    isAdmin: false,
+  });
+
   useEffect(() => {
     async function fetchTables() {
       try {
@@ -103,6 +112,28 @@ export default function AdminPage() {
     }
   }
 
+  async function createUser(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      setError(null);
+      await apiClient.request('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser),
+      });
+      setNewUser({
+        username: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        isAdmin: false,
+      });
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  }
+
   if (!user) return <Redirect to="/auth" />;
   if (!user.isAdmin) return <Redirect to="/" />;
 
@@ -134,6 +165,51 @@ export default function AdminPage() {
         <h1 className="text-3xl font-bold text-center">
           {t('nav.admin')} Panel
         </h1>
+
+        <Card className="space-y-4">
+          <CardHeader>
+            <CardTitle>Create User</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-2" onSubmit={createUser}>
+              <Input
+                placeholder="Username"
+                value={newUser.username}
+                onChange={e => setNewUser({ ...newUser, username: e.target.value })}
+              />
+              <Input
+                placeholder="First name"
+                value={newUser.firstName}
+                onChange={e => setNewUser({ ...newUser, firstName: e.target.value })}
+              />
+              <Input
+                placeholder="Last name"
+                value={newUser.lastName}
+                onChange={e => setNewUser({ ...newUser, lastName: e.target.value })}
+              />
+              <Input
+                placeholder="Email"
+                value={newUser.email}
+                onChange={e => setNewUser({ ...newUser, email: e.target.value })}
+              />
+              <Input
+                type="password"
+                placeholder="Password"
+                value={newUser.password}
+                onChange={e => setNewUser({ ...newUser, password: e.target.value })}
+              />
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={newUser.isAdmin}
+                  onChange={e => setNewUser({ ...newUser, isAdmin: e.target.checked })}
+                />
+                <span>Admin</span>
+              </label>
+              <Button type="submit">Create</Button>
+            </form>
+          </CardContent>
+        </Card>
 
         <Card className="space-y-4">
           <CardHeader>
