@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslations } from "@/hooks/use-translations";
+import { useEffect } from "react";
 
 interface Props {
   isOpen: boolean;
@@ -28,6 +29,20 @@ export default function CallRequestDialog({
   onDecline,
 }: Props) {
   const { t } = useTranslations();
+
+  useEffect(() => {
+    if (!(isOpen && incoming)) return;
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = 440;
+    osc.connect(ctx.destination);
+    osc.start();
+    return () => {
+      osc.stop();
+      ctx.close();
+    };
+  }, [isOpen, incoming]);
 
   const getInitials = (name?: string) => {
     if (!name) return "?";
