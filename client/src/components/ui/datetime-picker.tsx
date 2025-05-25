@@ -21,24 +21,27 @@ export const DateTimePicker = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <Calendar 
-        mode="single" 
-        selected={date} 
+      <Calendar
+        mode="single"
+        selected={date}
         onSelect={handleDateChange}
         disabled={disabled}
+        className="bg-background text-foreground"
       />
       <input
         type="time"
-        className="border rounded px-2 py-1"
+        className="border rounded px-2 py-1 dark:bg-muted dark:text-foreground"
         disabled={disabled || !date}
-        value={date?.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false
-        }) ?? ""}
+        value={
+          date?.toLocaleTimeString("ru-RU", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+          }) ?? ""
+        }
         onChange={(e) => {
           if (!date) return
-          const [hours, minutes] = e.target.value.split(":").map(Number)
+          const [hours, minutes] = e.target.value.split(":")?.map(Number)
           const newDate = new Date(date)
           newDate.setHours(hours)
           newDate.setMinutes(minutes)
