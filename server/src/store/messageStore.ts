@@ -1,3 +1,7 @@
+
+import fs from 'fs';
+import path from 'path';
+
 export interface SyncMessage {
   id: number;
   senderId: number;
@@ -47,4 +51,15 @@ export function getFile(messageId: number): string | undefined {
 
 export function clearFile(messageId: number) {
   fileStore.delete(messageId);
+}
+
+export function findStoredFilePath(messageId: number): string | undefined {
+  try {
+    const uploadDir = path.join(process.cwd(), 'uploads');
+    const files = fs.readdirSync(uploadDir);
+    const name = files.find((f) => f.startsWith(`${messageId}.`));
+    return name ? `/uploads/${name}` : undefined;
+  } catch {
+    return undefined;
+  }
 }
