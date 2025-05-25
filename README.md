@@ -76,6 +76,8 @@ traces when troubleshooting connection issues.
 
 For email notifications of offline messages configure the `SMTP_*` variables in
 `.env`.
+To enable push notifications set the `FCM_SERVER_KEY` in `.env` with your
+Firebase Cloud Messaging server key.
 
 Set `VITE_STUN_SERVER` in `.env` to override the STUN server used by the client
 for peer connections. Use `VITE_STUN_SERVER=none` to disable STUN entirely when
