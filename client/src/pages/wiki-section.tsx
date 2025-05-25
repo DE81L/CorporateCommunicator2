@@ -62,7 +62,6 @@ import {
 } from "lucide-react";
 
 import { useLocation } from "wouter";
-import ReactMarkdown from "react-markdown";
 
 import { MarkdownPreview } from "../components/wiki/markdown-preview";
 import { MarkdownEditor } from "../components/wiki/markdown-editor";
@@ -166,8 +165,6 @@ export default function WikiSection() {
         ...data,
         creatorId: user?.id,
         lastEditorId: user?.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
       };
       return request("/api/wiki", {
         method: "POST",
@@ -207,7 +204,6 @@ export default function WikiSection() {
       const payload = {
         ...rest,
         lastEditorId: user?.id,
-        updatedAt: new Date().toISOString(),
       };
       return request(`/api/wiki/${id}`, {
         method: "PUT",
@@ -266,8 +262,6 @@ export default function WikiSection() {
     mutationFn: (data: CategoryFormValues) => {
       const payload = {
         ...data,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
       };
       return request("/api/wiki/categories", {
         method: "POST",
@@ -301,7 +295,7 @@ export default function WikiSection() {
   const updateCategoryMutation = useMutation({
     mutationFn: (data: CategoryFormValues & { id: number }) => {
       const { id, ...rest } = data;
-      const payload = { ...rest, updatedAt: new Date().toISOString() };
+      const payload = { ...rest };
       return request(`/api/wiki/categories/${id}`, {
         method: "PUT",
         body: JSON.stringify(payload),
