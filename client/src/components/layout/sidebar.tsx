@@ -100,8 +100,7 @@ export default function Sidebar({
         )}
       >
         {/* Mobile close button */}
-        <div className="flex items-center justify-between p-4 md:hidden">
-          <h2 className="text-xl font-semibold text-primary-600">Nexus</h2>
+        <div className="flex items-center justify-end p-4 md:hidden">
           <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
             <XIcon className="h-5 w-5" />
           </Button>
