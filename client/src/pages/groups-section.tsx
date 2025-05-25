@@ -64,9 +64,10 @@ export function GroupsSection() {
   const createGroupMutation = useMutation({
     mutationFn: (data: CreateGroupFormValues) =>
       apiClient.request("/api/groups", {
-                          method: "POST",
-                          body: JSON.stringify(data)
-                        }),
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
       setIsCreateGroupDialogOpen(false);
@@ -87,7 +88,8 @@ export function GroupsSection() {
      mutationFn: async ({ id, data }: { id: number; data: Partial<Group> }) => {
       return await apiClient.request(`/api/groups/${id}`, {
         method: "PUT",
-        body: JSON.stringify(data)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
       });
     },
     onSuccess: () => {
@@ -106,8 +108,9 @@ export function GroupsSection() {
   });
   const createGroup = async (data: CreateGroupFormValues) => {
     await apiClient.request("/api/groups", {
-                              method: "POST",
-                              body: JSON.stringify(data)
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
                             });
     createGroupMutation.mutate(data);
   };
