@@ -553,6 +553,12 @@ export default function MessagesSection({ onStartCall }: Props) {
                 </AvatarFallback>
               )}
             </Avatar>
+            <span
+              className={cn(
+                'absolute bottom-0 right-0 h-2 w-2 rounded-full',
+                u.isonline ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600',
+              )}
+            />
             {unread > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full px-1 text-[10px]">
                 {unread > 99 ? '99+' : unread}
