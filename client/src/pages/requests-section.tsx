@@ -13,11 +13,12 @@ import {
   completeRequest,
 } from "@/api/requests";
 import { useAuth } from "@/hooks/use-auth";
+import { showError } from "@/lib/error-toast";
 
 export interface Request {
   id: number;
   senderId: number;
-  status: 'новая' | 'в работе' | 'выполнена';
+  status: 'новая' | 'в работе' | 'готово';
   receiverDepartmentId: number;
   subdivision?: { id: number; name: string };
   taskId: number;
@@ -50,18 +51,30 @@ export default function RequestsSection() {
   };
 
   const handleAccept = async (id: number) => {
-    await acceptRequest(id);
-    load();
+    try {
+      await acceptRequest(id);
+      load();
+    } catch (err) {
+      showError(err, 'Не удалось принять заявку');
+    }
   };
 
   const handleDelete = async (id: number) => {
-    await deleteRequest(id);
-    load();
+    try {
+      await deleteRequest(id);
+      load();
+    } catch (err) {
+      showError(err, 'Не удалось удалить заявку');
+    }
   };
 
   const handleComplete = async (id: number) => {
-    await completeRequest(id, {});
-    load();
+    try {
+      await completeRequest(id, {});
+      load();
+    } catch (err) {
+      showError(err, 'Не удалось завершить заявку');
+    }
   };
 
   const handleRowClick = (row: Request) => {
@@ -69,6 +82,10 @@ export default function RequestsSection() {
   };
 
   useEffect(() => { load(); }, []);
+  useEffect(() => {
+    const id = setInterval(load, 15000);
+    return () => clearInterval(id);
+  }, []);
 
   const columns: ColumnDef<Request>[] = [
     {
@@ -77,10 +94,10 @@ export default function RequestsSection() {
       cell: ({ getValue }) => {
         const status = getValue<string>();
         return (
-          <Badge 
+          <Badge
             variant={
-              status === "выполнена" ? "completed" :
-              status === "в работе" ? "inProgress" : 
+              status === "готово" ? "completed" :
+              status === "в работе" ? "inProgress" :
               "pending"
             }
           >
@@ -94,6 +111,19 @@ export default function RequestsSection() {
       header: "Задача",
       cell: ({ row }) => row.original.task?.name
     },
+    {
+      accessorKey: "subdivision",
+      header: "Подразделение",
+      cell: ({ row }) => row.original.subdivision?.name
+    },
+    {
+      accessorKey: "whoAccepted",
+      header: "Принял",
+      cell: ({ row }) =>
+        row.original.whoAccepted
+          ? `${row.original.whoAccepted.firstName} ${row.original.whoAccepted.lastName}`
+          : ''
+    },
     { accessorKey: "cabinet", header: "Кабинет" },
     { accessorKey: "deadline", header: "Дедлайн" },
     { accessorKey: "comment", header: "Комментарий" },
@@ -105,7 +135,7 @@ export default function RequestsSection() {
         const canAccept = r.status === "новая" && user?.id !== r.senderId;
         const canEdit = user?.id === r.senderId && r.status === "новая";
         const canDelete = canEdit;
-        const canComplete = user?.id === r.senderId && r.status !== "выполнена";
+        const canComplete = user?.id === r.senderId && r.status === "в работе";
         return (
           <div className="flex gap-2">
             {canAccept && (
