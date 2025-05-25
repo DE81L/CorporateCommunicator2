@@ -9,6 +9,7 @@
 - **Pull Requests**: Include a summary of changes and testing results when creating PRs.
 - **API**: The `/api/departments` endpoint should return a list of departments for the request modal.
 - **Client errors**: Use `showError` from `client/src/lib/error-toast.ts` instead of `console.error`.
+- **Admin panel**: The app lacks a dedicated admin UI. Build or integrate an admin dashboard to manage users, groups and settings as described in docs/admin-panel-notes.md.
 - **API client**: Prefer `createApiClient()` for all `fetch` calls.
 Feel free to add new things to the guidelines. This may be your notes on the project. See `docs/DEVELOPER_CHECKLIST_RU.md` for a high level TODO list in Russian.
 
