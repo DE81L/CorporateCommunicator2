@@ -23,6 +23,7 @@ import {
   storeFile,
   getFile,
   clearFile,
+  findStoredFilePath,
   type SyncMessage,
 } from '../store/messageStore';
 
@@ -329,8 +330,12 @@ router.get(
 
 
       const withFiles = history.rows.map((m) => {
-        const f = getFile(m.id);
-        if (f) clearFile(m.id);
+        let f = getFile(m.id);
+        if (!f) {
+          f = findStoredFilePath(m.id);
+        } else {
+          clearFile(m.id);
+        }
         return { ...m, file: f ?? null };
       });
       res.json(withFiles);
@@ -511,8 +516,12 @@ router.get('/groups/:groupId/messages', isAuthenticated, async (req: Request, re
     );
 
     const withFiles = history.rows.map((m) => {
-      const f = getFile(m.id);
-      if (f) clearFile(m.id);
+      let f = getFile(m.id);
+      if (!f) {
+        f = findStoredFilePath(m.id);
+      } else {
+        clearFile(m.id);
+      }
       return { ...m, file: f ?? null };
     });
     res.json(withFiles);
