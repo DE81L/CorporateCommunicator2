@@ -137,22 +137,6 @@ export function useWebSocket() {
     connectRef.current()
   }, [])
 
-  const sendCallRequest = (
-    to: number,
-    callType: 'video' | 'audio',
-    fromName: string,
-  ) => {
-    sendRaw({ type: 'call-request', payload: { to, callType, fromName } })
-  }
-
-  const sendCallAccept = (to: number) => {
-    sendRaw({ type: 'call-accept', payload: { to } })
-  }
-
-  const sendCallReject = (to: number) => {
-    sendRaw({ type: 'call-reject', payload: { to } })
-  }
-
   return {
     connectionStatus,
     lastRawMessage,
