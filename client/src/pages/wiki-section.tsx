@@ -110,6 +110,7 @@ export default function WikiSection() {
     queryFn: async () =>
       (await apiClient.request<WikiCategory[]>("/api/wiki/categories")) ?? [],
     enabled: true,
+    retry: false,
   });
 
   // Получаем хлебные крошки для текущей категории
@@ -142,6 +143,7 @@ export default function WikiSection() {
     enabled: activeTab === "entries",
     queryFn: async () =>
       (await apiClient.request<WikiEntry[]>("/api/wiki/entries")) ?? [],
+    retry: false,
   });
 
   // Запрос статей выбранной категории
@@ -156,6 +158,7 @@ export default function WikiSection() {
       return data ?? [];
     },
     enabled: !!activeCategoryId,
+    retry: false,
   });
 
   // Мутация создания статьи
@@ -383,7 +386,7 @@ export default function WikiSection() {
   const handleEditEntry = (entry: WikiEntry) => {
     setEditingEntry(entry);
     entryForm.reset({
-      title: entry.title,
+      title: entry.title || "",
       content: entry.content,
       category: entry.category || "",
     });
@@ -445,7 +448,7 @@ export default function WikiSection() {
   const filteredEntries = searchQuery
     ? (activeCategoryId ? categoryEntries : (entries as WikiEntry[])).filter(
         (entry: WikiEntry) =>
-          entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (entry.title ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
           entry.content.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : activeCategoryId
@@ -554,7 +557,7 @@ export default function WikiSection() {
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
                           <CardTitle className="text-xl">
-                            {entry.title}
+                            {entry.title ?? "Untitled"}
                           </CardTitle>
                           {user?.isAdmin && (
                             <div

@@ -37,6 +37,7 @@ export default function WikiArticlePage() {
     queryKey: ['/api/wiki/entries', id],
     enabled: !!id,
     queryFn: () => getWikiEntry(id),
+    retry: false,
   });
 
   const form = useForm<EntryValues>({
@@ -47,7 +48,7 @@ export default function WikiArticlePage() {
   useEffect(() => {
     if (entry) {
       form.reset({
-        title: entry.title,
+        title: entry.title || '',
         content: entry.content,
         category: entry.category || '',
       });
@@ -137,7 +138,7 @@ export default function WikiArticlePage() {
       ) : (
         <>
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold">{entry.title}</h1>
+            <h1 className="text-3xl font-bold">{entry.title ?? 'Untitled'}</h1>
             {user?.isAdmin && (
               <Button size="sm" onClick={() => setIsEditing(true)}>
                 <Edit className="h-4 w-4 mr-2" />
