@@ -228,6 +228,7 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
                   <FormControl>
                     <Input {...field} placeholder="Введите номер телефона" />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />

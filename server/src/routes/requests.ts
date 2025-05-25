@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db'; // Теперь этот импорт должен работать
+import { insertRequestSchema } from '@shared/schema';
 
 const router = Router();
 
@@ -15,7 +16,11 @@ router.get('/', async (req, res) => {
 
 // POST /api/requests – создать новую заявку
 router.post('/', async (req, res) => {
-  const { receiverDepartmentId, taskId, cabinet, phone, isUrgent, deadline, comment } = req.body;
+  const parseResult = insertRequestSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    return res.status(400).json({ error: 'Invalid request data' });
+  }
+  const { receiverDepartmentId, taskId, cabinet, phone, isUrgent, deadline, comment } = parseResult.data;
   const senderId = req.session.userId;
 
   // Normalize optional fields. Empty strings should be stored as NULL to avoid
