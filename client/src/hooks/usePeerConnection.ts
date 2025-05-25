@@ -88,7 +88,9 @@ export function usePeerConnection(
     if (incomingSignal && peerRef.current) {
       console.debug('P2P received signal', incomingSignal);
       try {
-        peerRef.current.signal(incomingSignal);
+        if (!peerRef.current.destroyed) {
+          peerRef.current.signal(incomingSignal);
+        }
       } catch (err) {
         showError(err, 'P2P signal error');
       }
@@ -96,9 +98,10 @@ export function usePeerConnection(
   }, [incomingSignal]);
 
   const send = (msg: PeerMessage) => {
-    if (enabled && peerRef.current?.connected) {
+    const peer = peerRef.current;
+    if (enabled && peer && peer.connected && !peer.destroyed) {
       console.debug('P2P send', msg);
-      peerRef.current.send(JSON.stringify(msg));
+      peer.send(JSON.stringify(msg));
     }
   };
 

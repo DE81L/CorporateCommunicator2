@@ -98,7 +98,11 @@ export function useWebSocket() {
         wsRef.current.onmessage = null
         wsRef.current.onerror = null
         wsRef.current.onclose = null
-        wsRef.current.close()
+        if (wsRef.current.readyState === WebSocket.CONNECTING) {
+          wsRef.current.addEventListener('open', () => wsRef.current?.close())
+        } else {
+          wsRef.current.close()
+        }
       }
     }
   }, [user])
