@@ -30,7 +30,7 @@ export function createApp(): Express {
     saveUninitialized: false,
     rolling: true,
     cookie: {
-      secure: false,
+      secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
       sameSite: 'lax',
       maxAge: 60 * 60 * 1000,
