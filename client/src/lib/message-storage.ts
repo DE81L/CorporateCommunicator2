@@ -7,6 +7,8 @@ export interface StoredMessage {
   file?: string;
   /** reference to message id that holds the actual file */
   fileRef?: number;
+  /** stable hash of the file for deduplication */
+  fileHash?: string;
   synced?: boolean;
   /** transport used to send the message */
   transport?: 'server' | 'p2p';
@@ -80,4 +82,21 @@ export function findMessageByFile(
   file: string,
 ): StoredMessage | undefined {
   return loadMessages(myId, otherId).find((m) => m.file === file);
+}
+
+export function findMessageByHash(
+  myId: number,
+  otherId: number,
+  hash: string,
+): StoredMessage | undefined {
+  return loadMessages(myId, otherId).find((m) => m.fileHash === hash);
+}
+
+export async function computeFileHash(data: string): Promise<string> {
+  const enc = new TextEncoder();
+  const buf = enc.encode(data);
+  const digest = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
 }
