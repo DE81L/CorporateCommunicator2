@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import MessageStatusDot from './message-status-dot';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import UserHoverCard from '@/components/user-hover-card';
 import {
   Dialog,
   DialogContent,
@@ -96,24 +97,35 @@ export function MessageList({ messages, myId, groupMode = false, users = {} }: M
           }`}
         >
           {groupMode && (
-            <div className="flex items-center gap-2">
-              <Avatar className="h-6 w-6">
-                {users[m.senderId]?.avatarUrl ? (
-                  <img
-                    src={users[m.senderId]!.avatarUrl!}
-                    alt=""
-                    className="h-6 w-6 rounded-full object-cover"
-                  />
-                ) : (
-                  <AvatarFallback>
-                    {getInitials(users[m.senderId]?.firstName || '', users[m.senderId]?.lastName || '')}
-                  </AvatarFallback>
-                )}
-              </Avatar>
-              <span className="text-xs font-medium">
-                {users[m.senderId]?.firstName} {users[m.senderId]?.lastName}
-              </span>
-            </div>
+            <UserHoverCard
+              user={{
+                firstName: users[m.senderId]?.firstName || '',
+                lastName: users[m.senderId]?.lastName || '',
+                avatarUrl: users[m.senderId]?.avatarUrl,
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <Avatar className="h-6 w-6">
+                  {users[m.senderId]?.avatarUrl ? (
+                    <img
+                      src={users[m.senderId]!.avatarUrl!}
+                      alt=""
+                      className="h-6 w-6 rounded-full object-cover"
+                    />
+                  ) : (
+                    <AvatarFallback>
+                      {getInitials(
+                        users[m.senderId]?.firstName || '',
+                        users[m.senderId]?.lastName || '',
+                      )}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <span className="text-xs font-medium">
+                  {users[m.senderId]?.firstName} {users[m.senderId]?.lastName}
+                </span>
+              </div>
+            </UserHoverCard>
           )}
           <div>{m.content}</div>
           {m.file && (

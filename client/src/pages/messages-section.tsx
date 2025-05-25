@@ -36,6 +36,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { MessageList } from '@/components/message-list';
+import UserHoverCard from '@/components/user-hover-card';
 import EmojiPicker from '@/components/emoji-picker';
 
 /* ──────────────── TYPES ──────────────── */
@@ -60,6 +61,8 @@ export interface User {
   firstName: string;
   lastName: string;
   avatarUrl?: string | null;
+  email?: string;
+  jobTitle?: string | null;
   isonline: 0 | 1;
 }
 
@@ -476,53 +479,65 @@ export default function MessagesSection({ onStartCall }: Props) {
     .map((u) => {
       const unread = countUnreadMessages(user.id, u.id);
       return (
-        <Card
+        <UserHoverCard
           key={u.id}
-          onClick={() => setSelectedUser(u)}
-          className={cn(
-            'm-2 cursor-pointer hover:shadow-md transition-shadow',
-            selectedUser?.id === u.id
-              ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400'
-              : 'hover:bg-muted/50'
-          )}
-          role="button"
-          tabIndex={0}
+          user={{
+            firstName: u.firstName,
+            lastName: u.lastName,
+            email: u.email,
+            avatarUrl: u.avatarUrl,
+            jobTitle: u.jobTitle,
+            isonline: u.isonline,
+          }}
+          onMessage={() => setSelectedUser(u)}
         >
-          <CardContent className="p-3 flex items-center gap-3">
-            <Avatar className="h-8 w-8 relative">
-              {u.avatarUrl ? (
-                <img
-                  src={u.avatarUrl}
-                  alt=""
-                  className="h-8 w-8 rounded-full object-cover"
-                />
-              ) : (
-                <AvatarFallback>
-                  {getInitials(u.firstName, u.lastName)}
-                </AvatarFallback>
-              )}
+          <Card
+            onClick={() => setSelectedUser(u)}
+            className={cn(
+              'm-2 cursor-pointer hover:shadow-md transition-shadow',
+              selectedUser?.id === u.id
+                ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400'
+                : 'hover:bg-muted/50'
+            )}
+            role="button"
+            tabIndex={0}
+          >
+            <CardContent className="p-3 flex items-center gap-3">
+              <Avatar className="h-8 w-8 relative">
+                {u.avatarUrl ? (
+                  <img
+                    src={u.avatarUrl}
+                    alt=""
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <AvatarFallback>
+                    {getInitials(u.firstName, u.lastName)}
+                  </AvatarFallback>
+                )}
+                {unread > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full px-1 text-[10px]">
+                    {unread > 99 ? '99+' : unread}
+                  </span>
+                )}
+              </Avatar>
+              <span className="flex-1 truncate">
+                {u.firstName} {u.lastName}
+              </span>
               {unread > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full px-1 text-[10px]">
+                <span className="text-xs bg-red-500 text-white rounded-full px-1 mr-1">
                   {unread > 99 ? '99+' : unread}
                 </span>
               )}
-            </Avatar>
-            <span className="flex-1 truncate">
-              {u.firstName} {u.lastName}
-            </span>
-            {unread > 0 && (
-              <span className="text-xs bg-red-500 text-white rounded-full px-1 mr-1">
-                {unread > 99 ? '99+' : unread}
-              </span>
-            )}
-            <span
-              className={cn(
-                'h-2 w-2 rounded-full',
-                u.isonline ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
-              )}
-            />
-          </CardContent>
-        </Card>
+              <span
+                className={cn(
+                  'h-2 w-2 rounded-full',
+                  u.isonline ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+                )}
+              />
+            </CardContent>
+          </Card>
+        </UserHoverCard>
       );
     })
 )}
@@ -543,38 +558,50 @@ export default function MessagesSection({ onStartCall }: Props) {
       .map((u) => {
         const unread = countUnreadMessages(user.id, u.id);
         return (
-          <Button
+          <UserHoverCard
             key={u.id}
-            variant="ghost"
-            size="icon"
-            className="m-2 relative"
-            onClick={() => setSelectedUser(u)}
+            user={{
+              firstName: u.firstName,
+              lastName: u.lastName,
+              email: u.email,
+              avatarUrl: u.avatarUrl,
+              jobTitle: u.jobTitle,
+              isonline: u.isonline,
+            }}
+            onMessage={() => setSelectedUser(u)}
           >
-            <Avatar className="h-8 w-8">
-              {u.avatarUrl ? (
-                <img
-                  src={u.avatarUrl}
-                  alt=""
-                  className="h-8 w-8 rounded-full object-cover"
-                />
-              ) : (
-                <AvatarFallback>
-                  {getInitials(u.firstName, u.lastName)}
-                </AvatarFallback>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="m-2 relative"
+              onClick={() => setSelectedUser(u)}
+            >
+              <Avatar className="h-8 w-8">
+                {u.avatarUrl ? (
+                  <img
+                    src={u.avatarUrl}
+                    alt=""
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <AvatarFallback>
+                    {getInitials(u.firstName, u.lastName)}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <span
+                className={cn(
+                  'absolute bottom-0 right-0 h-2 w-2 rounded-full',
+                  u.isonline ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600',
+                )}
+              />
+              {unread > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full px-1 text-[10px]">
+                  {unread > 99 ? '99+' : unread}
+                </span>
               )}
-            </Avatar>
-            <span
-              className={cn(
-                'absolute bottom-0 right-0 h-2 w-2 rounded-full',
-                u.isonline ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600',
-              )}
-            />
-            {unread > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full px-1 text-[10px]">
-                {unread > 99 ? '99+' : unread}
-              </span>
-            )}
-          </Button>
+            </Button>
+          </UserHoverCard>
         );
       })}
   </div>
