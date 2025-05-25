@@ -18,6 +18,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
 import { createApiClient } from '@/lib/api-client';
+import { showError } from '@/lib/error-toast';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -32,6 +34,8 @@ export default function AdminPage() {
   const [result, setResult] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const apiClient = createApiClient();
+
+  const [users, setUsers] = useState<any[]>([]);
 
   const [newUser, setNewUser] = useState({
     username: '',
@@ -49,9 +53,20 @@ export default function AdminPage() {
         setTables(data?.tables ?? []);
       } catch (err) {
         setError((err as Error).message);
+        showError(err);
       }
     }
     fetchTables();
+
+    async function fetchUsers() {
+      try {
+        const data = await apiClient.request<{ users: any[] }>('/api/admin/users');
+        setUsers(data?.users ?? []);
+      } catch (err) {
+        showError(err);
+      }
+    }
+    fetchUsers();
   }, []);
 
   useEffect(() => {
@@ -65,6 +80,7 @@ export default function AdminPage() {
         setRows([]);
         setEditedRows([]);
         setError((err as Error).message);
+        showError(err);
       }
     }
     fetchRows();
@@ -94,6 +110,7 @@ export default function AdminPage() {
       });
     } catch (err) {
       setError((err as Error).message);
+      showError(err);
     }
   }
 
@@ -109,6 +126,7 @@ export default function AdminPage() {
     } catch (err) {
       setResult([]);
       setError((err as Error).message);
+      showError(err);
     }
   }
 
@@ -129,8 +147,24 @@ export default function AdminPage() {
         password: '',
         isAdmin: false,
       });
+      const data = await apiClient.request<{ users: any[] }>('/api/admin/users');
+      setUsers(data?.users ?? []);
     } catch (err) {
       setError((err as Error).message);
+      showError(err);
+    }
+  }
+
+  async function setUserAdmin(id: number, isAdmin: boolean) {
+    try {
+      await apiClient.request(`/api/admin/users/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isAdmin }),
+      });
+      setUsers(prev => prev.map(u => (u.id === id ? { ...u, isAdmin } : u)));
+    } catch (err) {
+      showError(err);
     }
   }
 
@@ -208,6 +242,41 @@ export default function AdminPage() {
               </label>
               <Button type="submit">Create</Button>
             </form>
+          </CardContent>
+        </Card>
+
+        <Card className="space-y-4">
+          <CardHeader>
+            <CardTitle>User Management</CardTitle>
+          </CardHeader>
+          <CardContent className="overflow-auto">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-primary-100 dark:bg-primary-900/30">
+                <tr>
+                  <th className="px-3 py-2 text-left text-sm font-semibold">ID</th>
+                  <th className="px-3 py-2 text-left text-sm font-semibold">Username</th>
+                  <th className="px-3 py-2 text-left text-sm font-semibold">Email</th>
+                  <th className="px-3 py-2 text-center text-sm font-semibold">Admin</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {users.map(u => (
+                  <tr key={u.id} className="odd:bg-background">
+                    <td className="px-3 py-2">{u.id}</td>
+                    <td className="px-3 py-2">{u.username}</td>
+                    <td className="px-3 py-2">{u.email}</td>
+                    <td className="px-3 py-2 text-center">
+                      <Checkbox
+                        checked={u.isAdmin}
+                        onCheckedChange={checked =>
+                          setUserAdmin(u.id, checked === true)
+                        }
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </CardContent>
         </Card>
 

@@ -112,4 +112,52 @@ router.post('/table/:name', isAuthenticated, async (req: Request, res: Response)
   }
 });
 
+// GET /api/admin/users - list all users
+router.get('/users', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = req.session.userId as number;
+    const { rows } = await db!.query<{ is_admin: boolean }>(
+      'SELECT is_admin FROM users WHERE id = $1',
+      [userId],
+    );
+    if (!rows[0]?.is_admin) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const result = await db!.query(
+      `SELECT id, username, email, first_name AS "firstName", last_name AS "lastName", job_title AS "jobTitle", is_admin AS "isAdmin", isonline AS "isOnline" FROM users ORDER BY id`,
+    );
+    res.json({ users: result.rows });
+  } catch (err) {
+    logger.error('Admin users list error:', err);
+    res.status(400).json({ error: (err as Error).message });
+  }
+});
+
+// PATCH /api/admin/users/:id - update user fields (currently only isAdmin)
+router.patch('/users/:id', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const adminId = req.session.userId as number;
+    const { rows } = await db!.query<{ is_admin: boolean }>(
+      'SELECT is_admin FROM users WHERE id = $1',
+      [adminId],
+    );
+    if (!rows[0]?.is_admin) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const id = Number(req.params.id);
+    const { isAdmin } = req.body as { isAdmin?: boolean };
+    if (!id || typeof isAdmin !== 'boolean') {
+      return res.status(400).json({ error: 'Invalid request' });
+    }
+
+    await db!.query('UPDATE users SET is_admin = $1 WHERE id = $2', [isAdmin ? 1 : 0, id]);
+    res.json({ success: true });
+  } catch (err) {
+    logger.error('Admin user update error:', err);
+    res.status(400).json({ error: (err as Error).message });
+  }
+});
+
 export default router;
