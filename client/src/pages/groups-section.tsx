@@ -28,7 +28,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Loader2, Plus, Users } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Loader2, Plus, Users, Eye, Pencil, Trash2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useElectron } from "@/hooks/use-electron";
@@ -106,12 +112,7 @@ export function GroupsSection() {
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
     },
   });
-  const createGroup = async (data: CreateGroupFormValues) => {
-    await apiClient.request("/api/groups", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-                            });
+  const createGroup = (data: CreateGroupFormValues) => {
     createGroupMutation.mutate(data);
   };
   const updateGroup = async (id: number, data: Partial<Group>) => {
@@ -298,32 +299,51 @@ export function GroupsSection() {
                       </AvatarFallback>
                     </Avatar>
                   </div>
-                  <Button
-                    variant="link"
-                    className="text-primary p-0 h-auto"
-                    onClick={() => setSelectedGroup(group)}
-                  >
-                    {t('common.view')}
-                  </Button>
-                  <Button
-                    variant="link"
-                    className="text-primary p-0 h-auto"
-                    onClick={() =>
-                      updateGroup(group.id, {
-                        name: `Updated Name ${group.id}`,
-                        description: `Updated Description ${group.id}`,
-                      })
-                    }
-                  >
-                    {t('common.edit')}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    className="p-0 h-auto"
-                    onClick={() => deleteGroup(group.id)}
-                  >
-                    {t('common.delete')}
-                  </Button>
+                  <TooltipProvider delayDuration={0}>
+                    <div className="flex gap-2">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => setSelectedGroup(group)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{t('common.view')}</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            onClick={() =>
+                              updateGroup(group.id, {
+                                name: `Updated Name ${group.id}`,
+                                description: `Updated Description ${group.id}`,
+                              })
+                            }
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{t('common.edit')}</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="destructive"
+                            onClick={() => deleteGroup(group.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{t('common.delete')}</TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TooltipProvider>
                 </div>
               </CardContent>
             </Card>
