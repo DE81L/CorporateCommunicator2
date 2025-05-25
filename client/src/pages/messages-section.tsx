@@ -199,6 +199,12 @@ export default function MessagesSection({ onStartCall }: Props) {
     !!selectedUser && selectedUser.isonline === 1,
   );
 
+  useEffect(() => {
+    if (p2pStatus === 'closed' || p2pStatus === 'error') {
+      showError(t('errors.connectionError'));
+    }
+  }, [p2pStatus, t]);
+
   /* ───── WS side‑effects ───── */
   useEffect(() => {
     if (!lastRawMessage) return;

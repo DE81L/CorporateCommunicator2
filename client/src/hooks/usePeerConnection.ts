@@ -73,7 +73,7 @@ export function usePeerConnection(
     });
     peer.on('error', (err) => {
       showError(err, 'P2P error');
-      setStatus('closed');
+      setStatus('error');
     });
 
     peerRef.current = peer;
