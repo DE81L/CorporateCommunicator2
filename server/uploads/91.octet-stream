@@ -892,6 +892,9 @@ ALTER TABLE ONLY public.group_members
 ALTER TABLE ONLY public.groups
     ADD CONSTRAINT groups_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY public.groups
+    ADD CONSTRAINT groups_name_key UNIQUE (name);
+
 
 --
 -- TOC entry 4729 (class 2606 OID 16653)
