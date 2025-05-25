@@ -16,6 +16,7 @@ import jobsRouter from './jobs';
 import wikiRouter from './wiki';
 import requestsRouter from './requests';
 import adminRouter from './admin';
+import groupsRouter from './groups';
 import {
   addSyncMessages,
   takeSyncMessages,
@@ -28,6 +29,7 @@ import {
 const router = Router();
 router.use('/departments', isAuthenticated, departmentsRouter);
 router.use('/jobs', isAuthenticated, jobsRouter);
+router.use('/groups', isAuthenticated, groupsRouter);
 router.use('/requests', isAuthenticated, requestsRouter);
 router.use('/wiki', isAuthenticated, wikiRouter);
 router.use('/admin', isAuthenticated, adminRouter);

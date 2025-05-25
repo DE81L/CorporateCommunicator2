@@ -41,10 +41,8 @@ const createGroupSchema = z.object({
   description: z.string().optional(),
   isAnnouncement: z.boolean().default(false),
 });
-interface GroupsSectionProps { groupId: number; }
-
 type CreateGroupFormValues = z.infer<typeof createGroupSchema>;
-export function GroupsSection({ groupId }: GroupsSectionProps) {
+export function GroupsSection() {
   const apiClient = createApiClient();
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -61,14 +59,6 @@ export function GroupsSection({ groupId }: GroupsSectionProps) {
       const groups = (await apiClient.request<Group[]>('/api/groups')) ?? [];
       return groups;
     },
-  });
-  // Загружаем всех пользователей для добавления в группы
-  useQuery<User[]>({
-    queryKey: ["/api/users"],
-    queryFn: async (): Promise<User[]> => {
-     const users = (await apiClient.request<User[]>(`/api/groups/${groupId}/users`)) ?? [];
-     return users;
-   },
   });
   // Мутация создания группы
   const createGroupMutation = useMutation({

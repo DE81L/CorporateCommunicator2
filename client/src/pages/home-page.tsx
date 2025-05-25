@@ -168,7 +168,7 @@ export default function HomePage() {
             <MessagesSection onStartCall={handleStartCall} />
           )}
 
-          {activeSection === "groups" && <GroupsSection groupId={0} />}
+          {activeSection === "groups" && <GroupsSection />}
 
           {activeSection === "announcements" && <AnnouncementsSection />}
 
