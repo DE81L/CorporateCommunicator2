@@ -37,7 +37,16 @@ export default function HomePage() {
   const callSignalQueueRef = useRef<Map<number, any[]>>(new Map());
   const [callIncomingSignal, setCallIncomingSignal] = useState<any>(null);
   const { user } = useAuth();
-  const { connectionStatus, sendRaw, lastRawMessage, retriesLeft, reconnect } = useWebSocket();
+  const {
+    connectionStatus,
+    sendRaw,
+    sendCallRequest,
+    sendCallAccept,
+    sendCallReject,
+    lastRawMessage,
+    retriesLeft,
+    reconnect,
+  } = useWebSocket();
   const { chatUser, setChatUser } = useChat();
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -50,22 +59,18 @@ export default function HomePage() {
     setCallType(type);
     setCallRecipient(recipient);
     setIsCalling(true);
-    sendRaw({
-      type: "call-request",
-      payload: {
-        to: recipient.id,
-        callType: type,
-        fromName:
-          user?.firstName || user?.lastName
-            ? `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim()
-            : user?.username,
-      },
-    });
+    sendCallRequest(
+      recipient.id,
+      type,
+      user?.firstName || user?.lastName
+        ? `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim()
+        : user?.username || ''
+    );
   };
 
   const acceptCall = () => {
     if (!incomingCall) return;
-    sendRaw({ type: "call-accept", payload: { to: incomingCall.from } });
+    sendCallAccept(incomingCall.from);
     setCallRecipient({ id: incomingCall.from, name: incomingCall.name });
     setCallType(incomingCall.callType);
     setIncomingCall(null);
@@ -74,13 +79,13 @@ export default function HomePage() {
 
   const declineCall = () => {
     if (!incomingCall) return;
-    sendRaw({ type: "call-reject", payload: { to: incomingCall.from } });
+    sendCallReject(incomingCall.from);
     setIncomingCall(null);
   };
 
   const cancelOutgoingCall = () => {
     if (!callRecipient) return;
-    sendRaw({ type: "call-reject", payload: { to: callRecipient.id } });
+    sendCallReject(callRecipient.id);
     setIsCalling(false);
     setCallRecipient(null);
   };
