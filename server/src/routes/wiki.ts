@@ -23,11 +23,11 @@ router.get(['/entries/:id', '/:id(\\d+)'], async (req, res) => {
 
 // POST /api/wiki and /api/wiki/entries
 router.post(['/', '/entries'], async (req, res) => {
-  const { title, content, categoryId } = req.body;
+  const { title, content, category } = req.body;
   const creatorId = req.session.userId;
   const { rows } = await db!.query(
-    'INSERT INTO wiki_entries(title, content, category_id, creator_id, created_at) VALUES($1,$2,$3,$4,NOW()) RETURNING *',
-    [title, content, categoryId, creatorId]
+    'INSERT INTO wiki_entries(title, content, category, creator_id, created_at) VALUES($1,$2,$3,$4,NOW()) RETURNING *',
+    [title, content, category, creatorId]
   );
   res.status(201).json(rows[0]);
 });
@@ -35,11 +35,11 @@ router.post(['/', '/entries'], async (req, res) => {
 // PUT /api/wiki/:id and /api/wiki/entries/:id
 router.put(['/entries/:id', '/:id(\\d+)'], async (req, res) => {
   const entryId = +req.params.id;
-  const { title, content, categoryId } = req.body;
+  const { title, content, category } = req.body;
   const editorId = req.session.userId;
   const { rows } = await db!.query(
-    'UPDATE wiki_entries SET title=$1, content=$2, category_id=$3, last_editor_id=$4, updated_at=NOW() WHERE id = $5 RETURNING *',
-    [title, content, categoryId, editorId, entryId]
+    'UPDATE wiki_entries SET title=$1, content=$2, category=$3, last_editor_id=$4, updated_at=NOW() WHERE id = $5 RETURNING *',
+    [title, content, category, editorId, entryId]
   );
   if (rows.length === 0) {
     return res.status(404).json({ error: 'Entry not found' });
@@ -68,7 +68,10 @@ router.get('/categories', async (_req, res) => {
 // GET /api/wiki/categories/:id/entries
 router.get('/categories/:id/entries', async (req, res) => {
   const categoryId = +req.params.id;
-  const { rows } = await db!.query('SELECT * FROM wiki_entries WHERE category_id = $1', [categoryId]);
+  const { rows } = await db!.query(
+    'SELECT e.* FROM wiki_entries e JOIN wiki_categories c ON e.category = c.name WHERE c.id = $1',
+    [categoryId]
+  );
   res.json(rows);
 });
 
