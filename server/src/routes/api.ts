@@ -2,6 +2,7 @@
 import 'express-session';
 import { Router, Request, Response } from 'express';
 import fs from 'fs';
+const fsp = fs.promises;
 import path from 'path';
 import bcrypt from 'bcrypt';
 import { login, register } from '../lib/api/auth';
@@ -364,12 +365,12 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
     let filePath: string | undefined;
     if (file) {
       const uploadDir = path.join(process.cwd(), 'uploads');
-      fs.mkdirSync(uploadDir, { recursive: true });
+      await fsp.mkdir(uploadDir, { recursive: true });
       const extMatch = /^data:(.*?);base64/.exec(file);
       const ext = extMatch ? extMatch[1].split('/')[1] || 'bin' : 'bin';
       const base64Data = file.replace(/^data:.*;base64,/, '');
       const name = `${message.id}.${ext}`;
-      fs.writeFileSync(path.join(uploadDir, name), Buffer.from(base64Data, 'base64'));
+      await fsp.writeFile(path.join(uploadDir, name), Buffer.from(base64Data, 'base64'));
       filePath = `/uploads/${name}`;
       storeFile(message.id, filePath);
     }
@@ -535,12 +536,12 @@ router.post('/groups/:groupId/messages', isAuthenticated, async (req: Request, r
     let filePath: string | undefined;
     if (file) {
       const uploadDir = path.join(process.cwd(), 'uploads');
-      fs.mkdirSync(uploadDir, { recursive: true });
+      await fsp.mkdir(uploadDir, { recursive: true });
       const extMatch = /^data:(.*?);base64/.exec(file);
       const ext = extMatch ? extMatch[1].split('/')[1] || 'bin' : 'bin';
       const base64Data = file.replace(/^data:.*;base64,/, '');
       const name = `${message.id}.${ext}`;
-      fs.writeFileSync(path.join(uploadDir, name), Buffer.from(base64Data, 'base64'));
+      await fsp.writeFile(path.join(uploadDir, name), Buffer.from(base64Data, 'base64'));
       filePath = `/uploads/${name}`;
       storeFile(message.id, filePath);
     }
