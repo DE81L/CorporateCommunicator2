@@ -48,6 +48,109 @@ const createGroupSchema = z.object({
   isAnnouncement: z.boolean().default(false),
 });
 type CreateGroupFormValues = z.infer<typeof createGroupSchema>;
+
+const getInitials = (f: string, l: string) => `${f[0] || ''}${l[0] || ''}`.toUpperCase();
+
+function GroupCard({
+  group,
+  onView,
+  onEdit,
+  onDelete,
+}: {
+  group: Group;
+  onView: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const apiClient = createApiClient();
+  const { t } = useTranslation();
+  const { data: members = [] } = useQuery<User[]>({
+    queryKey: ["group-members", group.id],
+    queryFn: async (): Promise<User[]> =>
+      (await apiClient.request<User[]>(`/api/groups/${group.id}/users`)) ?? [],
+  });
+
+  const visible = members.slice(0, 3);
+  const extra = members.length - visible.length;
+
+  return (
+    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+      <div
+        className={`h-24 flex items-center justify-center ${
+          group.isAnnouncement ? "bg-secondary-100" : "bg-primary-100"
+        }`}
+      >
+        <Users
+          className={`h-12 w-12 ${
+            group.isAnnouncement ? "text-secondary-600" : "text-primary-600"
+          }`}
+        />
+      </div>
+      <CardContent className="p-4">
+        <h3 className="font-medium">{group.name}</h3>
+        {group.description && (
+          <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+            {group.description}
+          </p>
+        )}
+        <div className="mt-4 flex justify-between items-center">
+          <div className="flex -space-x-2">
+            {visible.map((m) => (
+              <Avatar key={m.id} className="h-6 w-6 border border-white">
+                {m.avatarUrl ? (
+                  <img
+                    src={m.avatarUrl}
+                    alt=""
+                    className="h-6 w-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <AvatarFallback className="text-xs">
+                    {getInitials(m.firstName, m.lastName)}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+            ))}
+            {extra > 0 && (
+              <Avatar className="h-6 w-6 border border-white">
+                <AvatarFallback className="text-xs bg-muted">
+                  +{extra}
+                </AvatarFallback>
+              </Avatar>
+            )}
+          </div>
+          <TooltipProvider delayDuration={0}>
+            <div className="flex gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon" variant="ghost" onClick={onView}>
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t('common.view')}</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon" variant="outline" onClick={onEdit}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t('common.edit')}</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon" variant="destructive" onClick={onDelete}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t('common.delete')}</TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 export function GroupsSection() {
   const apiClient = createApiClient();
   const { toast } = useToast();
@@ -251,102 +354,18 @@ export function GroupsSection() {
       ) : groups && groups.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {groups.map((group) => (
-            <Card
+            <GroupCard
               key={group.id}
-              className="overflow-hidden hover:shadow-md transition-shadow"
-            >
-              <div
-                className={`h-24 flex items-center justify-center ${
-                  group.isAnnouncement ? "bg-secondary-100" : "bg-primary-100"
-                }`}
-              >
-                <Users
-                  className={`h-12 w-12 ${
-                    group.isAnnouncement
-                      ? "text-secondary-600"
-                      : "text-primary-600"
-                  }`}
-                />
-              </div>
-              <CardContent className="p-4">
-                <h3 className="font-medium">{group.name}</h3>
-                {group.description && (
-                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                    {group.description}
-                  </p>
-                )}
-
-                <div className="mt-4 flex justify-between items-center">
-                  <div className="flex -space-x-2">
-                    <Avatar className="h-6 w-6 border border-white">
-                      <AvatarFallback className="text-xs bg-blue-100">
-                        A
-                      </AvatarFallback>
-                    </Avatar>
-                    <Avatar className="h-6 w-6 border border-white">
-                      <AvatarFallback className="text-xs bg-green-100">
-                        B
-                      </AvatarFallback>
-                    </Avatar>
-                    <Avatar className="h-6 w-6 border border-white">
-                      <AvatarFallback className="text-xs bg-yellow-100">
-                        C
-                      </AvatarFallback>
-                    </Avatar>
-                    <Avatar className="h-6 w-6 border border-white">
-                      <AvatarFallback className="text-xs bg-purple-100">
-                        +2
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <TooltipProvider delayDuration={0}>
-                    <div className="flex gap-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => setSelectedGroup(group)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{t('common.view')}</TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            onClick={() =>
-                              updateGroup(group.id, {
-                                name: `Updated Name ${group.id}`,
-                                description: `Updated Description ${group.id}`,
-                              })
-                            }
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{t('common.edit')}</TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            size="icon"
-                            variant="destructive"
-                            onClick={() => deleteGroup(group.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{t('common.delete')}</TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </TooltipProvider>
-                </div>
-              </CardContent>
-            </Card>
+              group={group}
+              onView={() => setSelectedGroup(group)}
+              onEdit={() =>
+                updateGroup(group.id, {
+                  name: `Updated Name ${group.id}`,
+                  description: `Updated Description ${group.id}`,
+                })
+              }
+              onDelete={() => deleteGroup(group.id)}
+            />
           ))}
         </div>
       ) : (
