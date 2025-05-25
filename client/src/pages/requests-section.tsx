@@ -3,14 +3,21 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, RefreshCw } from "lucide-react";
+import { PlusIcon, RefreshCw, Trash2, Edit, Check } from "lucide-react";
 import RequestModal from "./request-modal";
-import { getRequests, acceptRequest } from "@/api/requests";
+import {
+  getRequests,
+  acceptRequest,
+  deleteRequest,
+  completeRequest,
+} from "@/api/requests";
+import { useAuth } from "@/hooks/use-auth";
 
 export interface Request {
   id: number;
+  senderId: number;
   status: 'новая' | 'в работе' | 'выполнена';
-  receiverSubdivisionId: number;
+  receiverDepartmentId: number;
   subdivision?: { id: number; name: string };
   taskId: number;
   task?: { id: number; name: string; category: string };
@@ -31,6 +38,8 @@ export default function RequestsSection() {
   const [data, setData] = useState<Request[]>([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState<Request | null>(null);
+  const { user } = useAuth();
 
   const load = async () => {
     setLoading(true);
@@ -40,6 +49,16 @@ export default function RequestsSection() {
 
   const handleAccept = async (id: number) => {
     await acceptRequest(id);
+    load();
+  };
+
+  const handleDelete = async (id: number) => {
+    await deleteRequest(id);
+    load();
+  };
+
+  const handleComplete = async (id: number) => {
+    await completeRequest(id, {});
     load();
   };
 
@@ -82,12 +101,37 @@ export default function RequestsSection() {
     {
       id: "actions",
       header: "Действия",
-      cell: ({ row }) =>
-        row.original.status === "новая" ? (
-          <Button size="sm" onClick={() => handleAccept(row.original.id)}>
-            Принять
-          </Button>
-        ) : null,
+      cell: ({ row }) => {
+        const r = row.original;
+        const canAccept = r.status === "новая" && user?.id !== r.senderId;
+        const canEdit = user?.id === r.senderId && r.status === "новая";
+        const canDelete = canEdit;
+        const canComplete = user?.id === r.senderId && r.status !== "выполнена";
+        return (
+          <div className="flex gap-2">
+            {canAccept && (
+              <Button size="sm" onClick={() => handleAccept(r.id)}>
+                Принять
+              </Button>
+            )}
+            {canEdit && (
+              <Button size="icon" variant="outline" onClick={() => { setEditing(r); setShowModal(true); }}>
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
+            {canDelete && (
+              <Button size="icon" variant="outline" onClick={() => handleDelete(r.id)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+            {canComplete && (
+              <Button size="icon" variant="outline" onClick={() => handleComplete(r.id)}>
+                <Check className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        );
+      },
     },
   ];
 
@@ -107,7 +151,15 @@ export default function RequestsSection() {
 
       <DataTable columns={columns} data={data} placeholder="Заявок нет"/>
 
-      <RequestModal open={showModal} onOpenChange={setShowModal} onSuccess={load}/>
+      <RequestModal
+        open={showModal}
+        request={editing ?? undefined}
+        onOpenChange={(o) => {
+          setShowModal(o);
+          if (!o) setEditing(null);
+        }}
+        onSuccess={load}
+      />
     </div>
   );
 }

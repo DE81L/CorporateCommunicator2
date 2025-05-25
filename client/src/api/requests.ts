@@ -25,3 +25,20 @@ export async function completeRequest(
     body: JSON.stringify(payload),
   });
 }
+
+export async function updateRequest(
+  requestId: number,
+  data: Partial<
+    Pick<Request, 'cabinet' | 'phone' | 'isUrgent' | 'deadline' | 'comment'>
+  >
+) {
+  return api.request(`/requests/${requestId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteRequest(requestId: number) {
+  return api.request(`/requests/${requestId}`, { method: 'DELETE' });
+}

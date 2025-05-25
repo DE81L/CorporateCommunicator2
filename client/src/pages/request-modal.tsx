@@ -33,6 +33,8 @@ import { useState, useEffect } from "react";
 import { insertRequestSchema } from "@shared/schema";
 import { z } from "zod";
 import { createApiClient } from "@/lib/api-client";
+import type { Request } from "./requests-section";
+import { updateRequest } from "@/api/requests";
 
 export type Department = {
   id: number;
@@ -50,13 +52,13 @@ interface RequestFormValues {
 }
 
 interface Props {
-  requests?: any[];
+  request?: Request;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }
 
-export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
+export function RequestModal({ request, open, onOpenChange, onSuccess }: Props) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -81,15 +83,25 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
 
   const form = useForm<RequestFormValues>({
     resolver: zodResolver(insertRequestSchema),
-    defaultValues: {
-      receiverDepartmentId: 0,
-      taskId: 0,
-      cabinet: '',
-      phone: '',
-      isUrgent: false,
-      deadline: '',
-      comment: ''
-    }
+    defaultValues: request
+      ? {
+          receiverDepartmentId: request.receiverDepartmentId,
+          taskId: request.taskId,
+          cabinet: request.cabinet ?? '',
+          phone: request.phone ?? '',
+          isUrgent: request.isUrgent,
+          deadline: request.deadline ?? '',
+          comment: request.comment ?? ''
+        }
+      : {
+          receiverDepartmentId: 0,
+          taskId: 0,
+          cabinet: '',
+          phone: '',
+          isUrgent: false,
+          deadline: '',
+          comment: ''
+        },
   });
 
   useEffect(() => {
@@ -105,25 +117,28 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
     }
   }, [departmentsError]);
 
-  const createRequest = useMutation({
+  const saveRequest = useMutation({
     mutationFn: async (data: RequestFormValues) => {
-        const payload = { ...data, creatorId: user?.id, /* ... */ };
-        const res = await apiClient.request("/api/requests", {
-          method: "POST",
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+      const payload = { ...data, creatorId: user?.id };
+      if (request) {
+        return updateRequest(request.id, payload);
+      }
+      const res = await apiClient.request("/api/requests", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
       return res;
     },
     onSuccess: () => {
-      toast({ title: "Заявка создана" });
+      toast({ title: request ? "Заявка обновлена" : "Заявка создана" });
       queryClient.invalidateQueries({ queryKey: ["/api/requests"] });
       onOpenChange(false);
       onSuccess();
     },
     onError: (err: any) =>
       toast({
-        title: "Не удалось создать заявку",
+        title: request ? "Не удалось обновить заявку" : "Не удалось создать заявку",
         description: err.message,
         variant: "destructive",
       }),
@@ -140,7 +155,7 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((data) => createRequest.mutate(data))} className="space-y-4">
+          <form onSubmit={form.handleSubmit((data) => saveRequest.mutate(data))} className="space-y-4">
             <FormField
               control={form.control}
               name="receiverDepartmentId"
@@ -280,18 +295,18 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
             <DialogFooter>
               <Button
                 type="submit"
-                disabled={createRequest.isPending}
+                disabled={saveRequest.isPending}
                 className="ml-auto"
               >
-                {createRequest.isPending ? (
+                {saveRequest.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Создание...
+                    {request ? 'Сохранение...' : 'Создание...'}
                   </>
                 ) : (
                   <>
                     <Plus className="mr-2 h-4 w-4" />
-                    Создать
+                    {request ? 'Сохранить' : 'Создать'}
                   </>
                 )}
               </Button>
