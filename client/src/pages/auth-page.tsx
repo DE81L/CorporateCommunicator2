@@ -14,6 +14,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { createApiClient } from '@/lib/api-client';
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -138,24 +139,23 @@ export default function AuthPage() {
       resolver: zodResolver(registerSchema)
     });
     const { toast } = useToast();
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const apiClient = createApiClient();
     const registerMutation = useMutation({
       mutationFn: async (data: z.infer<typeof registerSchema>) => {
         const { confirmPassword, ...payload } = data;
-        const res = await fetch(`${baseURL}/api/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) {
-          if (res.status === 409) {
+        try {
+          const res = await apiClient.request('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          return res;
+        } catch (err: any) {
+          if (err instanceof Error && err.message.includes('409')) {
             throw new Error('Username or email already taken');
           }
-          const errorData = await res.json();
-          throw new Error(errorData.error || 'Registration failed');
+          throw err;
         }
-        return await res.json();
       },
       onSuccess: (_user, variables) => {
         toast({ title: "Registration successful!" });

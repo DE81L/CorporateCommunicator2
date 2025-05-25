@@ -31,6 +31,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createApiClient } from '@/lib/api-client';
 import { Bell, Moon, Sun, Globe, User, Lock, Settings as SettingsIcon, ArrowLeft } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
@@ -41,6 +42,7 @@ const SettingsPage: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const apiClient = createApiClient();
   const [, setLocation] = useLocation();
   const [emailNotifications, setEmailNotifications] = React.useState(true);
   const [pushNotifications, setPushNotifications] = React.useState(true);
@@ -48,15 +50,15 @@ const SettingsPage: React.FC = () => {
 
   const { data: jobs = [] } = useQuery<{ id: number; name: string }[]>({
     queryKey: ['/api/jobs'],
-    queryFn: async () => (await fetch('/api/jobs', { credentials: 'include' }).then(r => r.json())) as { id: number; name: string }[],
+    queryFn: async () =>
+      (await apiClient.request<{ id: number; name: string }[]>('/api/jobs')) ?? [],
   });
 
   const updateJob = useMutation({
     mutationFn: async (jobId: number | null) => {
-      await fetch('/api/user/job', {
+      await apiClient.request('/api/user/job', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ jobId }),
       });
     },
@@ -130,19 +132,14 @@ const SettingsPage: React.FC = () => {
     const mutation = useMutation({
       mutationFn: async (data: z.infer<typeof changePasswordSchema>) => {
         const { confirmPassword, ...payload } = data;
-        const res = await fetch('/api/change-password', {
+        await apiClient.request('/api/change-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({
             currentPassword: payload.currentPassword,
             newPassword: payload.newPassword,
           }),
         });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || 'Failed to change password');
-        }
       },
       onSuccess: () => {
         toast({ title: t('common.changesApplied') });

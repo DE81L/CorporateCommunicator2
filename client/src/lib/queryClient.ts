@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
+import { createApiClient } from './api-client';
 
 /**
  * Универсальный fetch-по-URL.
@@ -8,9 +9,9 @@ import { QueryClient } from '@tanstack/react-query';
  */
 async function defaultQueryFn({ queryKey }: { queryKey: readonly unknown[] }) {
   const url = queryKey[0] as string;
-  const res = await fetch(url, { credentials: 'include' });
-  if (!res.ok) throw new Error(`GET ${url} — ${res.status}`);
-  return res.json();
+  const apiClient = createApiClient();
+  const res = await apiClient.request(url);
+  return res;
 }
 
 export const queryClient = new QueryClient({

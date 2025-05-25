@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/card';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
+import { createApiClient } from '@/lib/api-client';
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -23,14 +24,13 @@ export default function AdminPage() {
   const [query, setQuery] = useState('');
   const [result, setResult] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const apiClient = createApiClient();
 
   useEffect(() => {
     async function fetchTables() {
       try {
-        const res = await fetch('/api/admin/tables');
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Error');
-        setTables(data.tables);
+        const data = await apiClient.request<{ tables: string[] }>('/api/admin/tables');
+        setTables(data?.tables ?? []);
       } catch (err) {
         setError((err as Error).message);
       }
@@ -42,11 +42,9 @@ export default function AdminPage() {
     async function fetchRows() {
       if (!selectedTable) return;
       try {
-        const res = await fetch(`/api/admin/table/${selectedTable}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Error');
-        setRows(data.rows);
-        setEditedRows(data.rows);
+        const data = await apiClient.request<{ rows: any[] }>(`/api/admin/table/${selectedTable}`);
+        setRows(data?.rows ?? []);
+        setEditedRows(data?.rows ?? []);
       } catch (err) {
         setRows([]);
         setEditedRows([]);
@@ -68,13 +66,11 @@ export default function AdminPage() {
     try {
       setError(null);
       const row = editedRows[index];
-      const res = await fetch(`/api/admin/table/${selectedTable}`, {
+      const data = await apiClient.request<{ rows: any[] }>(`/api/admin/table/${selectedTable}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ row })
+        body: JSON.stringify({ row }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error');
       setRows(prev => {
         const copy = [...prev];
         copy[index] = row;
@@ -88,14 +84,12 @@ export default function AdminPage() {
   async function runQuery() {
     try {
       setError(null);
-      const res = await fetch('/api/admin/sql', {
+      const data = await apiClient.request<{ rows: any[] }>('/api/admin/sql', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query })
+        body: JSON.stringify({ query }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error');
-      setResult(data.rows);
+      setResult(data?.rows ?? []);
     } catch (err) {
       setResult([]);
       setError((err as Error).message);
