@@ -28,6 +28,7 @@ export function createApp(): AppInit {
 
   /* ───────── SESSIONS ───────── */
   const store = new session.MemoryStore();
+  const cookieDomain = process.env.COOKIE_DOMAIN;
   const sess = session({
     store,
     secret: process.env.SESSION_SECRET ?? 'dev‑secret',
@@ -39,6 +40,7 @@ export function createApp(): AppInit {
       httpOnly: true,
       sameSite: 'lax',
       maxAge: 60 * 60 * 1000,
+      ...(cookieDomain ? { domain: cookieDomain } : {}),
     },
   });
   if (typeof (store as any).prune === 'function') {
