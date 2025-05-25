@@ -94,7 +94,7 @@ export default function CallModal({
     }
   }, [isMuted, localStream]);
 
-  // Start call timer when call is active
+  // Запускаем таймер, когда звонок активен
   useEffect(() => {
     if (stage !== 'in_call') {
       setCallDuration(0);
@@ -108,14 +108,14 @@ export default function CallModal({
     return () => clearInterval(timer);
   }, [stage]);
 
-  // Format call duration as MM:SS
+  // Форматируем длительность звонка как ММ:СС
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Get initials for avatar
+  // Получаем инициалы для аватара
   const getInitials = (name?: string) => {
     if (!name) return "?";
     return name

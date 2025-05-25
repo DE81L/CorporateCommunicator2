@@ -35,7 +35,7 @@ export function DataTable<TData>({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  // Nothing to show? – early out with a caption
+  // Нечего показывать? – просто выводим подпись
   if (!data.length) {
     return (
       <Table className="w-full">

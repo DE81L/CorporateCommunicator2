@@ -65,7 +65,7 @@ export function RequestModal({ open, onOpenChange, onSuccess }: Props) {
     queryKey: ["/api/departments"],
       queryFn: async (): Promise<{ id:number; name:string }[]> => {
         const depts = await apiClient.request<Department[]>('/api/departments');
-        return depts ?? [];    // never null
+        return depts ?? [];    // никогда не null
       },
     enabled: open
   });

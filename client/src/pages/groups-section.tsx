@@ -50,7 +50,7 @@ export function GroupsSection({ groupId }: GroupsSectionProps) {
   const { t } = useTranslation();
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
-  //Fetch groups
+  // Загружаем группы
   const {
     data: groups = [],
     isLoading: isLoadingGroups,
@@ -62,7 +62,7 @@ export function GroupsSection({ groupId }: GroupsSectionProps) {
       return groups;
     },
   });
-  // Fetch all users for adding to groups
+  // Загружаем всех пользователей для добавления в группы
   useQuery<User[]>({
     queryKey: ["/api/users"],
     queryFn: async (): Promise<User[]> => {
@@ -70,7 +70,7 @@ export function GroupsSection({ groupId }: GroupsSectionProps) {
      return users;
    },
   });
-  // Create group mutation
+  // Мутация создания группы
   const createGroupMutation = useMutation({
     mutationFn: (data: CreateGroupFormValues) =>
       apiClient.request("/api/groups", {

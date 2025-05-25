@@ -9,7 +9,7 @@ const pool = new Pool({
   port: parseInt(process.env.DB_PORT || '5432'),
 });
 
-// Test the connection
+// Тест подключения
 pool.connect((err, client, release) => {
   if (err) {
     return console.error('Error acquiring client:', err.stack);

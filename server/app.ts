@@ -10,38 +10,38 @@ export const app = express();
 const logger = pino();
 
 export async function createApp() {
-  // core middleware
+  // основное промежуточное ПО
   app.use(morgan('dev'));
   app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
-  // Allow larger batched requests
+  // Разрешаем большие пакетные запросы
   app.use(express.json({ limit: '5mb' }));
 
-  // HTTP logging middleware
+  // Промежуточное ПО логирования HTTP
   app.use(pinoHttp({ logger, autoLogging: false }));
 
-  // debug middleware
+  // отладочное промежуточное ПО
   app.use((req, _res, next) => {
     logger.info(`${req.method} ${req.url}`);
     next();
   });
 
-  // routes
+  // маршруты
   app.use('/api', router);
 
   // 404
   app.use((_req, res, _next) => { res.status(404).json({ error: 'Not found' }); });
 
-  // error handler
+  // обработчик ошибок
   app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     logger.error({ err }, 'Unhandled error');
     res.status(500).json({ message: 'Something blew up' });
   });
 
-  // DB (skipped when DB_DISABLED=true)
+  // БД (пропускается при DB_DISABLED=true)
   await connectDb();
 }
 
-// run directly = start server
+// запускать напрямую = стартуем сервер
 if (require.main === module) {
   createApp()
     .then(() => {

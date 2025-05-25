@@ -282,7 +282,7 @@ export default function MessagesSection({ onStartCall }: Props) {
     `${f[0]}${l[0]}`.toUpperCase();
 
 
-  // combine server and local messages without duplicates
+  // объединяем серверные и локальные сообщения без дубликатов
   const combinedMessages = Array.from(
     new Map(
       [...messages, ...localMessages].map((m) => [m.id, m]),
@@ -335,7 +335,7 @@ export default function MessagesSection({ onStartCall }: Props) {
       const existing = findMessageByFile(user!.id, selectedUser!.id, file);
       if (existing) {
         fileRef = existing.id;
-        // don't store duplicate file locally
+        // не сохраняем локально дубликаты файла
       }
     }
     if (viaP2P) {
@@ -417,7 +417,7 @@ export default function MessagesSection({ onStartCall }: Props) {
     setMsgInput(e.target.value);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      const max = 96; // limit growth
+      const max = 96; // ограничиваем рост
       const newHeight = Math.min(textareaRef.current.scrollHeight, max);
       textareaRef.current.style.height = `${newHeight}px`;
       textareaRef.current.scrollTop = textareaRef.current.scrollHeight;

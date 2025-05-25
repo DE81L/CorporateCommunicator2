@@ -1,6 +1,6 @@
 import { pgTable, serial, integer, text, timestamp, boolean } from "drizzle-orm/pg-core";
 import { z } from "zod";
-import { users, departments } from "./users"; // <-- Import departments
+import { users, departments } from "./users"; // <-- импорт департаментов
 
 export const subdivisions = pgTable("subdivisions", {
   id: serial("id").primaryKey(),
@@ -16,7 +16,7 @@ export const tasksCatalog = pgTable("tasks_catalog", {
 export const requests = pgTable("requests", {
   id: serial("id").primaryKey(),
   senderId: integer("sender_id").references(() => users.id).notNull(),
-  receiverDepartmentId: integer("receiver_department_id") // <-- Changed name
+  receiverDepartmentId: integer("receiver_department_id") // <-- изменено имя
     .references(() => departments.id)
     .notNull(),
   cabinet: text("cabinet"),
@@ -34,7 +34,7 @@ export const requests = pgTable("requests", {
 });
 
 export const insertRequestSchema = z.object({
-  receiverDepartmentId: z.number(), // <-- Changed name
+  receiverDepartmentId: z.number(), // <-- изменено имя
   taskId: z.number(),
   cabinet: z.string().optional(),
   phone: z.string().optional(),

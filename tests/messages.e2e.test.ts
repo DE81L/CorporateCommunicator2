@@ -12,29 +12,29 @@ describe('Messaging E2E', () => {
   });
 
   it('should send and store a message between users', async () => {
-    // Register two users:
+    // Регистрация двух пользователей:
     await request(app).post('/api/auth/register').send({ username: 'user1', password: 'pass1' });
     await request(app).post('/api/auth/register').send({ username: 'user2', password: 'pass2' });
 
-    // Log in both users (using different agents for sessions):
+    // Войти обоим пользователям (используем разные агенты для сессий):
     const agent1 = request.agent(app);
     const agent2 = request.agent(app);
 
     await agent1.post('/api/auth/login').send({ username: 'user1', password: 'pass1' });
     await agent2.post('/api/auth/login').send({ username: 'user2', password: 'pass2' });
 
-    // Get user IDs (assuming users are created with IDs 1 and 2, adjust if necessary)
+    // Получаем ID пользователей (предположительно 1 и 2, при необходимости скорректируйте)
     const user1Res = await db.query('SELECT id FROM users WHERE username = $1', ['user1']);
     const user2Res = await db.query('SELECT id FROM users WHERE username = $1', ['user2']);
     const user1Id = user1Res.rows[0].id;
     const user2Id = user2Res.rows[0].id;
 
 
-    // Send a message from user1 to user2:
+    // Отправить сообщение от user1 к user2:
     const messageContent = 'Hello!';
     await agent1.post('/api/messages').send({ receiverId: user2Id, content: messageContent });
 
-    // Verify the record in the database:
+    // Проверяем запись в базе данных:
     const res = await db.query('SELECT sender_id, receiver_id, content FROM messages WHERE sender_id = $1 AND receiver_id = $2 AND content = $3', [user1Id, user2Id, messageContent]);
 
     expect(res.rows).toHaveLength(1);

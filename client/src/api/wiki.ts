@@ -2,11 +2,11 @@ import { createApiClient } from '@/lib/api-client';
 import type { WikiEntry } from '@shared/schema';
 import type { InsertWikiEntry, WikiCategory } from '@shared/schema';
 
-const apiClient = createApiClient(); 
-// — you may need to pass auth token: createApiClient(token)
+const apiClient = createApiClient();
+// — возможно, потребуется передать токен: createApiClient(token)
 
 export async function getWikiEntries(): Promise<WikiEntry[]> {
-  // adjust the endpoint path & query as your server expects
+  // скорректируйте путь и параметры запроса по требованиям сервера
   return (await apiClient.request<WikiEntry[]>('/api/wiki/entries')) ?? [];
 }
 

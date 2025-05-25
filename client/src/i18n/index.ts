@@ -3,7 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { showError } from '@/lib/error-toast';
 
-// Import translations
+// Импорт переводов
 import translationEN from './locales/en.json';
 import translationRU from './locales/ru.json';
 
@@ -33,13 +33,13 @@ i18n
       order: ['localStorage', 'navigator'],
       caches: ['localStorage']
     },
-    debug: import.meta.env.DEV // Enable debug in development
+    debug: import.meta.env.DEV // Включаем отладку в разработке
   })
   .catch(error => {
     showError(error, 'i18n initialization error');
   });
   
-// Set language to Russian by default if not detected
+// Устанавливаем русский язык по умолчанию, если язык не определён
 if (!i18n.language) {
     i18n.changeLanguage('ru');
 }

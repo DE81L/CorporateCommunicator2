@@ -3,18 +3,18 @@ import { createApiClient } from '@/lib/api-client';
 
 const api = createApiClient();
 
-// Grab a list that belongs to the logged-in user.
-// We keep cookies/auth headers by passing credentials: 'include'.
+// Получаем список, принадлежащий авторизованному пользователю.
+// Куки и заголовки авторизации сохраняем через credentials: 'include'.
 export async function getRequests(): Promise<Request[]> {
   return (await api.request<Request[]>('/requests')) ?? [];
 }
 
-// Mark request as taken by current user
+// Пометить заявку как принятую текущим пользователем
 export async function acceptRequest(requestId: number) {
   return api.request(`/requests/${requestId}/accept`, { method: 'PATCH' });
 }
 
-// Handy helper you can use elsewhere if you want to mark a request “done”.
+// Удобный помощник для пометки заявки как выполненной
 export async function completeRequest(
   requestId: number,
   payload: { grade?: number; reviewText?: string }

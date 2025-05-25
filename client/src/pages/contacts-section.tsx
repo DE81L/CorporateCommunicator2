@@ -17,7 +17,7 @@ import {
   Video,
 } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
-// Remove the line: const apiClient = createApiClient();
+// Удалите строку: const apiClient = createApiClient();
 
 interface ContactsProps {
   onStartCall: (
@@ -34,7 +34,7 @@ export default function ContactsSection({ onStartCall, onOpenChat }: ContactsPro
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch all users
+  // Загружаем всех пользователей
   const {
     data: users,
     isLoading,
@@ -47,7 +47,7 @@ export default function ContactsSection({ onStartCall, onOpenChat }: ContactsPro
     },
   });
 
-  // Filter users based on search query
+  // Фильтруем пользователей по строке поиска
   const filteredUsers = ((users ?? []) as User[]).filter((u: User) =>
   String(u.id) !== String(user?.id) &&
   (
@@ -62,7 +62,7 @@ export default function ContactsSection({ onStartCall, onOpenChat }: ContactsPro
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
-  // Mock function to get job titles for demo
+  // Временная функция для получения должностей (демо)
   const getJobTitle = (userId: number) => {
     const titles = [
       "Marketing Director",

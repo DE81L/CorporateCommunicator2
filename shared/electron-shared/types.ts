@@ -7,5 +7,5 @@ export interface UserWithoutPassword {
   jobId?: number | null;
   jobTitle?: string | null;
   isonline?: number | boolean;
-  isAdmin?: number;   // 0 | 1
+  isAdmin?: number;   // 0 | 1 (да/нет)
 }
