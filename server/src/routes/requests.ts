@@ -9,25 +9,31 @@ router.get('/', async (req, res) => {
   const userId = req.session.userId;
   const { rows } = await db!.query(
     `SELECT
-       id,
-       sender_id              AS "senderId",
-       receiver_department_id AS "receiverDepartmentId",
-       task_id                AS "taskId",
-       cabinet,
-       phone,
-       is_urgent              AS "isUrgent",
-       deadline,
-       comment,
-       who_accepted           AS "whoAccepted",
-       taken_at               AS "takenAt",
-       grade,
-       review_text            AS "reviewText",
-       finished_at            AS "finishedAt",
-       status,
-       created_at             AS "createdAt"
-     FROM requests
-    WHERE sender_id = $1
-       OR receiver_department_id IN (SELECT department_id FROM users WHERE id = $1)`,
+       r.id,
+       r.sender_id              AS "senderId",
+       r.receiver_department_id AS "receiverDepartmentId",
+       json_build_object('id', d.id, 'name', d.name)            AS subdivision,
+       r.task_id                AS "taskId",
+       json_build_object('id', t.id, 'name', t.name, 'category', t.category) AS task,
+       r.cabinet,
+       r.phone,
+       r.is_urgent              AS "isUrgent",
+       r.deadline,
+       r.comment,
+       json_build_object('id', u.id, 'firstName', u.first_name, 'lastName', u.last_name) AS "whoAccepted",
+       r.taken_at               AS "takenAt",
+       r.grade,
+       r.review_text            AS "reviewText",
+       r.finished_at            AS "finishedAt",
+       r.status,
+       r.created_at             AS "createdAt"
+     FROM requests r
+       LEFT JOIN departments d ON r.receiver_department_id = d.id
+       LEFT JOIN tasks_catalog t ON r.task_id = t.id
+       LEFT JOIN users u ON r.who_accepted = u.id
+    WHERE r.sender_id = $1
+       OR r.receiver_department_id IN (SELECT department_id FROM users WHERE id = $1)
+    ORDER BY r.created_at DESC`,
     [userId]
   );
   res.json(rows);

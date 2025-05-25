@@ -90,20 +90,13 @@ export default function RequestsSection() {
       }
     },
     {
-      accessorKey: "isUrgent",
-      header: "Срочность",
-      cell: ({ row }) => 
-        row.original.isUrgent && 
-        <Badge variant="destructive">Срочно</Badge>
-    },
-    {
       accessorKey: "task",
       header: "Задача",
       cell: ({ row }) => row.original.task?.name
     },
     { accessorKey: "cabinet", header: "Кабинет" },
     { accessorKey: "deadline", header: "Дедлайн" },
-    { accessorKey: "grade", header: "Оценка" },
+    { accessorKey: "comment", header: "Комментарий" },
     {
       id: "actions",
       header: "Действия",
