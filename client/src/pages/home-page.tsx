@@ -64,7 +64,7 @@ export default function HomePage() {
       type,
       user?.firstName || user?.lastName
         ? `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim()
-        : user?.username || ''
+        : user?.username || '',
     );
   };
 
