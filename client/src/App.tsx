@@ -13,6 +13,7 @@ import { WindowFrameHeader } from "./components/ui/window-frame";
 import { useElectron } from "./hooks/use-electron";
 import { useEffect, useState } from "react";
 import { showError } from "@/lib/error-toast";
+import { createApiClient } from "@/lib/api-client";
 import { useUserStatusHeartbeat } from "./hooks/useUserStatus";
 
 function AppContent() {
@@ -62,22 +63,19 @@ export default function App() {
   const [status, setStatus]   = useState('Loading...');
   const [message, setMessage] = useState('');
 
-  const API_BASE =
-    (import.meta.env.VITE_API_URL || 'http://localhost:4000')
-      .replace(/\/api\/?$/, '')        // убираем лишний /api
-      .replace(/\/+$/, '');
+  const apiClient = createApiClient();
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/health`)
-      .then(res => res.json())
-      .then(data => setStatus(data.status))
+    apiClient
+      .request<{ status: string }>('/api/health')
+      .then(data => setStatus(data?.status ?? 'error'))
       .catch(() => setStatus('error'));
 
-    fetch(`${API_BASE}/api/hello`)
-      .then(res => res.json())
-      .then(data => setMessage(data.message))
+    apiClient
+      .request<{ message: string }>('/api/hello')
+      .then(data => setMessage(data?.message ?? ''))
       .catch(err => showError(err));
-  }, [API_BASE]);
+  }, [apiClient]);
 
 
   return (

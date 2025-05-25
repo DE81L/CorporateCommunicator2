@@ -52,8 +52,12 @@ export default function AnnouncementsSection() {
   // Create announcement mutation (creates a group with isAnnouncement=true)
   const createAnnouncementMutation = useMutation({
     mutationFn: async (data: CreateAnnouncementFormValues) => {
-        await fetch("/api/groups", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
-      },
+      await apiClient.request('/api/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+    },
 
     onSuccess: () => { 
       queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
