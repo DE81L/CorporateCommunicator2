@@ -20,9 +20,10 @@ export function useUserStatusHeartbeat() {
         body: JSON.stringify({ isonline: 1 }),
       })
       .then(() => {
-        queryClient.setQueryData(['/api/user'], (prev: any) =>
-          prev ? { ...prev, isOnline: 1 } : prev
-        );
+        queryClient.setQueryData(['/api/user'], (prev: any) => {
+          if (!prev || prev.isOnline === 1) return prev
+          return { ...prev, isOnline: 1 }
+        })
       })
       .catch(showError);
 
@@ -35,9 +36,10 @@ export function useUserStatusHeartbeat() {
           body: JSON.stringify({ isonline: 1 }),
         })
         .then(() => {
-          queryClient.setQueryData(['/api/user'], (prev: any) =>
-            prev ? { ...prev, isOnline: 1 } : prev
-          );
+          queryClient.setQueryData(['/api/user'], (prev: any) => {
+            if (!prev || prev.isOnline === 1) return prev
+            return { ...prev, isOnline: 1 }
+          })
         })
         .catch(showError);
     }, 10_000);
@@ -53,9 +55,10 @@ export function useUserStatusHeartbeat() {
           type: 'application/json',
         })
       );
-      queryClient.setQueryData(['/api/user'], (prev: any) =>
-        prev ? { ...prev, isOnline: 0 } : prev
-      );
+      queryClient.setQueryData(['/api/user'], (prev: any) => {
+        if (!prev || prev.isOnline === 0) return prev
+        return { ...prev, isOnline: 0 }
+      })
     };
     window.addEventListener('beforeunload', setOffline);
 
