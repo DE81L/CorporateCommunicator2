@@ -86,6 +86,12 @@ export default function CallModal({
   }, [status]);
 
   useEffect(() => {
+    if (status === 'closed' || status === 'error') {
+      onClose();
+    }
+  }, [status, onClose]);
+
+  useEffect(() => {
     if (
       lastRawMessage?.type === "p2p-signal" &&
       (lastRawMessage as any).payload.from === recipient.id

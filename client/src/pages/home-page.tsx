@@ -63,6 +63,17 @@ export default function HomePage() {
     });
   };
 
+  useEffect(() => {
+    if (!isCalling) return;
+    const timer = setTimeout(() => {
+      if (isCalling) {
+        cancelOutgoingCall();
+        toast({ title: t("call.noAnswer") });
+      }
+    }, 30000);
+    return () => clearTimeout(timer);
+  }, [isCalling]);
+
   const acceptCall = () => {
     if (!incomingCall) return;
     sendRaw({ type: "call-accept", payload: { to: incomingCall.from } });
@@ -83,6 +94,14 @@ export default function HomePage() {
     sendRaw({ type: "call-reject", payload: { to: callRecipient.id } });
     setIsCalling(false);
     setCallRecipient(null);
+  };
+
+  const endCall = () => {
+    setIsCallModalOpen(false);
+    setCallRecipient(null);
+    setCallIncomingSignal(null);
+    setIsCalling(false);
+    toast({ title: t("call.ended") });
   };
 
   useEffect(() => {
@@ -209,7 +228,7 @@ export default function HomePage() {
       {isCallModalOpen && callRecipient && (
         <CallModal
           isOpen={isCallModalOpen}
-          onClose={() => setIsCallModalOpen(false)}
+          onClose={endCall}
           callType={callType}
           recipient={callRecipient}
           incomingSignal={callIncomingSignal}
