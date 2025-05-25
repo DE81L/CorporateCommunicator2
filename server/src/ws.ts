@@ -193,3 +193,19 @@ export function sendChatMessage(
   return false;
 }
 
+/**
+ * Broadcast group message to multiple recipients
+ */
+export function sendGroupMessage(
+  receiverIds: number[],
+  message: any,
+): number[] {
+  const delivered: number[] = [];
+  for (const id of receiverIds) {
+    if (sendChatMessage(id, message)) {
+      delivered.push(id);
+    }
+  }
+  return delivered;
+}
+

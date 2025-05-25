@@ -8,7 +8,7 @@ import { login, register } from '../lib/api/auth';
 import { db } from '../db'; // Уже есть
 import { logger } from '../util/logger'; // Уже есть
 import { isAuthenticated } from '../middleware/auth'; // Уже есть
-import { broadcastStatus, sendChatMessage } from '../ws'; // Уже есть
+import { broadcastStatus, sendChatMessage, sendGroupMessage } from '../ws'; // Уже есть
 import { sendEmailNotification } from '../util/email';
 import departmentsRouter from './departments';
 import jobsRouter from './jobs';
@@ -457,6 +457,109 @@ router.patch('/messages/:id', isAuthenticated, async (req: Request, res: Respons
     res.json(updated.rows[0]);
   } catch (err) {
     logger.error('PATCH /messages/:id error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/groups/:groupId/messages
+ * Returns message history for a group.
+ */
+router.get('/groups/:groupId/messages', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = req.session.userId as number;
+    const groupId = Number(req.params.groupId);
+    if (!groupId) return res.status(400).json({ error: 'Invalid group' });
+
+    const limit = Math.min(Number(req.query.limit) || 50, 100);
+    const before = req.query.before ? new Date(req.query.before as string) : new Date();
+
+    const history = await db!.query(
+      `SELECT m.id,
+              m.sender_id   AS "senderId",
+              m.group_id    AS "groupId",
+              m.content,
+              m.timestamp,
+              m.status,
+              u.first_name  AS "firstName",
+              u.last_name   AS "lastName",
+              u.avatar_url  AS "avatarUrl"
+         FROM messages m
+         JOIN group_members gm ON gm.group_id = m.group_id AND gm.user_id = $1
+         JOIN users u ON u.id = m.sender_id
+        WHERE m.group_id = $2 AND m.timestamp < $3
+        ORDER BY m.timestamp DESC
+        LIMIT $4`,
+      [userId, groupId, before, limit]
+    );
+
+    await db!.query(
+      `UPDATE messages
+          SET status = 'read'
+        WHERE group_id = $2
+          AND sender_id <> $1
+          AND status <> 'read'`,
+      [userId, groupId]
+    );
+
+    const withFiles = history.rows.map((m) => {
+      const f = getFile(m.id);
+      if (f) clearFile(m.id);
+      return { ...m, file: f ?? null };
+    });
+    res.json(withFiles);
+  } catch (err) {
+    logger.error('GET /groups/:groupId/messages error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/groups/:groupId/messages
+ * Send a group message
+ */
+router.post('/groups/:groupId/messages', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const senderId = req.session.userId as number;
+    const groupId = Number(req.params.groupId);
+    if (!groupId) return res.status(400).json({ error: 'Invalid group' });
+
+    const { content, file } = req.body as { content: string; file?: string };
+    const insert = await db!.query(
+      `INSERT INTO messages (sender_id, group_id, content, status)
+       VALUES ($1, $2, $3, 'pending')
+       RETURNING id, sender_id AS "senderId", group_id AS "groupId", content, timestamp, status`,
+      [senderId, groupId, content]
+    );
+    const message = insert.rows[0];
+    let filePath: string | undefined;
+    if (file) {
+      const uploadDir = path.join(process.cwd(), 'uploads');
+      fs.mkdirSync(uploadDir, { recursive: true });
+      const extMatch = /^data:(.*?);base64/.exec(file);
+      const ext = extMatch ? extMatch[1].split('/')[1] || 'bin' : 'bin';
+      const base64Data = file.replace(/^data:.*;base64,/, '');
+      const name = `${message.id}.${ext}`;
+      fs.writeFileSync(path.join(uploadDir, name), Buffer.from(base64Data, 'base64'));
+      filePath = `/uploads/${name}`;
+      storeFile(message.id, filePath);
+    }
+
+    const { rows } = await db!.query<{ user_id: number }>(
+      'SELECT user_id FROM group_members WHERE group_id = $1 AND user_id <> $2',
+      [groupId, senderId]
+    );
+    const receivers = rows.map((r) => r.user_id);
+    const deliveredTo = sendGroupMessage(receivers, { ...message, file: filePath });
+
+    if (deliveredTo.length === receivers.length) {
+      await db!.query("UPDATE messages SET status = 'delivered' WHERE id = $1", [message.id]);
+      message.status = 'delivered';
+    }
+
+    res.json({ ...message, file: filePath });
+  } catch (err) {
+    logger.error('POST /groups/:groupId/messages error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

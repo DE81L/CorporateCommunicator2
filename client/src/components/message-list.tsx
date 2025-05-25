@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import MessageStatusDot from './message-status-dot';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Dialog,
   DialogContent,
@@ -24,9 +25,11 @@ export interface MessageItem {
 interface MessageListProps {
   messages: MessageItem[];
   myId: number;
+  groupMode?: boolean;
+  users?: Record<number, { firstName: string; lastName: string; avatarUrl?: string | null }>;
 }
 
-export function MessageList({ messages, myId }: MessageListProps) {
+export function MessageList({ messages, myId, groupMode = false, users = {} }: MessageListProps) {
   const { t } = useTranslation();
   const endRef = useRef<HTMLDivElement | null>(null);
   const prevMessagesRef = useRef<string | null>(null);
@@ -71,6 +74,8 @@ export function MessageList({ messages, myId }: MessageListProps) {
     }
   };
 
+  const getInitials = (f: string, l: string) => `${f[0] || ''}${l[0] || ''}`.toUpperCase();
+
   return (
     <div className="min-h-full flex flex-col space-y-3">
       {messages.map((m) => (
@@ -82,6 +87,26 @@ export function MessageList({ messages, myId }: MessageListProps) {
               : 'mr-auto bg-gray-200 text-black dark:bg-gray-700 dark:text-white'
           }`}
         >
+          {groupMode && (
+            <div className="flex items-center gap-2">
+              <Avatar className="h-6 w-6">
+                {users[m.senderId]?.avatarUrl ? (
+                  <img
+                    src={users[m.senderId]!.avatarUrl!}
+                    alt=""
+                    className="h-6 w-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <AvatarFallback>
+                    {getInitials(users[m.senderId]?.firstName || '', users[m.senderId]?.lastName || '')}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <span className="text-xs font-medium">
+                {users[m.senderId]?.firstName} {users[m.senderId]?.lastName}
+              </span>
+            </div>
+          )}
           <div>{m.content}</div>
           {m.file && (
             isImage(m.file) ? (
