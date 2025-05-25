@@ -13,7 +13,8 @@ import {
   StoredMessage,
   markMessagesRead,
   countUnreadMessages,
-  findMessageByFile,
+  findMessageByHash,
+  computeFileHash,
 } from '@/lib/message-storage';
 import {
   Send,
@@ -51,6 +52,7 @@ export interface Message {
   error?: boolean;
   file?: string;
   fileRef?: number;
+  fileHash?: string;
 }
 
 export interface User {
@@ -331,8 +333,14 @@ export default function MessagesSection({ onStartCall }: Props) {
     const viaP2P = p2pStatus === 'open';
 
     let fileRef: number | undefined;
+    let fileHash: string | undefined;
     if (file) {
-      const existing = findMessageByFile(user!.id, selectedUser!.id, file);
+      fileHash = await computeFileHash(file);
+      const existing = findMessageByHash(
+        user!.id,
+        selectedUser!.id,
+        fileHash,
+      );
       if (existing) {
         fileRef = existing.id;
         // не сохраняем локально дубликаты файла
@@ -358,6 +366,7 @@ export default function MessagesSection({ onStartCall }: Props) {
       status: viaP2P ? 'p2p' : 'pending',
       file: fileRef ? undefined : file,
       fileRef,
+      fileHash,
     };
 
     appendMessage(user!.id, selectedUser!.id, tempMsg);
@@ -377,8 +386,9 @@ export default function MessagesSection({ onStartCall }: Props) {
         if (!saved) return;
 
         const updated: StoredMessage = {
+          ...tempMsg,
           ...saved,
-          file: (saved.file ?? file) || undefined,
+          file: (saved.file ?? file) || tempMsg.file,
           synced: true,
           transport: 'server',
           status: saved.status,
