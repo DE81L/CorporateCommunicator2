@@ -10,7 +10,7 @@ import { db } from './db';
 let wss: WebSocketServer;
 const connections = new Map<number, Set<WebSocket>>();
 
-function sendToUser(id: number, message: any): boolean {
+export function sendToUser(id: number, message: any): boolean {
   const targets = connections.get(id);
   if (!targets || targets.size === 0) return false;
   const data = JSON.stringify(message);
