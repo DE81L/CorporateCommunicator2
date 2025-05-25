@@ -196,7 +196,9 @@
     "incoming": "Incoming call",
     "accept": "Accept",
     "decline": "Decline",
-    "rejected": "Call rejected"
+    "rejected": "Call rejected",
+    "noAnswer": "No answer",
+    "ended": "Call ended"
   },
   "requests": {
     "title": "Requests",
