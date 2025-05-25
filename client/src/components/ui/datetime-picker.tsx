@@ -55,7 +55,8 @@ const DateTimePicker = React.forwardRef<HTMLInputElement, DateTimePickerProps>(
       />
     </div>
   )
-}
+  }
+)
 
 DateTimePicker.displayName = "DateTimePicker"
 
