@@ -7,7 +7,8 @@ describe('Messaging E2E', () => {
   let app: Express.Application;
 
   beforeAll(async () => {
-    app = createApp();
+    const init = createApp();
+    app = init.app;
     await connectDb();
   });
 
