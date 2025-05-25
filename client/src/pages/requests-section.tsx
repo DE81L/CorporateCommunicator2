@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, RefreshCw, Trash2, Edit, Check } from "lucide-react";
 import RequestModal from "./request-modal";
+import RequestDetailsDialog from "./request-details-dialog";
 import {
   getRequests,
   acceptRequest,
@@ -39,6 +40,7 @@ export default function RequestsSection() {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Request | null>(null);
+  const [selected, setSelected] = useState<Request | null>(null);
   const { user } = useAuth();
 
   const load = async () => {
@@ -60,6 +62,10 @@ export default function RequestsSection() {
   const handleComplete = async (id: number) => {
     await completeRequest(id, {});
     load();
+  };
+
+  const handleRowClick = (row: Request) => {
+    setSelected(row);
   };
 
   useEffect(() => { load(); }, []);
@@ -149,7 +155,12 @@ export default function RequestsSection() {
         </div>
       </div>
 
-      <DataTable columns={columns} data={data} placeholder="Заявок нет"/>
+      <DataTable
+        columns={columns}
+        data={data}
+        placeholder="Заявок нет"
+        onRowClick={(row) => handleRowClick(row.original)}
+      />
 
       <RequestModal
         open={showModal}
@@ -159,6 +170,19 @@ export default function RequestsSection() {
           if (!o) setEditing(null);
         }}
         onSuccess={load}
+      />
+
+      <RequestDetailsDialog
+        open={selected !== null}
+        request={selected}
+        onOpenChange={(o) => {
+          if (!o) setSelected(null);
+        }}
+        onEdit={(r) => {
+          setEditing(r);
+          setShowModal(true);
+        }}
+        onDeleted={load}
       />
     </div>
   );

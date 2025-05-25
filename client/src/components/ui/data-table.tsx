@@ -1,5 +1,6 @@
 import {
   ColumnDef,
+  Row,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
@@ -21,12 +22,14 @@ interface DataTableProps<TData> {
   columns: ColumnDef<TData, any>[];
   data: TData[];
   placeholder?: string;
+  onRowClick?: (row: Row<TData>) => void;
 }
 
 export function DataTable<TData>({
   columns,
   data,
   placeholder = "No data",
+  onRowClick,
 }: DataTableProps<TData>) {
   const table = useReactTable({
     data,
@@ -66,7 +69,12 @@ export function DataTable<TData>({
 
         <TableBody>
           {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+            <TableRow
+              key={row.id}
+              data-state={row.getIsSelected() && "selected"}
+              onClick={() => onRowClick?.(row)}
+              className={onRowClick ? "cursor-pointer" : undefined}
+            >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
