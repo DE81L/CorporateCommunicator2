@@ -763,26 +763,26 @@ export default function WikiSection() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <FormControl>
-                      <Select
-                        value={field.value || 'none'}
-                        onValueChange={(v) =>
-                          field.onChange(v === 'none' ? '' : v)
-                        }
-                      >
+                    <Select
+                      value={field.value || 'none'}
+                      onValueChange={(v) =>
+                        field.onChange(v === 'none' ? '' : v)
+                      }
+                    >
+                      <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {categories.map((category) => (
-                            <SelectItem key={category.id} value={category.name}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.name}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -889,33 +889,33 @@ export default function WikiSection() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Parent Category</FormLabel>
-                    <FormControl>
-                      <Select
-                        value={field.value?.toString() || 'none'}
-                        onValueChange={(value) =>
-                          field.onChange(
-                            value === 'none' ? undefined : parseInt(value)
-                          )
-                        }
-                      >
+                    <Select
+                      value={field.value?.toString() || 'none'}
+                      onValueChange={(value) =>
+                        field.onChange(
+                          value === 'none' ? undefined : parseInt(value)
+                        )
+                      }
+                    >
+                      <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a parent category (optional)" />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None (Root)</SelectItem>
-                          {categories
-                            .filter((c) => c.id !== editingCategory?.id) // Don't show self as parent
-                            .map((category) => (
-                              <SelectItem
-                                key={category.id}
-                                value={category.id.toString()}
-                              >
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">None (Root)</SelectItem>
+                        {categories
+                          .filter((c) => c.id !== editingCategory?.id) // Don't show self as parent
+                          .map((category) => (
+                            <SelectItem
+                              key={category.id}
+                              value={category.id.toString()}
+                            >
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
