@@ -11,12 +11,14 @@ import { logger } from '../util/logger'; // Уже есть
 import { isAuthenticated } from '../middleware/auth'; // Уже есть
 import { broadcastStatus, sendChatMessage, sendGroupMessage } from '../ws'; // Уже есть
 import { sendEmailNotification } from '../util/email';
+import { notifyUser } from '../util/push';
 import departmentsRouter from './departments';
 import jobsRouter from './jobs';
 import wikiRouter from './wiki';
 import requestsRouter from './requests';
 import adminRouter from './admin';
 import groupsRouter from './groups';
+import notificationsRouter from './notifications';
 import {
   addSyncMessages,
   takeSyncMessages,
@@ -34,6 +36,7 @@ router.use('/groups', isAuthenticated, groupsRouter);
 router.use('/requests', isAuthenticated, requestsRouter);
 router.use('/wiki', isAuthenticated, wikiRouter);
 router.use('/admin', isAuthenticated, adminRouter);
+router.use('/notifications', notificationsRouter);
 /**
  * POST /api/login
  * Логин пользователя.
@@ -411,6 +414,18 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
           logger.error('Failed to send email notification:', err);
         }
       }
+      try {
+        await notifyUser(
+          receiverId,
+          {
+            title: `New message from ${req.session.username}`,
+            body: content,
+          },
+          db,
+        );
+      } catch (err) {
+        logger.error('Push notify failed:', err);
+      }
     }
 
     logger.info({ senderId, receiverId, delivered }, 'Message stored on server');
@@ -577,6 +592,22 @@ router.post('/groups/:groupId/messages', isAuthenticated, async (req: Request, r
     if (deliveredTo.length === receivers.length) {
       await db!.query("UPDATE messages SET status = 'delivered' WHERE id = $1", [message.id]);
       message.status = 'delivered';
+    }
+
+    const offline = receivers.filter((id) => !deliveredTo.includes(id));
+    for (const id of offline) {
+      try {
+        await notifyUser(
+          id,
+          {
+            title: `New group message`,
+            body: content,
+          },
+          db,
+        );
+      } catch (err) {
+        logger.error('Push notify failed:', err);
+      }
     }
 
     res.json({ ...message, file: filePath });
