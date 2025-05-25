@@ -366,15 +366,20 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
     const message = insert.rows[0];
     let filePath: string | undefined;
     if (file) {
-      const uploadDir = path.join(process.cwd(), 'uploads');
-      await fsp.mkdir(uploadDir, { recursive: true });
-      const extMatch = /^data:(.*?);base64/.exec(file);
-      const ext = extMatch ? extMatch[1].split('/')[1] || 'bin' : 'bin';
-      const base64Data = file.replace(/^data:.*;base64,/, '');
-      const name = `${message.id}.${ext}`;
-      await fsp.writeFile(path.join(uploadDir, name), Buffer.from(base64Data, 'base64'));
-      filePath = `/uploads/${name}`;
-      storeFile(message.id, filePath);
+      if (file.startsWith('/uploads/')) {
+        filePath = file;
+        storeFile(message.id, filePath);
+      } else {
+        const uploadDir = path.join(process.cwd(), 'uploads');
+        await fsp.mkdir(uploadDir, { recursive: true });
+        const extMatch = /^data:(.*?);base64/.exec(file);
+        const ext = extMatch ? extMatch[1].split('/')[1] || 'bin' : 'bin';
+        const base64Data = file.replace(/^data:.*;base64,/, '');
+        const name = `${message.id}.${ext}`;
+        await fsp.writeFile(path.join(uploadDir, name), Buffer.from(base64Data, 'base64'));
+        filePath = `/uploads/${name}`;
+        storeFile(message.id, filePath);
+      }
     }
 
     const delivered = sendChatMessage(receiverId, { ...message, file: filePath });
@@ -537,15 +542,20 @@ router.post('/groups/:groupId/messages', isAuthenticated, async (req: Request, r
     const message = insert.rows[0];
     let filePath: string | undefined;
     if (file) {
-      const uploadDir = path.join(process.cwd(), 'uploads');
-      await fsp.mkdir(uploadDir, { recursive: true });
-      const extMatch = /^data:(.*?);base64/.exec(file);
-      const ext = extMatch ? extMatch[1].split('/')[1] || 'bin' : 'bin';
-      const base64Data = file.replace(/^data:.*;base64,/, '');
-      const name = `${message.id}.${ext}`;
-      await fsp.writeFile(path.join(uploadDir, name), Buffer.from(base64Data, 'base64'));
-      filePath = `/uploads/${name}`;
-      storeFile(message.id, filePath);
+      if (file.startsWith('/uploads/')) {
+        filePath = file;
+        storeFile(message.id, filePath);
+      } else {
+        const uploadDir = path.join(process.cwd(), 'uploads');
+        await fsp.mkdir(uploadDir, { recursive: true });
+        const extMatch = /^data:(.*?);base64/.exec(file);
+        const ext = extMatch ? extMatch[1].split('/')[1] || 'bin' : 'bin';
+        const base64Data = file.replace(/^data:.*;base64,/, '');
+        const name = `${message.id}.${ext}`;
+        await fsp.writeFile(path.join(uploadDir, name), Buffer.from(base64Data, 'base64'));
+        filePath = `/uploads/${name}`;
+        storeFile(message.id, filePath);
+      }
     }
 
     const { rows } = await db!.query<{ user_id: number }>(
