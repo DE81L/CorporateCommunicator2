@@ -14,6 +14,7 @@ import { useElectron } from "./hooks/use-electron";
 import { useEffect, useState } from "react";
 import { showError } from "@/lib/error-toast";
 import { createApiClient } from "@/lib/api-client";
+import ServerDownBanner from "./components/server-down-banner";
 import { useUserStatusHeartbeat } from "./hooks/useUserStatus";
 
 function AppContent() {
@@ -60,8 +61,7 @@ function AppContent() {
 import { queryClient } from './lib/queryClient';
 
 export default function App() {
-  const [status, setStatus]   = useState('Loading...');
-  const [message, setMessage] = useState('');
+  const [status, setStatus] = useState('loading');
 
   const apiClient = createApiClient();
 
@@ -73,7 +73,6 @@ export default function App() {
 
     apiClient
       .request<{ message: string }>('/api/hello')
-      .then(data => setMessage(data?.message ?? ''))
       .catch(err => showError(err));
   }, [apiClient]);
 
@@ -83,11 +82,8 @@ export default function App() {
       <AuthProvider>
         <ChatProvider>
           <AppContent />
-          {status !== 'ok' && (
-            <div>
-              <h1>Server Status: {status}</h1>
-              <p>{message}</p>
-            </div>
+          {status === 'error' && (
+            <ServerDownBanner onReload={() => window.location.reload()} />
           )}
         </ChatProvider>
       </AuthProvider>
