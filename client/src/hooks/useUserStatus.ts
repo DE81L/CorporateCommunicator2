@@ -49,7 +49,9 @@ export function useUserStatusHeartbeat() {
         : `${envBase.replace(/\/+$/, '')}/api`;
       navigator.sendBeacon(
         `${base}/users/status`,
-        JSON.stringify({ isonline: 0 })
+        new Blob([JSON.stringify({ isonline: 0 })], {
+          type: 'application/json',
+        })
       );
       queryClient.setQueryData(['/api/user'], (prev: any) =>
         prev ? { ...prev, isOnline: 0 } : prev
