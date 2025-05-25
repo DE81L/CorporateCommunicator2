@@ -14,6 +14,7 @@ import {
   BookOpenIcon,
   LogOutIcon,
   ShieldIcon,
+  UsersIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -73,6 +74,7 @@ export default function Sidebar({
 
   const navItems: { id: SectionType; icon: LucideIcon; label: string; badge?: number }[] = [
     { id: "messages", icon: MessageSquareIcon, label: t("sidebar.nav.messages") },
+    { id: "groups", icon: UsersIcon, label: t("sidebar.nav.groups") },
     { id: "requests", icon: ClipboardCheckIcon, label: t("sidebar.nav.requests"), badge: 2 },
     { id: "contacts", icon: ContactIcon, label: t("sidebar.nav.contacts") },
     { id: "wiki", icon: BookOpenIcon, label: t("sidebar.nav.wiki") || "Wiki" },
