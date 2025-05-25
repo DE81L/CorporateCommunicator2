@@ -13,6 +13,7 @@ import {
   StoredMessage,
   markMessagesRead,
   countUnreadMessages,
+  findMessageByFile,
 } from '@/lib/message-storage';
 import {
   Send,
@@ -49,6 +50,7 @@ export interface Message {
   synced?: boolean;
   error?: boolean;
   file?: string;
+  fileRef?: number;
 }
 
 export interface User {
@@ -285,6 +287,14 @@ export default function MessagesSection({ onStartCall }: Props) {
   const trimmedMessages = combinedMessages.slice(0, maxDisplay);
   const visibleMessages = trimmedMessages.slice(0, visibleCount).reverse();
 
+  const displayMessages = visibleMessages.map((m) => {
+    if (!m.file && (m as any).fileRef) {
+      const ref = combinedMessages.find((r) => r.id === (m as any).fileRef);
+      if (ref?.file) return { ...m, file: ref.file };
+    }
+    return m;
+  });
+
   useEffect(() => {
     setVisibleCount((c) => {
       const baseline = Math.min(pageSize, trimmedMessages.length);
@@ -313,6 +323,15 @@ export default function MessagesSection({ onStartCall }: Props) {
   const sendSingle = async (content: string, file?: string) => {
     const tempId = Date.now() + Math.random();
     const viaP2P = p2pStatus === 'open';
+
+    let fileRef: number | undefined;
+    if (file) {
+      const existing = findMessageByFile(user!.id, selectedUser!.id, file);
+      if (existing) {
+        fileRef = existing.id;
+        // don't store duplicate file locally
+      }
+    }
     if (viaP2P) {
       sendP2P({
         senderId: user!.id,
@@ -331,7 +350,8 @@ export default function MessagesSection({ onStartCall }: Props) {
       synced: viaP2P ? true : false,
       transport: viaP2P ? 'p2p' : 'server',
       status: viaP2P ? 'p2p' : 'pending',
-      file: file,
+      file: fileRef ? undefined : file,
+      fileRef,
     };
 
     appendMessage(user!.id, selectedUser!.id, tempMsg);
@@ -596,7 +616,7 @@ export default function MessagesSection({ onStartCall }: Props) {
                 {isLoadingMessages ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <MessageList messages={visibleMessages} myId={user.id} />
+                  <MessageList messages={displayMessages} myId={user.id} />
                 )}
               </div>
 

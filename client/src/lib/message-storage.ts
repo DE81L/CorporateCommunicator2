@@ -5,6 +5,8 @@ export interface StoredMessage {
   content: string;
   timestamp: string;
   file?: string;
+  /** reference to message id that holds the actual file */
+  fileRef?: number;
   synced?: boolean;
   /** transport used to send the message */
   transport?: 'server' | 'p2p';
@@ -70,4 +72,12 @@ export function countUnreadMessages(myId: number, otherId: number): number {
 
 export function clearMessages(myId: number, otherId: number): void {
   localStorage.removeItem(key(myId, otherId));
+}
+
+export function findMessageByFile(
+  myId: number,
+  otherId: number,
+  file: string,
+): StoredMessage | undefined {
+  return loadMessages(myId, otherId).find((m) => m.file === file);
 }
