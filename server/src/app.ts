@@ -15,7 +15,12 @@ import apiRouter from './routes/api';
 import { isAuthenticated } from './middleware/auth';
 import path from 'path';
 
-export function createApp(): Express {
+export interface AppInit {
+  app: Express;
+  sessionMiddleware: RequestHandler;
+}
+
+export function createApp(): AppInit {
   const app: Express = express();
 
   // Disable ETag to avoid 304 responses which break simple fetch helpers
@@ -76,5 +81,5 @@ export function createApp(): Express {
   /* ───────── 404 FALLBACK ───────── */
   app.all('*', (_req, res) => res.status(404).json({ error: 'Not found' }));
 
-  return app;
+  return { app, sessionMiddleware: sess as RequestHandler };
 }
