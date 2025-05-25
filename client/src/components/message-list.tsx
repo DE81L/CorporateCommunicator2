@@ -40,7 +40,7 @@ export function MessageList({ messages, myId, groupMode = false, users = {} }: M
     const container = endRef.current?.parentElement;
     if (!container) return;
     const nearBottom =
-      container.scrollHeight - container.scrollTop - container.clientHeight < 50;
+      container.scrollHeight - container.scrollTop - container.clientHeight < 10;
     if (nearBottom) {
       endRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
