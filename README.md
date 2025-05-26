@@ -22,9 +22,6 @@ Install dependencies for all workspaces:
 pnpm install
 ```
 
-If you encounter errors like `Cannot find module 'nodemailer'` when starting the
-server, make sure the dependencies were installed using `pnpm`. Using `npm` or
-`yarn` will not correctly set up the workspace packages.
 
 Start the development environment (server, client and electron will run concurrently):
 
@@ -75,8 +72,6 @@ The `LOG_LEVEL` environment variable controls server log verbosity. Leaving it
 unset uses `info` level logging. Set `LOG_LEVEL=debug` for detailed WebSocket
 traces when troubleshooting connection issues.
 
-For email notifications of offline messages configure the `SMTP_*` variables in
-`.env`.
 To enable push notifications set the `FCM_SERVER_KEY` in `.env` with your
 Firebase Cloud Messaging server key.
 

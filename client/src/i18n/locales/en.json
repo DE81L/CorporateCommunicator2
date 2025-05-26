@@ -111,7 +111,6 @@
     "lightMode": "Light Mode",
     "theme": "Theme",
     "sounds": "Sounds",
-    "emailNotifications": "Email Notifications",
     "pushNotifications": "Push Notifications",
     "desktopNotifications": "Desktop Notifications",
     "saveChanges": "Save Changes",
@@ -127,7 +126,6 @@
     "managePrivacy": "Manage your privacy preferences",
     "privacySettings": "Privacy settings",
     "manageNotifications": "Manage notification preferences",
-    "emailNotificationsDescription": "Receive updates via email",
     "pushNotificationsDescription": "Receive push notifications on your device",
     "desktopNotificationsDescription": "Receive notifications on your desktop"
   },
