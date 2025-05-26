@@ -7,6 +7,9 @@ const flagIndex2 = args.indexOf('--localp2p');
 const local = flagIndex !== -1 || flagIndex2 !== -1;
 if (flagIndex !== -1) args.splice(flagIndex, 1);
 if (flagIndex2 !== -1) args.splice(flagIndex2, 1);
+const pywsIndex = args.indexOf('-pyws');
+const pyws = pywsIndex !== -1;
+if (pywsIndex !== -1) args.splice(pywsIndex, 1);
 
 const env = { ...process.env };
 if (local) {
@@ -14,6 +17,19 @@ if (local) {
   env.STUN_SERVER = 'none';
 }
 
+const names = ['server', 'client', 'electron'];
+const colors = ['green', 'blue', 'magenta'];
+const commands = [
+  'pnpm run dev:server',
+  'pnpm run dev:client',
+  'pnpm run dev:electron'
+];
+
+if (pyws) {
+  names.push('pyws');
+  colors.push('yellow');
+  commands.push('python3 python_ws_server.py');
+}
 const child = spawn(
   'pnpm',
   [
@@ -21,12 +37,10 @@ const child = spawn(
     'concurrently',
     '-k',
     '-n',
-    'server,client,electron',
+    names.join(','),
     '-c',
-    'green,blue,magenta',
-    'pnpm run dev:server',
-    'pnpm run dev:client',
-    'pnpm run dev:electron'
+    colors.join(','),
+    ...commands
   ],
   { stdio: 'inherit', env }
 );

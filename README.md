@@ -90,3 +90,9 @@ disable STUN/TURN and force local peer discovery:
 pnpm run dev -localp2p
 ```
 
+Pass `-pyws` to additionally start the experimental Python WebSocket server:
+
+```bash
+pnpm run dev -pyws
+```
+
