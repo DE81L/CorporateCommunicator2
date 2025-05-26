@@ -32,8 +32,17 @@ export default function JitsiFrame({
         roomName,
         parentNode: containerRef.current,
         userInfo: { displayName: userName },
-        configOverwrite: { startWithVideoMuted: !video },
-        interfaceConfigOverwrite: { TOOLBAR_BUTTONS: [], ...interfaceConfig },
+        configOverwrite: {
+          startWithVideoMuted: !video,
+          prejoinPageEnabled: false,
+        },
+        interfaceConfigOverwrite: {
+          TOOLBAR_BUTTONS: [],
+          filmStripOnly: false,
+          SHOW_JITSI_WATERMARK: false,
+          SHOW_WATERMARK_FOR_GUESTS: false,
+          ...interfaceConfig,
+        },
       };
       const api = new (window as any).JitsiMeetExternalAPI(domain, options);
       onApiReady?.(api);
