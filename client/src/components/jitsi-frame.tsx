@@ -67,6 +67,7 @@ export default function JitsiFrame({
           const script = document.createElement('script');
           script.src = 'https://meet.jit.si/external_api.js';
           script.async = true;
+          script.crossOrigin = 'anonymous';
           script.onload = () => resolve();
           script.onerror = () => reject(new Error('Failed to load Jitsi'));
           document.body.appendChild(script);
