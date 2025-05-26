@@ -139,22 +139,50 @@ export default function RequestsSection() {
         return (
           <div className="flex gap-2">
             {canAccept && (
-              <Button size="sm" onClick={() => handleAccept(r.id)}>
+              <Button
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAccept(r.id);
+                }}
+              >
                 Принять
               </Button>
             )}
             {canEdit && (
-              <Button size="icon" variant="outline" onClick={() => { setEditing(r); setShowModal(true); }}>
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditing(r);
+                  setShowModal(true);
+                }}
+              >
                 <Edit className="h-4 w-4" />
               </Button>
             )}
             {canDelete && (
-              <Button size="icon" variant="outline" onClick={() => handleDelete(r.id)}>
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(r.id);
+                }}
+              >
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}
             {canComplete && (
-              <Button size="icon" variant="outline" onClick={() => handleComplete(r.id)}>
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleComplete(r.id);
+                }}
+              >
                 <Check className="h-4 w-4" />
               </Button>
             )}
