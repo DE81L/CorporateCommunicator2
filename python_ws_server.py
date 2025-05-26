@@ -41,9 +41,13 @@ def update_online_status(user_id: int, isonline: int) -> None:
 async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
     params = ws.query_params
+    user_id_param = params.get("userId")
+    if user_id_param is None:
+        await ws.close(code=4401)
+        return
     try:
-        user_id = int(params.get("userId"))
-    except (TypeError, ValueError):
+        user_id = int(user_id_param)
+    except ValueError:
         await ws.close(code=4401)
         return
     user_set = connections.setdefault(user_id, set())
