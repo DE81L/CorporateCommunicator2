@@ -1,17 +1,35 @@
 import argparse
 import asyncio
 import json
-from typing import Dict, Set
+import os
+from typing import Dict, Set, List
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi import Body
-from typing import List
+import asyncpg
+from fastapi import Body, FastAPI, WebSocket, WebSocketDisconnect
 import uvicorn
 
 # Map user_id -> set of WebSocket connections
 connections: Dict[int, Set[WebSocket]] = {}
 
+db_pool: asyncpg.Pool | None = None
+
+async def init_db() -> None:
+    global db_pool
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        return
+    db_pool = await asyncpg.create_pool(dsn=db_url)
+
 app = FastAPI()
+
+@app.on_event("startup")
+async def on_startup() -> None:
+    await init_db()
+
+@app.on_event("shutdown")
+async def on_shutdown() -> None:
+    if db_pool:
+        await db_pool.close()
 
 async def send_to_user(user_id: int, message: dict) -> bool:
     targets = connections.get(user_id)
@@ -49,10 +67,16 @@ async def post_group_chat(userIds: List[int] = Body(...), message: dict = Body(.
             delivered.append(uid)
     return {"delivered": delivered}
 
-def update_online_status(user_id: int, isonline: int) -> None:
-    """Placeholder for updating DB user status."""
-    # TODO: implement database update using asyncpg or other driver
-    pass
+async def update_online_status(user_id: int, isonline: int) -> None:
+    """Update user's online status in the database if configured."""
+    if not db_pool:
+        return
+    async with db_pool.acquire() as conn:
+        await conn.execute(
+            "UPDATE users SET isonline=$1 WHERE id=$2",
+            isonline,
+            user_id,
+        )
 
 async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
@@ -70,7 +94,7 @@ async def websocket_endpoint(ws: WebSocket):
     first = len(user_set) == 0
     user_set.add(ws)
     if first:
-        update_online_status(user_id, 1)
+        await update_online_status(user_id, 1)
         await broadcast_status(user_id, 1)
     try:
         while True:
@@ -101,7 +125,7 @@ async def websocket_endpoint(ws: WebSocket):
         last = len(user_set) == 0
         if last:
             connections.pop(user_id, None)
-            update_online_status(user_id, 0)
+            await update_online_status(user_id, 0)
             await broadcast_status(user_id, 0)
 
 @app.websocket("/ws")

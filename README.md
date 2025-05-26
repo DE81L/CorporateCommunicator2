@@ -94,5 +94,9 @@ pnpm run dev -pyws
 ```
 On Windows the script uses `py -3` to launch Python automatically.
 The Python implementation handles signaling events and broadcasts user status
-just like the Node version.
+just like the Node version. Install its dependencies with:
+
+```bash
+pip install fastapi uvicorn asyncpg
+```
 
