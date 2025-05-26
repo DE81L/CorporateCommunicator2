@@ -15,9 +15,9 @@ module.exports = function transformer(file: FileInfo, api: API) {
   root.find(j.ExportNamedDeclaration).forEach(path => {
     const decl = path.value.declaration;
     if (decl && (decl.type === 'FunctionDeclaration' || decl.type === 'VariableDeclaration')) {
-      const name =
+      const name: string =
         decl.type === 'FunctionDeclaration'
-          ? decl.id!.name
+          ? (decl.id as Identifier)?.name ?? ''
           : ((decl.declarations[0] as VariableDeclarator).id as Identifier).name;
 
       const wrapCall = j.callExpression(j.identifier('withLogging'), [j.identifier(name)]);
