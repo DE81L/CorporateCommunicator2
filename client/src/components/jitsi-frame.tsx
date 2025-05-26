@@ -4,9 +4,23 @@ interface JitsiFrameProps {
   roomName: string;
   userName?: string;
   video?: boolean;
+  /**
+   * Called when the Jitsi Meet API instance is ready.
+   */
+  onApiReady?: (api: any) => void;
+  /**
+   * Optional interface configuration overrides.
+   */
+  interfaceConfig?: Record<string, unknown>;
 }
 
-export default function JitsiFrame({ roomName, userName, video = true }: JitsiFrameProps) {
+export default function JitsiFrame({
+  roomName,
+  userName,
+  video = true,
+  onApiReady,
+  interfaceConfig,
+}: JitsiFrameProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -19,8 +33,10 @@ export default function JitsiFrame({ roomName, userName, video = true }: JitsiFr
         parentNode: containerRef.current,
         userInfo: { displayName: userName },
         configOverwrite: { startWithVideoMuted: !video },
+        interfaceConfigOverwrite: { TOOLBAR_BUTTONS: [], ...interfaceConfig },
       };
       const api = new (window as any).JitsiMeetExternalAPI(domain, options);
+      onApiReady?.(api);
       return () => api?.dispose();
     };
 
@@ -36,7 +52,7 @@ export default function JitsiFrame({ roomName, userName, video = true }: JitsiFr
         document.body.removeChild(script);
       };
     }
-  }, [roomName, userName, video]);
+  }, [roomName, userName, video, onApiReady, interfaceConfig]);
 
   return <div ref={containerRef} className="w-full h-80" />;
 }

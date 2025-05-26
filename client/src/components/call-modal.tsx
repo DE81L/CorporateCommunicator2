@@ -9,7 +9,15 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { PhoneOffIcon, UserIcon } from "lucide-react";
+import {
+  PhoneOffIcon,
+  MicIcon,
+  MicOffIcon,
+  VideoIcon,
+  VideoOffIcon,
+  ScreenShareIcon,
+  ScreenShareOffIcon,
+} from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { useAuth } from "@/hooks/use-auth";
 import JitsiFrame from "./jitsi-frame";
@@ -42,8 +50,16 @@ export default function CallModal({
 }: CallModalProps) {
   const [callDuration, setCallDuration] = useState(0);
   const [roomName, setRoomName] = useState('');
+  const [jitsiApi, setJitsiApi] = useState<any>(null);
+  const [audioMuted, setAudioMuted] = useState(false);
+  const [videoMuted, setVideoMuted] = useState(callType !== 'video');
+  const [screenSharing, setScreenSharing] = useState(false);
   const { t } = useTranslations();
   const { user } = useAuth();
+  const handleHangup = () => {
+    jitsiApi?.executeCommand('hangup');
+    onClose();
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -52,6 +68,21 @@ export default function CallModal({
     const timer = setInterval(() => setCallDuration((p) => p + 1), 1000);
     return () => clearInterval(timer);
   }, [isOpen, user?.id, recipient.id]);
+
+  useEffect(() => {
+    if (!jitsiApi) return;
+    const handleAudio = (e: any) => setAudioMuted(e.muted);
+    const handleVideo = (e: any) => setVideoMuted(e.muted);
+    const handleScreen = (e: any) => setScreenSharing(e.on);
+    jitsiApi.addEventListener('audioMuteStatusChanged', handleAudio);
+    jitsiApi.addEventListener('videoMuteStatusChanged', handleVideo);
+    jitsiApi.addEventListener('screenSharingStatusChanged', handleScreen);
+    return () => {
+      jitsiApi.removeEventListener('audioMuteStatusChanged', handleAudio);
+      jitsiApi.removeEventListener('videoMuteStatusChanged', handleVideo);
+      jitsiApi.removeEventListener('screenSharingStatusChanged', handleScreen);
+    };
+  }, [jitsiApi]);
 
   // Форматируем длительность звонка как ММ:СС
   const formatDuration = (seconds: number) => {
@@ -72,7 +103,7 @@ export default function CallModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleHangup}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-primary-800 text-white border-none">
         <DialogHeader>
           <DialogTitle>{t(`call.${callType}`)}</DialogTitle>
@@ -93,14 +124,6 @@ export default function CallModal({
             {formatDuration(callDuration)}
           </p>
 
-          <Button
-            variant="destructive"
-            size="icon"
-            className="rounded-full mt-6"
-            onClick={onClose}
-          >
-            <PhoneOffIcon className="h-5 w-5" />
-          </Button>
         </div>
 
         <JitsiFrame
@@ -113,9 +136,53 @@ export default function CallModal({
               : undefined
           }
           video={callType === 'video'}
+          onApiReady={setJitsiApi}
+          interfaceConfig={{ DEFAULT_REMOTE_DISPLAY_NAME: recipient.name }}
         />
+        <div className="flex justify-center space-x-4 my-4">
+          <Button
+            variant="secondary"
+            size="icon"
+            onClick={() => jitsiApi?.executeCommand('toggleAudio')}
+          >
+            {audioMuted ? (
+              <MicOffIcon className="h-5 w-5" />
+            ) : (
+              <MicIcon className="h-5 w-5" />
+            )}
+          </Button>
+          <Button
+            variant="secondary"
+            size="icon"
+            onClick={() => jitsiApi?.executeCommand('toggleVideo')}
+          >
+            {videoMuted ? (
+              <VideoOffIcon className="h-5 w-5" />
+            ) : (
+              <VideoIcon className="h-5 w-5" />
+            )}
+          </Button>
+          <Button
+            variant="secondary"
+            size="icon"
+            onClick={() => jitsiApi?.executeCommand('toggleShareScreen')}
+          >
+            {screenSharing ? (
+              <ScreenShareOffIcon className="h-5 w-5" />
+            ) : (
+              <ScreenShareIcon className="h-5 w-5" />
+            )}
+          </Button>
+          <Button
+            variant="destructive"
+            size="icon"
+            onClick={handleHangup}
+          >
+            <PhoneOffIcon className="h-5 w-5" />
+          </Button>
+        </div>
         <DialogFooter>
-          <Button variant="destructive" onClick={onClose}>
+          <Button variant="destructive" onClick={handleHangup}>
             {t("common.cancel")}
           </Button>
         </DialogFooter>
