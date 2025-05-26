@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/layout/header";
 import Sidebar from "@/components/layout/sidebar";
 import MessagesSection from "@/pages/messages-section";
@@ -35,8 +35,6 @@ export default function HomePage() {
     id: number;
     name: string;
   } | null>(null);
-  const callSignalQueueRef = useRef<Map<number, any[]>>(new Map());
-  const [callIncomingSignal, setCallIncomingSignal] = useState<any>(null);
   const { user } = useAuth();
   const {
     connectionStatus,
@@ -105,19 +103,9 @@ export default function HomePage() {
   const endCall = () => {
     setIsCallModalOpen(false);
     setCallRecipient(null);
-    setCallIncomingSignal(null);
     setIsCalling(false);
     toast({ title: t("call.ended") });
   };
-
-  useEffect(() => {
-    if (isCallModalOpen && callRecipient) {
-      const q = callSignalQueueRef.current.get(callRecipient.id);
-      if (q && q.length > 0) {
-        setCallIncomingSignal(q.shift()!);
-      }
-    }
-  }, [isCallModalOpen, callRecipient]);
 
   const handleOpenChat = (contact: any) => {
     setChatUser({
@@ -178,16 +166,7 @@ export default function HomePage() {
       }
     }
 
-    if (lastRawMessage.type === 'p2p-signal') {
-      const payload = lastRawMessage.payload as { from: number; signal: any };
-      const q = callSignalQueueRef.current.get(payload.from) || [];
-      q.push(payload.signal);
-      callSignalQueueRef.current.set(payload.from, q);
-      if (isCallModalOpen && callRecipient?.id === payload.from) {
-        const sig = q.shift();
-        if (sig) setCallIncomingSignal(sig);
-      }
-    }
+
 
     if (
       lastRawMessage.type === 'call-accept' &&
@@ -253,7 +232,6 @@ export default function HomePage() {
           onClose={endCall}
           callType={callType}
           recipient={callRecipient}
-          incomingSignal={callIncomingSignal}
         />
       )}
 
