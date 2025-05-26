@@ -171,6 +171,7 @@ export default function WikiSection() {
       };
       return request("/api/wiki", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
     },
@@ -210,6 +211,7 @@ export default function WikiSection() {
       };
       return request(`/api/wiki/${id}`, {
         method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
     },
@@ -268,6 +270,7 @@ export default function WikiSection() {
       };
       return request("/api/wiki/categories", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
     },
@@ -301,6 +304,7 @@ export default function WikiSection() {
       const payload = { ...rest };
       return request(`/api/wiki/categories/${id}`, {
         method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
     },

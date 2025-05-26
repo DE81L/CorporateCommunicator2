@@ -23,6 +23,7 @@ export async function createWikiEntry(
 ): Promise<WikiEntry> {
   const entry = await apiClient.request<WikiEntry>('/api/wiki/entries', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
   if (!entry) {
@@ -37,6 +38,7 @@ export async function updateWikiEntry(
 ): Promise<WikiEntry | undefined> {
   return apiClient.request<WikiEntry>(`/api/wiki/entries/${id}`, {
     method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(patch),
   });
 }
