@@ -18,6 +18,9 @@ if (local) {
 }
 if (pyws) {
   env.NO_NODE_WS = '1';
+  if (!env.VITE_WS_URL) {
+    env.VITE_WS_URL = 'ws://localhost:8001/ws';
+  }
 }
 
 const names = ['server', 'client', 'electron'];
