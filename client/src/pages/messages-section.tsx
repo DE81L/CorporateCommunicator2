@@ -275,8 +275,9 @@ export default function MessagesSection({ onStartCall }: Props) {
         saveMessages(user!.id, selectedUser!.id, updated);
         return updated;
       });
+      refetchHistory();
     }
-  }, [p2pMsg, selectedUser, user]);
+  }, [p2pMsg, selectedUser, user, refetchHistory]);
 
   /* ───── helpers ───── */
   const getInitials = (f: string, l: string) =>
