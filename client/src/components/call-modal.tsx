@@ -142,6 +142,9 @@ export default function CallModal({
       <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-primary-800 text-white border-none">
         <DialogHeader>
           <DialogTitle>{t(`call.${callType}`)}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {t('call.in_progress')}
+          </DialogDescription>
         </DialogHeader>
         <div className="p-6 text-center">
           <Avatar className="h-24 w-24 mx-auto bg-primary-700">
