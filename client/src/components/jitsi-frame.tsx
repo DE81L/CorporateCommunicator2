@@ -1,4 +1,12 @@
 import { useEffect, useRef } from 'react';
+import { showError } from '@/lib/error-toast';
+
+declare global {
+  interface Window {
+    JitsiMeetExternalAPI?: any;
+    __jitsiScriptLoading?: Promise<void>;
+  }
+}
 
 interface JitsiFrameProps {
   roomName: string;
@@ -26,6 +34,9 @@ export default function JitsiFrame({
   useEffect(() => {
     if (!containerRef.current) return;
 
+    let disposed = false;
+    let api: any = null;
+
     const load = () => {
       const domain = 'meet.jit.si';
       const options: any = {
@@ -44,23 +55,34 @@ export default function JitsiFrame({
           ...interfaceConfig,
         },
       };
-      const api = new (window as any).JitsiMeetExternalAPI(domain, options);
+      api = new (window as any).JitsiMeetExternalAPI(domain, options);
       onApiReady?.(api);
-      return () => api?.dispose();
     };
 
-    if ((window as any).JitsiMeetExternalAPI) {
-      return load();
+    if (window.JitsiMeetExternalAPI) {
+      load();
     } else {
-      const script = document.createElement('script');
-      script.src = 'https://meet.jit.si/external_api.js';
-      script.async = true;
-      script.onload = load;
-      document.body.appendChild(script);
-      return () => {
-        document.body.removeChild(script);
-      };
+      if (!window.__jitsiScriptLoading) {
+        window.__jitsiScriptLoading = new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://meet.jit.si/external_api.js';
+          script.async = true;
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Failed to load Jitsi'));
+          document.body.appendChild(script);
+        });
+      }
+      window.__jitsiScriptLoading
+        .then(() => {
+          if (!disposed) load();
+        })
+        .catch((err) => showError(err, 'Jitsi script failed'));
     }
+
+    return () => {
+      disposed = true;
+      api?.dispose();
+    };
   }, [roomName, userName, video, onApiReady, interfaceConfig]);
 
   return <div ref={containerRef} className="w-full h-80" />;
