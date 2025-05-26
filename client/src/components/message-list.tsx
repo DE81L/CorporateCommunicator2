@@ -34,6 +34,7 @@ export function MessageList({ messages, myId, groupMode = false, users = {} }: M
   const { t } = useTranslation();
   const endRef = useRef<HTMLDivElement | null>(null);
   const prevMessagesRef = useRef<string | null>(null);
+  const firstRenderRef = useRef(true);
   const [viewerSrc, setViewerSrc] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,9 +42,11 @@ export function MessageList({ messages, myId, groupMode = false, users = {} }: M
     if (!container) return;
     const nearBottom =
       container.scrollHeight - container.scrollTop - container.clientHeight < 10;
-    if (nearBottom) {
-      endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const behavior = firstRenderRef.current ? 'auto' : 'smooth';
+    if (nearBottom || firstRenderRef.current) {
+      endRef.current?.scrollIntoView({ behavior });
     }
+    if (firstRenderRef.current) firstRenderRef.current = false;
   }, [messages]);
 
   useEffect(() => {
