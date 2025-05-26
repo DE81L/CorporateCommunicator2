@@ -31,7 +31,8 @@ const commands = [
 if (pyws) {
   names.push('pyws');
   colors.push('yellow');
-  commands.push('python3 python_ws_server.py');
+  const pythonCmd = process.platform === 'win32' ? 'py -3' : 'python3';
+  commands.push(`${pythonCmd} python_ws_server.py`);
 }
 const child = spawn(
   'pnpm',

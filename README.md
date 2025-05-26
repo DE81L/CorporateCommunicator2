@@ -12,6 +12,7 @@ This repository contains a monorepo setup for a corporate messaging application.
 
 - Node.js 20 or later
 - [pnpm](https://pnpm.io/) package manager
+- Python 3 (required only when using the `-pyws` flag)
 
 ## Getting started
 
@@ -97,4 +98,5 @@ server will not start:
 ```bash
 pnpm run dev -pyws
 ```
+On Windows the script uses `py -3` to launch Python automatically.
 
