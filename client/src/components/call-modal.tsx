@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useSettings } from "@/context/SettingsContext";
 import { useCallConnection } from "@/hooks/useCallConnection";
+import JitsiFrame from "./jitsi-frame";
 
 export type TranslationKey =
   | "call.video"
@@ -222,22 +223,18 @@ export default function CallModal({
           <audio ref={audioRef} className="hidden" />
         </div>
 
-        {callType === "video" && !isVideoOff && (
-          <div className="relative">
-            <video
-              ref={remoteVideoRef}
-              autoPlay
-              playsInline
-              className="w-full h-40 bg-black object-cover"
-            />
-            <video
-              ref={localVideoRef}
-              autoPlay
-              muted
-              playsInline
-              className="absolute bottom-2 right-2 w-24 h-24 rounded object-cover"
-            />
-          </div>
+        {stage === 'in_call' && (
+          <JitsiFrame
+            roomName={`cc2-${[user?.id, recipient.id].sort().join('-')}`}
+            userName={
+              user
+                ? [user.firstName, user.lastName]
+                    .filter(Boolean)
+                    .join(' ') || user.username
+                : undefined
+            }
+            video={callType === 'video'}
+          />
         )}
         <DialogFooter>
           <Button variant="destructive" onClick={onClose}>
