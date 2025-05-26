@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Header from "@/components/layout/header";
 import Sidebar from "@/components/layout/sidebar";
 import MessagesSection from "@/pages/messages-section";
@@ -50,6 +50,9 @@ export default function HomePage() {
   const { toast } = useToast();
   const { t } = useTranslation();
   useMessageSync();
+
+  type WSMsg = { type: string; payload: any };
+  const lastProcessedRef = useRef<WSMsg | null>(null);
 
   const handleStartCall = (
     type: "video" | "audio",
@@ -124,6 +127,8 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!lastRawMessage) return;
+    if (lastProcessedRef.current === lastRawMessage) return;
+    lastProcessedRef.current = lastRawMessage;
 
     if (lastRawMessage.type === 'chat') {
       const msg = lastRawMessage.payload as {
