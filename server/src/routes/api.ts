@@ -10,7 +10,6 @@ import { db } from '../db'; // Уже есть
 import { logger } from '../util/logger'; // Уже есть
 import { isAuthenticated } from '../middleware/auth'; // Уже есть
 import { broadcastStatus, sendChatMessage, sendGroupMessage } from '../ws'; // Уже есть
-import { sendEmailNotification } from '../util/email';
 import { notifyUser } from '../util/push';
 import departmentsRouter from './departments';
 import jobsRouter from './jobs';
@@ -404,17 +403,6 @@ router.post('/messages', isAuthenticated, async (req: Request, res: Response) =>
         [receiverId]
       );
       const recipient = rows[0];
-      if (recipient?.email) {
-        try {
-          await sendEmailNotification(
-            recipient.email,
-            `New message from ${req.session.username}`,
-            `${req.session.username} sent you a message: ${content}`
-          );
-        } catch (err) {
-          logger.error('Failed to send email notification:', err);
-        }
-      }
       try {
         await notifyUser(
           receiverId,

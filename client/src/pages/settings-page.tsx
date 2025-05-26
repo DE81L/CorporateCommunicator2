@@ -44,7 +44,6 @@ const SettingsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const apiClient = createApiClient();
   const [, setLocation] = useLocation();
-  const [emailNotifications, setEmailNotifications] = React.useState(true);
   const [pushNotifications, setPushNotifications] = React.useState(true);
   const [desktopNotifications, setDesktopNotifications] = React.useState(true);
 
@@ -89,13 +88,10 @@ const SettingsPage: React.FC = () => {
   };
 
   const handleNotificationChange = (
-    type: 'email' | 'push' | 'desktop',
+    type: 'push' | 'desktop',
     value: boolean
   ) => {
     switch (type) {
-      case 'email':
-        setEmailNotifications(value);
-        break;
       case 'push':
         setPushNotifications(value);
         break;
@@ -362,21 +358,6 @@ const SettingsPage: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label htmlFor="email-notifications">
-                    {t('settings.emailNotifications')}
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    {t('settings.emailNotificationsDescription')}
-                  </p>
-                </div>
-                <Switch
-                  id="email-notifications"
-                  checked={emailNotifications}
-                  onCheckedChange={(checked) => handleNotificationChange('email', checked)}
-                />
-              </div>
               
               <div className="flex items-center justify-between">
                 <div className="space-y-1">

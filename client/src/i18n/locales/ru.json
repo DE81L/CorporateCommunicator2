@@ -123,7 +123,6 @@
     "lightMode": "Светлый режим",
     "theme": "Тема",
     "sounds": "Звуки",
-    "emailNotifications": "Уведомления по электронной почте",
     "pushNotifications": "Push-уведомления",
     "desktopNotifications": "Уведомления на рабочем столе",
     "saveChanges": "Сохранить изменения",
@@ -139,7 +138,6 @@
     "managePrivacy": "Управление параметрами конфиденциальности",
     "privacySettings": "Настройки конфиденциальности",
     "manageNotifications": "Управление уведомлениями",
-    "emailNotificationsDescription": "Получать обновления по электронной почте",
     "pushNotificationsDescription": "Получать push-уведомления на устройстве",
     "desktopNotificationsDescription": "Получать уведомления на рабочем столе"
   },
