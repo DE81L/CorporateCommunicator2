@@ -158,6 +158,14 @@ export default function HomePage() {
         fromName: string;
         callType: 'video' | 'audio';
       };
+      if (
+        isCallModalOpen ||
+        isCalling ||
+        callRecipient ||
+        incomingCall
+      ) {
+        return;
+      }
       setIncomingCall({
         from: payload.from,
         name: payload.fromName,
