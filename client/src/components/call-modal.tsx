@@ -41,14 +41,17 @@ export default function CallModal({
   recipient,
 }: CallModalProps) {
   const [callDuration, setCallDuration] = useState(0);
+  const [roomName, setRoomName] = useState('');
   const { t } = useTranslations();
   const { user } = useAuth();
 
   useEffect(() => {
     if (!isOpen) return;
+    const random = Math.random().toString(36).slice(2, 10);
+    setRoomName(`cc2-${[user?.id, recipient.id].sort().join('-')}-${random}`);
     const timer = setInterval(() => setCallDuration((p) => p + 1), 1000);
     return () => clearInterval(timer);
-  }, [isOpen]);
+  }, [isOpen, user?.id, recipient.id]);
 
   // Форматируем длительность звонка как ММ:СС
   const formatDuration = (seconds: number) => {
@@ -101,7 +104,7 @@ export default function CallModal({
         </div>
 
         <JitsiFrame
-          roomName={`cc2-${[user?.id, recipient.id].sort().join('-')}`}
+          roomName={roomName}
           userName={
             user
               ? [user.firstName, user.lastName]
