@@ -2,7 +2,7 @@ import argparse
 import asyncio
 import json
 import os
-from typing import Dict, Set, List
+from typing import Dict, Set, List, Optional
 
 import asyncpg
 from fastapi import Body, FastAPI, WebSocket, WebSocketDisconnect
@@ -11,7 +11,7 @@ import uvicorn
 # Map user_id -> set of WebSocket connections
 connections: Dict[int, Set[WebSocket]] = {}
 
-db_pool: asyncpg.Pool | None = None
+db_pool: Optional[asyncpg.Pool] = None
 
 async def init_db() -> None:
     global db_pool
