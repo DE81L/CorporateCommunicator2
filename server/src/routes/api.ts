@@ -18,6 +18,7 @@ import requestsRouter from './requests';
 import adminRouter from './admin';
 import groupsRouter from './groups';
 import notificationsRouter from './notifications';
+import callLogsRouter from './call-logs';
 import {
   addSyncMessages,
   takeSyncMessages,
@@ -36,6 +37,7 @@ router.use('/requests', isAuthenticated, requestsRouter);
 router.use('/wiki', isAuthenticated, wikiRouter);
 router.use('/admin', isAuthenticated, adminRouter);
 router.use('/notifications', notificationsRouter);
+router.use('/call-logs', isAuthenticated, callLogsRouter);
 /**
  * POST /api/login
  * Логин пользователя.
