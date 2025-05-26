@@ -44,7 +44,9 @@ export function useWebSocket() {
     const connect = () => {
       console.debug('WS connect attempt', retries.current)
       setConnectionStatus('connecting')
-      const ws = new WebSocket(WS_URL)
+      const url = new URL(WS_URL, window.location.href)
+      if (user) url.searchParams.set('userId', String(user.id))
+      const ws = new WebSocket(url.toString())
       wsRef.current = ws
       connectRef.current = connect
 
