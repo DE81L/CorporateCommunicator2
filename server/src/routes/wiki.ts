@@ -29,13 +29,20 @@ router.post(['/', '/entries'], async (req, res) => {
   if (!title || !title.trim()) {
     title = 'Untitled';
   }
+  if (typeof content !== 'string' || !content.trim()) {
+    return res.status(400).json({ error: 'Content is required' });
+  }
   const creatorId = req.session.userId;
-  const { rows } = await db!.query(
-    'INSERT INTO wiki_entries(title, content, category, creator_id, created_at) VALUES($1,$2,$3,$4,NOW()) RETURNING *',
-    [title, content, category, creatorId]
-  );
-  const entry = rows[0];
-  res.status(201).json({ ...entry, title: entry.title ?? 'Untitled' });
+  try {
+    const { rows } = await db!.query(
+      'INSERT INTO wiki_entries(title, content, category, creator_id, created_at) VALUES($1,$2,$3,$4,NOW()) RETURNING *',
+      [title, content, category, creatorId],
+    );
+    const entry = rows[0];
+    res.status(201).json({ ...entry, title: entry.title ?? 'Untitled' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create entry' });
+  }
 });
 
 // PUT /api/wiki/:id and /api/wiki/entries/:id
@@ -45,16 +52,23 @@ router.put(['/entries/:id', '/:id(\\d+)'], async (req, res) => {
   if (title !== undefined && !title.trim()) {
     title = 'Untitled';
   }
-  const editorId = req.session.userId;
-  const { rows } = await db!.query(
-    'UPDATE wiki_entries SET title=$1, content=$2, category=$3, last_editor_id=$4, updated_at=NOW() WHERE id = $5 RETURNING *',
-    [title, content, category, editorId, entryId]
-  );
-  if (rows.length === 0) {
-    return res.status(404).json({ error: 'Entry not found' });
+  if (content !== undefined && (typeof content !== 'string' || !content.trim())) {
+    return res.status(400).json({ error: 'Content is required' });
   }
-  const entry = rows[0];
-  res.json({ ...entry, title: entry.title ?? 'Untitled' });
+  const editorId = req.session.userId;
+  try {
+    const { rows } = await db!.query(
+      'UPDATE wiki_entries SET title=$1, content=$2, category=$3, last_editor_id=$4, updated_at=NOW() WHERE id = $5 RETURNING *',
+      [title, content, category, editorId, entryId],
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Entry not found' });
+    }
+    const entry = rows[0];
+    res.json({ ...entry, title: entry.title ?? 'Untitled' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update entry' });
+  }
 });
 
 // DELETE /api/wiki/:id and /api/wiki/entries/:id
