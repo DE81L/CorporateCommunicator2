@@ -18,7 +18,8 @@ module.exports = function transformer(file: FileInfo, api: API) {
       const name =
         decl.type === 'FunctionDeclaration'
           ? decl.id!.name
-          : (decl.declarations[0].id as any).name;
+          : ((decl.declarations[0] as j.VariableDeclarator).id as j.Identifier)
+              .name;
 
       const wrapCall = j.callExpression(j.identifier('withLogging'), [j.identifier(name)]);
       const newDecl =
