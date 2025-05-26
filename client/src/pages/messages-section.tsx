@@ -13,8 +13,6 @@ import {
   StoredMessage,
   markMessagesRead,
   countUnreadMessages,
-  findMessageByHash,
-  computeFileHash,
 } from '@/lib/message-storage';
 import {
   Send,
@@ -52,8 +50,6 @@ export interface Message {
   synced?: boolean;
   error?: boolean;
   file?: string;
-  fileRef?: number;
-  fileHash?: string;
 }
 
 export interface User {
@@ -298,13 +294,7 @@ export default function MessagesSection({ onStartCall }: Props) {
   const trimmedMessages = combinedMessages.slice(0, maxDisplay);
   const visibleMessages = trimmedMessages.slice(0, visibleCount).reverse();
 
-  const displayMessages = visibleMessages.map((m) => {
-    if (!m.file && (m as any).fileRef) {
-      const ref = combinedMessages.find((r) => r.id === (m as any).fileRef);
-      if (ref?.file) return { ...m, file: ref.file };
-    }
-    return m;
-  });
+  const displayMessages = visibleMessages;
 
   useEffect(() => {
     setVisibleCount((c) => {
@@ -335,20 +325,6 @@ export default function MessagesSection({ onStartCall }: Props) {
     const tempId = Date.now() + Math.random();
     const viaP2P = p2pStatus === 'open';
 
-    let fileRef: number | undefined;
-    let fileHash: string | undefined;
-    if (file) {
-      fileHash = await computeFileHash(file);
-      const existing = findMessageByHash(
-        user!.id,
-        selectedUser!.id,
-        fileHash,
-      );
-      if (existing) {
-        fileRef = existing.id;
-        // не сохраняем локально дубликаты файла
-      }
-    }
     if (viaP2P) {
       sendP2P({
         senderId: user!.id,
@@ -367,9 +343,7 @@ export default function MessagesSection({ onStartCall }: Props) {
       synced: viaP2P ? true : false,
       transport: viaP2P ? 'p2p' : 'server',
       status: viaP2P ? 'p2p' : 'pending',
-      file: fileRef ? undefined : file,
-      fileRef,
-      fileHash,
+      file,
     };
 
     appendMessage(user!.id, selectedUser!.id, tempMsg);
