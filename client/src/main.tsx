@@ -18,9 +18,7 @@ import { SettingsProvider } from './context/SettingsContext';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <SettingsProvider>
-      <App />
-    </SettingsProvider>
-  </StrictMode>,
+  <SettingsProvider>
+    <App />
+  </SettingsProvider>,
 );
