@@ -4,6 +4,8 @@ import json
 from typing import Dict, Set
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import Body
+from typing import List
 import uvicorn
 
 # Map user_id -> set of WebSocket connections
@@ -32,6 +34,20 @@ async def broadcast_status(user_id: int, isonline: int) -> None:
         for ws in sets:
             if ws.client_state.name == "CONNECTED":
                 await ws.send_text(msg)
+
+# ----- HTTP endpoints for server-side message delivery -----
+@app.post("/chat")
+async def post_chat(userId: int = Body(...), message: dict = Body(...)):
+    ok = await send_to_user(userId, {"type": "chat", "payload": message})
+    return {"delivered": ok}
+
+@app.post("/group-chat")
+async def post_group_chat(userIds: List[int] = Body(...), message: dict = Body(...)):
+    delivered = []
+    for uid in userIds:
+        if await send_to_user(uid, {"type": "chat", "payload": message}):
+            delivered.append(uid)
+    return {"delivered": delivered}
 
 def update_online_status(user_id: int, isonline: int) -> None:
     """Placeholder for updating DB user status."""

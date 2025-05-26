@@ -158,16 +158,27 @@ export function sendChatMessage(
   receiverId: number,
   message: any,
 ): boolean {
-  const ok = sendToUser(receiverId, {
-    type: 'chat',
-    payload: message,
-  });
-  if (!ok) {
-    logger.debug(`Chat recipient ${receiverId} offline, skipping WS send`);
+  if (process.env.NO_NODE_WS) {
+    const wsUrl = process.env.VITE_WS_URL || 'ws://localhost:8001/ws';
+    const base = wsUrl.replace(/^ws/, 'http').replace(/\/ws$/, '');
+    fetch(`${base}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: receiverId, message }),
+    }).catch((err) => logger.error('pyws chat send failed:', err));
+    return false;
   } else {
-    logger.debug(`Sending chat message from ${message.senderId} to ${receiverId}`);
+    const ok = sendToUser(receiverId, {
+      type: 'chat',
+      payload: message,
+    });
+    if (!ok) {
+      logger.debug(`Chat recipient ${receiverId} offline, skipping WS send`);
+    } else {
+      logger.debug(`Sending chat message from ${message.senderId} to ${receiverId}`);
+    }
+    return ok;
   }
-  return ok;
 }
 
 /**
@@ -177,12 +188,23 @@ export function sendGroupMessage(
   receiverIds: number[],
   message: any,
 ): number[] {
-  const delivered: number[] = [];
-  for (const id of receiverIds) {
-    if (sendChatMessage(id, message)) {
-      delivered.push(id);
+  if (process.env.NO_NODE_WS) {
+    const wsUrl = process.env.VITE_WS_URL || 'ws://localhost:8001/ws';
+    const base = wsUrl.replace(/^ws/, 'http').replace(/\/ws$/, '');
+    fetch(`${base}/group-chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userIds: receiverIds, message }),
+    }).catch((err) => logger.error('pyws group send failed:', err));
+    return [];
+  } else {
+    const delivered: number[] = [];
+    for (const id of receiverIds) {
+      if (sendChatMessage(id, message)) {
+        delivered.push(id);
+      }
     }
+    return delivered;
   }
-  return delivered;
 }
 
