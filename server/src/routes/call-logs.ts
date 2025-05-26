@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { isAuthenticated } from '../middleware/auth';
-import { db } from '../db';
 import { logger } from '../util/logger';
 
 const router = Router();
@@ -17,11 +16,7 @@ router.post('/', async (req, res) => {
     if (!calleeId || !callType) {
       return res.status(400).json({ error: 'Missing fields' });
     }
-    const result = await db!.query<{ id: number }>(
-      'INSERT INTO call_logs (caller_id, callee_id, call_type) VALUES ($1,$2,$3) RETURNING id',
-      [callerId, calleeId, callType],
-    );
-    const id = result.rows[0].id;
+    const id = Date.now();
     logger.info(`Call started ${id}: ${callerId} -> ${calleeId} (${callType})`);
     res.status(201).json({ id });
   } catch (err) {
@@ -34,7 +29,6 @@ router.post('/:id/end', async (req, res) => {
   try {
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ error: 'Invalid id' });
-    await db!.query('UPDATE call_logs SET ended_at = NOW() WHERE id = $1', [id]);
     logger.info(`Call ended ${id}`);
     res.json({ success: true });
   } catch (err) {
