@@ -16,6 +16,9 @@ if (local) {
   env.VITE_STUN_SERVER = 'none';
   env.STUN_SERVER = 'none';
 }
+if (pyws) {
+  env.NO_NODE_WS = '1';
+}
 
 const names = ['server', 'client', 'electron'];
 const colors = ['green', 'blue', 'magenta'];
