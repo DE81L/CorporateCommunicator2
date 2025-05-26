@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { useAuth } from "@/hooks/use-auth";
+import { createApiClient } from "@/lib/api-client";
+import { showError } from "@/lib/error-toast";
 import JitsiFrame from "./jitsi-frame";
 
 export type TranslationKey =
@@ -54,10 +56,36 @@ export default function CallModal({
   const [audioMuted, setAudioMuted] = useState(false);
   const [videoMuted, setVideoMuted] = useState(callType !== 'video');
   const [screenSharing, setScreenSharing] = useState(false);
+  const [callLogId, setCallLogId] = useState<number | null>(null);
   const { t } = useTranslations();
   const { user } = useAuth();
+  const apiClient = createApiClient();
+  const startLog = async () => {
+    try {
+      const data = await apiClient.request<{ id: number }>('/call-logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ calleeId: recipient.id, callType }),
+      });
+      setCallLogId(data?.id ?? null);
+    } catch (err) {
+      showError(err, 'Failed to log call start');
+    }
+  };
+
+  const endLog = async () => {
+    if (!callLogId) return;
+    try {
+      await apiClient.request(`/call-logs/${callLogId}/end`, { method: 'POST' });
+    } catch (err) {
+      showError(err, 'Failed to log call end');
+    } finally {
+      setCallLogId(null);
+    }
+  };
   const handleHangup = () => {
     jitsiApi?.executeCommand('hangup');
+    endLog();
     onClose();
   };
 
@@ -66,6 +94,7 @@ export default function CallModal({
     const random = Math.random().toString(36).slice(2, 10);
     setRoomName(`cc2-${[user?.id, recipient.id].sort().join('-')}-${random}`);
     const timer = setInterval(() => setCallDuration((p) => p + 1), 1000);
+    startLog();
     return () => clearInterval(timer);
   }, [isOpen, user?.id, recipient.id]);
 
@@ -83,6 +112,12 @@ export default function CallModal({
       jitsiApi.removeEventListener('screenSharingStatusChanged', handleScreen);
     };
   }, [jitsiApi]);
+
+  useEffect(() => {
+    return () => {
+      endLog();
+    };
+  }, []);
 
   // Форматируем длительность звонка как ММ:СС
   const formatDuration = (seconds: number) => {
