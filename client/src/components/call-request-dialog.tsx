@@ -9,7 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslations } from "@/hooks/use-translations";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { Ringtone } from "@/lib/ringtone";
 
 interface Props {
   isOpen: boolean;
@@ -30,17 +31,15 @@ export default function CallRequestDialog({
 }: Props) {
   const { t } = useTranslations();
 
+  const ringRef = useRef<Ringtone | null>(null);
+
   useEffect(() => {
     if (!(isOpen && incoming)) return;
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    osc.type = 'sine';
-    osc.frequency.value = 440;
-    osc.connect(ctx.destination);
-    osc.start();
+    ringRef.current = new Ringtone();
+    ringRef.current.start();
     return () => {
-      osc.stop();
-      ctx.close();
+      ringRef.current?.dispose();
+      ringRef.current = null;
     };
   }, [isOpen, incoming]);
 
