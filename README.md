@@ -91,12 +91,13 @@ disable STUN/TURN and force local peer discovery:
 pnpm run dev -localp2p
 ```
 
-Pass `-pyws` to start the experimental Python WebSocket server instead of the
-built‑in Node WebSocket implementation. When this flag is used the Node WS
-server will not start:
+Pass `-pyws` to start the Python WebSocket server which mirrors the Node
+implementation. When this flag is used the Node WS server will not start:
 
 ```bash
 pnpm run dev -pyws
 ```
 On Windows the script uses `py -3` to launch Python automatically.
+The Python implementation handles signaling events and broadcasts user status
+just like the Node version.
 
