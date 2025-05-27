@@ -100,7 +100,7 @@ router.get('/:id/users', isAuthenticated, async (req: Request, res: Response) =>
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ error: 'Invalid group' });
     const { rows } = await db!.query(
-      `SELECT u.id, u.username, u.email, u.first_name AS "firstName", u.last_name AS "lastName", u.avatar_url AS "avatarUrl" FROM users u JOIN group_members gm ON gm.user_id = u.id WHERE gm.group_id = $1`,
+      `SELECT u.id, u.username, u.email, u.first_name AS "firstName", u.last_name AS "lastName", u.avatarurl AS "avatarUrl" FROM users u JOIN group_members gm ON gm.user_id = u.id WHERE gm.group_id = $1`,
       [id]
     );
     res.json(rows);

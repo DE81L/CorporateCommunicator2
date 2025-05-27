@@ -502,7 +502,7 @@ router.get('/groups/:groupId/messages', isAuthenticated, async (req: Request, re
               m.status,
               u.first_name  AS "firstName",
               u.last_name   AS "lastName",
-              u.avatar_url  AS "avatarUrl"
+              u.avatarurl  AS "avatarUrl"
          FROM messages m
          JOIN group_members gm ON gm.group_id = m.group_id AND gm.user_id = $1
          JOIN users u ON u.id = m.sender_id
