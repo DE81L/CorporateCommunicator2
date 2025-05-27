@@ -3,3 +3,7 @@ export const log = (...args: unknown[]) => {
     console.log('[DEBUG]', ...args);
   }
 };
+
+export const callLog = (...args: unknown[]) => {
+  console.log('[call]', ...args);
+};

@@ -12,3 +12,6 @@ export const logger: Logger = pino({
         },
 });
 export const log = logger.info.bind(logger);
+export const callLog = (...args: unknown[]) => {
+  logger.info('[call]', ...args);
+};
