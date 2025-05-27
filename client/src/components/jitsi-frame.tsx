@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { showError } from '@/lib/error-toast';
+import { callLog } from '../../../util/logger';
 
 declare global {
   interface Window {
@@ -38,6 +39,7 @@ export default function JitsiFrame({
     let api: any = null;
 
     const load = () => {
+      callLog('Initializing Jitsi', roomName);
       const domain = 'meet.jit.si';
       const options: any = {
         roomName,
@@ -64,12 +66,14 @@ export default function JitsiFrame({
         }
       }
       onApiReady?.(api);
+      callLog('Jitsi API ready');
     };
 
     if (window.JitsiMeetExternalAPI) {
       load();
     } else {
       if (!window.__jitsiScriptLoading) {
+        callLog('Loading Jitsi script');
         window.__jitsiScriptLoading = new Promise<void>((resolve, reject) => {
           const script = document.createElement('script');
           script.src = 'https://meet.jit.si/external_api.js';
@@ -83,7 +87,10 @@ export default function JitsiFrame({
         .then(() => {
           if (!disposed) load();
         })
-        .catch((err) => showError(err, 'Jitsi script failed'));
+        .catch((err) => {
+          callLog('Jitsi script failed', err);
+          showError(err, 'Jitsi script failed');
+        });
     }
 
     return () => {

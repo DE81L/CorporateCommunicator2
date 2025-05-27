@@ -24,6 +24,7 @@ import { createApiClient } from "@/lib/api-client";
 import { showError } from "@/lib/error-toast";
 import JitsiFrame from "./jitsi-frame";
 import { useSettings } from "@/context/SettingsContext";
+import { callLog } from "../../../util/logger";
 
 export type TranslationKey =
   | "call.video"
@@ -62,6 +63,10 @@ export default function CallModal({
   const { user } = useAuth();
   const { audioInputId, audioOutputId } = useSettings();
   const apiClient = createApiClient();
+  const handleApiReady = (api: any) => {
+    callLog('Jitsi API ready in modal');
+    setJitsiApi(api);
+  };
   const startLog = async () => {
     try {
       const data = await apiClient.request<{ id: number }>('/call-logs', {
@@ -70,6 +75,7 @@ export default function CallModal({
         body: JSON.stringify({ calleeId: recipient.id, callType }),
       });
       setCallLogId(data?.id ?? null);
+      callLog('Call started', data?.id);
     } catch (err) {
       showError(err, 'Failed to log call start');
     }
@@ -79,6 +85,7 @@ export default function CallModal({
     if (!callLogId) return;
     try {
       await apiClient.request(`/call-logs/${callLogId}/end`, { method: 'POST' });
+      callLog('Call ended', callLogId);
     } catch (err) {
       showError(err, 'Failed to log call end');
     } finally {
@@ -88,6 +95,7 @@ export default function CallModal({
   const handleHangup = () => {
     jitsiApi?.executeCommand('hangup');
     endLog();
+    callLog('Hangup command sent');
     onClose();
   };
 
@@ -96,6 +104,7 @@ export default function CallModal({
     const random = Math.random().toString(36).slice(2, 10);
     setRoomName(`cc2-${[user?.id, recipient.id].sort().join('-')}-${random}`);
     const timer = setInterval(() => setCallDuration((p) => p + 1), 1000);
+    callLog('Opening call modal', recipient.id);
     startLog();
     return () => clearInterval(timer);
   }, [isOpen, user?.id, recipient.id]);
@@ -105,13 +114,20 @@ export default function CallModal({
     const handleAudio = (e: any) => setAudioMuted(e.muted);
     const handleVideo = (e: any) => setVideoMuted(e.muted);
     const handleScreen = (e: any) => setScreenSharing(e.on);
+    const handleReady = () => {
+      callLog('Conference ready to close');
+      endLog();
+      onClose();
+    };
     jitsiApi.addEventListener('audioMuteStatusChanged', handleAudio);
     jitsiApi.addEventListener('videoMuteStatusChanged', handleVideo);
     jitsiApi.addEventListener('screenSharingStatusChanged', handleScreen);
+    jitsiApi.addEventListener('readyToClose', handleReady);
     return () => {
       jitsiApi.removeEventListener('audioMuteStatusChanged', handleAudio);
       jitsiApi.removeEventListener('videoMuteStatusChanged', handleVideo);
       jitsiApi.removeEventListener('screenSharingStatusChanged', handleScreen);
+      jitsiApi.removeEventListener('readyToClose', handleReady);
     };
   }, [jitsiApi]);
 
@@ -120,6 +136,7 @@ export default function CallModal({
     if (audioInputId) {
       try {
         jitsiApi.setAudioInputDevice(audioInputId);
+        callLog('Set audio input device', audioInputId);
       } catch (err) {
         console.warn('Failed to set audio input device', err);
       }
@@ -127,6 +144,7 @@ export default function CallModal({
     if (audioOutputId) {
       try {
         jitsiApi.setAudioOutputDevice(audioOutputId);
+        callLog('Set audio output device', audioOutputId);
       } catch (err) {
         console.warn('Failed to set audio output device', err);
       }
@@ -135,6 +153,7 @@ export default function CallModal({
 
   useEffect(() => {
     return () => {
+      callLog('Call modal unmounted');
       endLog();
     };
   }, []);
@@ -194,7 +213,7 @@ export default function CallModal({
               : undefined
           }
           video={callType === 'video'}
-          onApiReady={setJitsiApi}
+          onApiReady={handleApiReady}
           interfaceConfig={{ DEFAULT_REMOTE_DISPLAY_NAME: recipient.name }}
         />
         <div className="flex justify-center space-x-4 my-4">
