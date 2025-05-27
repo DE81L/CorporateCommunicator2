@@ -40,6 +40,14 @@ import { Switch } from "@/components/ui/switch";
 import { useElectron } from "@/hooks/use-electron";
 import { queryClient } from "@/lib/queryClient";
 import { createApiClient } from "@/lib/api-client";
+import { showError } from "@/lib/error-toast";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import GroupChatSection from "@/pages/group-chat-section";
 
 const createGroupSchema = z.object({
@@ -56,11 +64,13 @@ function GroupCard({
   onView,
   onEdit,
   onDelete,
+  onInvite,
 }: {
   group: Group;
   onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onInvite: () => void;
 }) {
   const apiClient = createApiClient();
   const { t } = useTranslation();
@@ -144,6 +154,14 @@ function GroupCard({
                 </TooltipTrigger>
                 <TooltipContent>{t('common.delete')}</TooltipContent>
               </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon" variant="ghost" onClick={onInvite}>
+                    <Users className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t('groups.inviteToGroup')}</TooltipContent>
+              </Tooltip>
             </div>
           </TooltipProvider>
         </div>
@@ -157,6 +175,9 @@ export function GroupsSection() {
   const { t } = useTranslation();
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteGroupId, setInviteGroupId] = useState<number | null>(null);
+  const [inviteUserId, setInviteUserId] = useState<number | null>(null);
   // Загружаем группы
   const {
     data: groups = [],
@@ -168,6 +189,12 @@ export function GroupsSection() {
       const groups = (await apiClient.request<Group[]>('/api/groups')) ?? [];
       return groups;
     },
+  });
+
+  const { data: users = [] } = useQuery<User[]>({
+    queryKey: ['/api/contacts'],
+    queryFn: async (): Promise<User[]> =>
+      (await apiClient.request<User[]>('/api/contacts')) ?? [],
   });
   // Мутация создания группы
   const createGroupMutation = useMutation({
@@ -213,6 +240,25 @@ export function GroupsSection() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
+    },
+  });
+
+  const inviteMutation = useMutation<void, Error, { groupId: number; userId: number }>({
+    mutationFn: ({ groupId, userId }) =>
+      apiClient.request(`/api/groups/${groupId}/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['group-members', variables.groupId] });
+      setInviteOpen(false);
+      setInviteGroupId(null);
+      setInviteUserId(null);
+      toast({ title: t('groups.inviteToGroup'), description: 'Invite sent' });
+    },
+    onError: (err: Error) => {
+      showError(err, 'Failed to invite');
     },
   });
   const createGroup = (data: CreateGroupFormValues) => {
@@ -365,6 +411,10 @@ export function GroupsSection() {
                 })
               }
               onDelete={() => deleteGroup(group.id)}
+              onInvite={() => {
+                setInviteGroupId(group.id);
+                setInviteOpen(true);
+              }}
             />
           ))}
         </div>
@@ -384,6 +434,44 @@ export function GroupsSection() {
           </Button>
         </div>
       )}
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('groups.inviteToGroup')}</DialogTitle>
+          </DialogHeader>
+          <Select
+            value={inviteUserId ? inviteUserId.toString() : ''}
+            onValueChange={(v) => setInviteUserId(Number(v))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={t('groups.selectUser', 'Select user')} />
+            </SelectTrigger>
+            <SelectContent>
+              {users.map((u) => (
+                <SelectItem key={u.id} value={u.id.toString()}>
+                  {u.firstName} {u.lastName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                if (inviteGroupId && inviteUserId) {
+                  inviteMutation.mutate({ groupId: inviteGroupId, userId: inviteUserId });
+                }
+              }}
+              disabled={!inviteGroupId || !inviteUserId || inviteMutation.isPending}
+            >
+              {inviteMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                t('common.save')
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -6,10 +6,20 @@ import { logger } from '../util/logger';
 const router = Router();
 
 // GET /api/groups - list all groups
-router.get('/', isAuthenticated, async (_req: Request, res: Response) => {
+router.get('/', isAuthenticated, async (req: Request, res: Response) => {
   try {
+    const userId = req.session.userId as number;
     const { rows } = await db!.query(
-      'SELECT id, name, description, creator_id AS "creatorId", is_announcement AS "isAnnouncement" FROM groups ORDER BY name'
+      `SELECT g.id,
+              g.name,
+              g.description,
+              g.creator_id    AS "creatorId",
+              g.is_announcement AS "isAnnouncement"
+         FROM groups g
+         LEFT JOIN group_members gm ON gm.group_id = g.id AND gm.user_id = $1
+        WHERE gm.user_id IS NOT NULL OR g.creator_id = $1
+        ORDER BY g.name`,
+      [userId]
     );
     res.json(rows);
   } catch (err) {
@@ -118,10 +128,13 @@ router.post('/:id/invite', isAuthenticated, async (req: Request, res: Response) 
     if (!groupId || !userId) {
       return res.status(400).json({ error: 'Invalid group or user' });
     }
-    await db!.query(
-      'INSERT INTO group_members (group_id, user_id, is_admin) VALUES ($1, $2, 0) ON CONFLICT DO NOTHING',
-      [groupId, userId],
-    );
+    const existing = await db!.query('SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2', [groupId, userId]);
+    if (existing.rowCount === 0) {
+      await db!.query(
+        'INSERT INTO group_members (group_id, user_id, is_admin) VALUES ($1, $2, 0)',
+        [groupId, userId],
+      );
+    }
     res.json({ success: true });
   } catch (err) {
     logger.error('POST /groups/:id/invite error:', err);
