@@ -117,6 +117,8 @@
     "notifications": "Уведомления",
     "appearance": "Внешний вид",
     "language": "Язык",
+    "audioDevices": "Аудио устройства",
+    "selectAudioDevices": "Выбор устройств ввода и вывода",
     "audioInput": "Микрофон",
     "audioOutput": "Вывод звука",
     "noAudioDevices": "Устройства не найдены",

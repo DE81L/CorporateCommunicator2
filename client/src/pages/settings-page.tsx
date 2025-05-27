@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslations } from '@/hooks/use-translations';
 import { useSettings } from '@/context/SettingsContext';
+import { useAudioDevices } from '@/hooks/useAudioDevices';
 import {
   Card,
   CardContent,
@@ -38,7 +39,18 @@ import { useAuth } from '@/hooks/use-auth';
 
 const SettingsPage: React.FC = () => {
   const { t } = useTranslations();
-  const { theme, setTheme, language, setLanguage } = useSettings();
+  const {
+    theme,
+    setTheme,
+    language,
+    setLanguage,
+    audioInputId,
+    setAudioInputId,
+    audioOutputId,
+    setAudioOutputId,
+  } = useSettings();
+  const { devices: inputDevices } = useAudioDevices('audioinput');
+  const { devices: outputDevices } = useAudioDevices('audiooutput');
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -292,6 +304,59 @@ const SettingsPage: React.FC = () => {
                     <SelectContent>
                       <SelectItem value="ru">Русский</SelectItem>
                       <SelectItem value="en">English</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('settings.audioDevices')}</CardTitle>
+                <CardDescription>{t('settings.selectAudioDevices')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="audioInput">{t('settings.audioInput')}</Label>
+                  <Select
+                    value={audioInputId ?? 'none'}
+                    onValueChange={(val) => setAudioInputId(val === 'none' ? null : val)}
+                  >
+                    <SelectTrigger id="audioInput">
+                      <SelectValue placeholder={t('settings.audioInput')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {inputDevices.length === 0 ? (
+                        <SelectItem value="none">{t('settings.noAudioDevices')}</SelectItem>
+                      ) : (
+                        inputDevices.map((d) => (
+                          <SelectItem key={d.deviceId} value={d.deviceId}>
+                            {d.label}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="audioOutput">{t('settings.audioOutput')}</Label>
+                  <Select
+                    value={audioOutputId ?? 'none'}
+                    onValueChange={(val) => setAudioOutputId(val === 'none' ? null : val)}
+                  >
+                    <SelectTrigger id="audioOutput">
+                      <SelectValue placeholder={t('settings.audioOutput')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {outputDevices.length === 0 ? (
+                        <SelectItem value="none">{t('settings.noAudioDevices')}</SelectItem>
+                      ) : (
+                        outputDevices.map((d) => (
+                          <SelectItem key={d.deviceId} value={d.deviceId}>
+                            {d.label}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

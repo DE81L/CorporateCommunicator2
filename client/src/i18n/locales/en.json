@@ -105,6 +105,8 @@
     "notifications": "Notifications",
     "appearance": "Appearance",
     "language": "Language",
+    "audioDevices": "Audio Devices",
+    "selectAudioDevices": "Select input and output devices",
     "audioInput": "Microphone",
     "audioOutput": "Speakers",
     "noAudioDevices": "No devices found",
