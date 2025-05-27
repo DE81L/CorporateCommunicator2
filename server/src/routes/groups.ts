@@ -110,4 +110,40 @@ router.get('/:id/users', isAuthenticated, async (req: Request, res: Response) =>
   }
 });
 
+// POST /api/groups/:id/invite - add a user to group
+router.post('/:id/invite', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const groupId = Number(req.params.id);
+    const { userId } = req.body as { userId: number };
+    if (!groupId || !userId) {
+      return res.status(400).json({ error: 'Invalid group or user' });
+    }
+    await db!.query(
+      'INSERT INTO group_members (group_id, user_id, is_admin) VALUES ($1, $2, 0) ON CONFLICT DO NOTHING',
+      [groupId, userId],
+    );
+    res.json({ success: true });
+  } catch (err) {
+    logger.error('POST /groups/:id/invite error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/groups/:id/join - current user joins group
+router.post('/:id/join', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const groupId = Number(req.params.id);
+    const userId = req.session.userId as number;
+    if (!groupId) return res.status(400).json({ error: 'Invalid group' });
+    await db!.query(
+      'INSERT INTO group_members (group_id, user_id, is_admin) VALUES ($1, $2, 0) ON CONFLICT DO NOTHING',
+      [groupId, userId],
+    );
+    res.json({ success: true });
+  } catch (err) {
+    logger.error('POST /groups/:id/join error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 export default router;

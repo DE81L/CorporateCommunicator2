@@ -173,6 +173,7 @@
     "removeMember": "Remove member",
     "leaveGroup": "Leave group",
     "joinGroup": "Join group",
+    "inviteToGroup": "Invite to group",
     "groupCreated": "Group created",
     "groupDeleted": "Group deleted",
     "groupUpdated": "Group updated",

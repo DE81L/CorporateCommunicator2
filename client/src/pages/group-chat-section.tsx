@@ -75,7 +75,11 @@ export default function GroupChatSection({ group }: Props) {
 
   if (!user) return null;
 
-  const plainMessages: MessageItem[] = messages.map((m) => ({
+  const ordered = [...messages].sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+  );
+
+  const plainMessages: MessageItem[] = ordered.map((m) => ({
     id: m.id,
     senderId: m.senderId,
     content: m.content,

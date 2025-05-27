@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState, useCallback, useRef } from 'react';
 import { showError } from '@/lib/error-toast';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 import { useChat } from '@/context/ChatContext';
 import { useWebSocket } from '@/hooks/useWebSocket';
@@ -23,6 +23,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  Users,
   Smile,
   X,
 } from 'lucide-react';
@@ -31,6 +32,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { MessageList } from '@/components/message-list';
@@ -62,6 +78,11 @@ export interface User {
   isonline: 0 | 1;
 }
 
+interface Group {
+  id: number;
+  name: string;
+}
+
 interface WsPacket<T = any> {
   type: string;
   payload: T;
@@ -80,6 +101,7 @@ export default function MessagesSection({ onStartCall }: Props) {
   const { user } = useAuth();
   const apiClient = createApiClient();
   const { t } = useTranslation();
+  const { toast } = useToast();
   const { connectionStatus, lastRawMessage, sendRaw } = useWebSocket();
 
   const { chatUser: selectedUser, setChatUser: setSelectedUser } = useChat();
@@ -94,6 +116,8 @@ export default function MessagesSection({ onStartCall }: Props) {
   const [contacts, setContacts] = useState<User[]>([]);
   const [contactSearch, setContactSearch] = useState('');
   const [showPicker, setShowPicker] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteGroupId, setInviteGroupId] = useState<number | null>(null);
 
   /* ─────────── contacts ─────────── */
   const {
@@ -104,6 +128,28 @@ export default function MessagesSection({ onStartCall }: Props) {
     queryKey: ['contacts'],
     queryFn: async () =>
       (await apiClient.request<User[]>('/contacts')) ?? [],
+  });
+
+  const { data: groups = [] } = useQuery<Group[]>({
+    queryKey: ['/api/groups'],
+    queryFn: async () => (await apiClient.request<Group[]>('/api/groups')) ?? [],
+  });
+
+  const inviteMutation = useMutation<void, Error, number>({
+    mutationFn: (groupId: number) =>
+      apiClient.request(`/api/groups/${groupId}/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: selectedUser!.id }),
+      }),
+    onSuccess: () => {
+      toast({ title: t('groups.inviteToGroup'), description: 'Invite sent' });
+      setInviteOpen(false);
+      setInviteGroupId(null);
+    },
+    onError: (err: Error) => {
+      showError(err, 'Failed to invite');
+    },
   });
 
   useEffect(() => {
@@ -622,8 +668,25 @@ export default function MessagesSection({ onStartCall }: Props) {
                 >
                   <Video className="h-5 w-5" />
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setInviteOpen(true)}
+                >
+                  <Users className="h-5 w-5" />
+                </Button>
               </div>
             )}
+          </div>
+        )}
+        {selectedUser && (
+          <div className="hidden md:flex items-center gap-2 p-3 border-b border-border bg-background">
+            <span className="flex-1 font-medium">
+              {selectedUser.firstName} {selectedUser.lastName}
+            </span>
+            <Button variant="outline" size="sm" onClick={() => setInviteOpen(true)}>
+              {t('groups.inviteToGroup')}
+            </Button>
           </div>
         )}
         {!selectedUser ? (
@@ -751,6 +814,36 @@ export default function MessagesSection({ onStartCall }: Props) {
           </>
         )}
       </section>
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('groups.inviteToGroup')}</DialogTitle>
+          </DialogHeader>
+          <Select
+            value={inviteGroupId ? inviteGroupId.toString() : ''}
+            onValueChange={(v) => setInviteGroupId(Number(v))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={t('groups.selectGroups', 'Select group')} />
+            </SelectTrigger>
+            <SelectContent>
+              {groups.map((g) => (
+                <SelectItem key={g.id} value={g.id.toString()}>{g.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                if (inviteGroupId) inviteMutation.mutate(inviteGroupId);
+              }}
+              disabled={inviteMutation.isPending || !inviteGroupId}
+            >
+              {inviteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t('common.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

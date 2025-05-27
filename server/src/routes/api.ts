@@ -320,7 +320,7 @@ router.get(
         WHERE ((sender_id = $1 AND receiver_id = $2)
            OR (sender_id = $2 AND receiver_id = $1))
           AND timestamp < $3
-        ORDER BY timestamp DESC
+        ORDER BY timestamp ASC
         LIMIT $4`,
         [userId, chatWith, before, limit]
       );
@@ -507,7 +507,7 @@ router.get('/groups/:groupId/messages', isAuthenticated, async (req: Request, re
          JOIN group_members gm ON gm.group_id = m.group_id AND gm.user_id = $1
          JOIN users u ON u.id = m.sender_id
         WHERE m.group_id = $2 AND m.timestamp < $3
-        ORDER BY m.timestamp DESC
+        ORDER BY m.timestamp ASC
         LIMIT $4`,
       [userId, groupId, before, limit]
     );

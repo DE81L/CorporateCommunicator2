@@ -185,6 +185,7 @@
     "removeMember": "Удалить участника",
     "leaveGroup": "Покинуть группу",
     "joinGroup": "Присоединиться к группе",
+    "inviteToGroup": "Пригласить в группу",
     "groupCreated": "Группа создана",
     "groupDeleted": "Группа удалена",
     "groupUpdated": "Группа обновлена",
