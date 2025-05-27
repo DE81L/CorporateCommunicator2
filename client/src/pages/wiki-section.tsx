@@ -131,7 +131,6 @@ export default function WikiSection() {
 
     return crumbs;
   }, [activeCategoryId, categories]);
-  const [viewEntry, setViewEntry] = useState<WikiEntry | null>(null);
 
   // Запрос статей wiki
   const {
@@ -556,7 +555,7 @@ export default function WikiSection() {
                     <Card
                       key={entry.id}
                       className="h-full cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() => setViewEntry(entry)}
+                      onClick={() => setLocation(`/wiki/${entry.id}`)}
                     >
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
@@ -704,26 +703,6 @@ export default function WikiSection() {
         </div>
       </Tabs>
 
-      {/* Article Dialog */}
-      <Dialog
-        open={!!viewEntry}
-        onOpenChange={(open) => {
-          if (!open) setViewEntry(null);
-        }}
-      >
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>{viewEntry?.title}</DialogTitle>
-            <DialogDescription>View wiki article</DialogDescription>
-          </DialogHeader>
-          {viewEntry && (
-            <MarkdownPreview
-              content={viewEntry.content}
-              className="prose max-w-none"
-            />
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Wiki Entry Dialog */}
       <Dialog open={showEntryDialog} onOpenChange={setShowEntryDialog}>
