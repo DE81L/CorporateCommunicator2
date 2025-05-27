@@ -8,8 +8,8 @@ import RequestsSection from "@/pages/requests-section";
 import ContactsSection from "@/pages/contacts-section";
 import SettingsSection from "@/pages/settings-section";
 import WikiSection from "@/pages/wiki-section";
-import CallModal from "@/components/call-modal";
-import CallRequestDialog from "@/components/call-request-dialog";
+// import CallModal from "@/components/call-modal";
+// import CallRequestDialog from "@/components/call-request-dialog";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import ConnectionBanner from "@/components/connection-banner";
 import { useAuth } from "@/hooks/use-auth";
@@ -23,25 +23,25 @@ import { showDesktopNotification } from "@/lib/desktop-notify";
 export default function HomePage() {
   const [activeSection, setActiveSection] = useState<SectionType>("messages");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isCallModalOpen, setIsCallModalOpen] = useState(false);
-  const [incomingCall, setIncomingCall] = useState<{
-    from: number;
-    name: string;
-    callType: "video" | "audio";
-  } | null>(null);
-  const [isCalling, setIsCalling] = useState(false);
-  const [callType, setCallType] = useState<"video" | "audio">("video");
-  const [callRecipient, setCallRecipient] = useState<{
-    id: number;
-    name: string;
-  } | null>(null);
+  // const [isCallModalOpen, setIsCallModalOpen] = useState(false);
+  // const [incomingCall, setIncomingCall] = useState<{
+  //   from: number;
+  //   name: string;
+  //   callType: "video" | "audio";
+  // } | null>(null);
+  // const [isCalling, setIsCalling] = useState(false);
+  // const [callType, setCallType] = useState<"video" | "audio">("video");
+  // const [callRecipient, setCallRecipient] = useState<{
+  //   id: number;
+  //   name: string;
+  // } | null>(null);
   const { user } = useAuth();
   const {
     connectionStatus,
     sendRaw,
-    sendCallRequest,
-    sendCallAccept,
-    sendCallReject,
+    // sendCallRequest,
+    // sendCallAccept,
+    // sendCallReject,
     lastRawMessage,
     retriesLeft,
     reconnect,
@@ -54,61 +54,61 @@ export default function HomePage() {
   type WSMsg = { type: string; payload: any };
   const lastProcessedRef = useRef<WSMsg | null>(null);
 
-  const handleStartCall = (
-    type: "video" | "audio",
-    recipient: { id: number; name: string },
-  ) => {
-    setCallType(type);
-    setCallRecipient(recipient);
-    setIsCalling(true);
-    sendCallRequest(
-      recipient.id,
-      type,
-      user?.firstName || user?.lastName
-        ? `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim()
-        : user?.username || '',
-    );
-  };
+  // const handleStartCall = (
+  //   type: "video" | "audio",
+  //   recipient: { id: number; name: string },
+  // ) => {
+  //   setCallType(type);
+  //   setCallRecipient(recipient);
+  //   setIsCalling(true);
+  //   sendCallRequest(
+  //     recipient.id,
+  //     type,
+  //     user?.firstName || user?.lastName
+  //       ? `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim()
+  //       : user?.username || '',
+  //   );
+  // };
 
-  useEffect(() => {
-    if (!isCalling) return;
-    const timer = setTimeout(() => {
-      if (isCalling) {
-        cancelOutgoingCall();
-        toast({ title: t("call.noAnswer") });
-      }
-    }, 30000);
-    return () => clearTimeout(timer);
-  }, [isCalling]);
+  // useEffect(() => {
+  //   if (!isCalling) return;
+  //   const timer = setTimeout(() => {
+  //     if (isCalling) {
+  //       cancelOutgoingCall();
+  //       toast({ title: t("call.noAnswer") });
+  //     }
+  //   }, 30000);
+  //   return () => clearTimeout(timer);
+  // }, [isCalling]);
 
-  const acceptCall = () => {
-    if (!incomingCall) return;
-    sendCallAccept(incomingCall.from);
-    setCallRecipient({ id: incomingCall.from, name: incomingCall.name });
-    setCallType(incomingCall.callType);
-    setIncomingCall(null);
-    setIsCallModalOpen(true);
-  };
+  // const acceptCall = () => {
+  //   if (!incomingCall) return;
+  //   sendCallAccept(incomingCall.from);
+  //   setCallRecipient({ id: incomingCall.from, name: incomingCall.name });
+  //   setCallType(incomingCall.callType);
+  //   setIncomingCall(null);
+  //   setIsCallModalOpen(true);
+  // };
 
-  const declineCall = () => {
-    if (!incomingCall) return;
-    sendCallReject(incomingCall.from);
-    setIncomingCall(null);
-  };
+  // const declineCall = () => {
+  //   if (!incomingCall) return;
+  //   sendCallReject(incomingCall.from);
+  //   setIncomingCall(null);
+  // };
 
-  const cancelOutgoingCall = () => {
-    if (!callRecipient) return;
-    sendCallReject(callRecipient.id);
-    setIsCalling(false);
-    setCallRecipient(null);
-  };
+  // const cancelOutgoingCall = () => {
+  //   if (!callRecipient) return;
+  //   sendCallReject(callRecipient.id);
+  //   setIsCalling(false);
+  //   setCallRecipient(null);
+  // };
 
-  const endCall = () => {
-    setIsCallModalOpen(false);
-    setCallRecipient(null);
-    setIsCalling(false);
-    toast({ title: t("call.ended") });
-  };
+  // const endCall = () => {
+  //   setIsCallModalOpen(false);
+  //   setCallRecipient(null);
+  //   setIsCalling(false);
+  //   toast({ title: t("call.ended") });
+  // };
 
   const handleOpenChat = (contact: any) => {
     setChatUser({
@@ -145,53 +145,54 @@ export default function HomePage() {
       return;
     }
 
-    if (lastRawMessage.type === 'call-request') {
-      const payload = lastRawMessage.payload as {
-        from: number;
-        fromName: string;
-        callType: 'video' | 'audio';
-      };
-      if (
-        isCallModalOpen ||
-        isCalling ||
-        callRecipient ||
-        incomingCall
-      ) {
-        return;
-      }
-      setIncomingCall({
-        from: payload.from,
-        name: payload.fromName,
-        callType: payload.callType,
-      });
-      if (!document.hasFocus()) {
-        showDesktopNotification(payload.fromName, {
-          body: t(`call.${payload.callType}`),
-        });
-      }
-    }
+    // if (lastRawMessage.type === 'call-request') {
+    //   const payload = lastRawMessage.payload as {
+    //     from: number;
+    //     fromName: string;
+    //     callType: 'video' | 'audio';
+    //   };
+    //   if (
+    //     isCallModalOpen ||
+    //     isCalling ||
+    //     callRecipient ||
+    //     incomingCall
+    //   ) {
+    //     return;
+    //   }
+    //   setIncomingCall({
+    //     from: payload.from,
+    //     name: payload.fromName,
+    //     callType: payload.callType,
+    //   });
+    //   if (!document.hasFocus()) {
+    //     showDesktopNotification(payload.fromName, {
+    //       body: t(`call.${payload.callType}`),
+    //     });
+    //   }
+    // }
 
 
 
-    if (
-      lastRawMessage.type === 'call-accept' &&
-      callRecipient &&
-      lastRawMessage.payload.from === callRecipient.id
-    ) {
-      setIsCalling(false);
-      setIsCallModalOpen(true);
-    }
+    // if (
+    //   lastRawMessage.type === 'call-accept' &&
+    //   callRecipient &&
+    //   lastRawMessage.payload.from === callRecipient.id
+    // ) {
+    //   setIsCalling(false);
+    //   setIsCallModalOpen(true);
+    // }
 
-    if (
-      lastRawMessage.type === 'call-reject' &&
-      callRecipient &&
-      lastRawMessage.payload.from === callRecipient.id
-    ) {
-      setIsCalling(false);
-      setCallRecipient(null);
-      toast({ title: t('call.rejected') });
-    }
-  }, [lastRawMessage, chatUser, user, toast, t, callRecipient]);
+    // if (
+    //   lastRawMessage.type === 'call-reject' &&
+    //   callRecipient &&
+    //   lastRawMessage.payload.from === callRecipient.id
+    // ) {
+    //   setIsCalling(false);
+    //   setCallRecipient(null);
+    //   toast({ title: t('call.rejected') });
+    // }
+  // }, [lastRawMessage, chatUser, user, toast, t, callRecipient]);
+  }, []);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -212,7 +213,7 @@ export default function HomePage() {
 
         <main className="flex-1 overflow-hidden flex flex-col">
           {activeSection === "messages" && (
-            <MessagesSection onStartCall={handleStartCall} />
+            <MessagesSection /* onStartCall={handleStartCall} */ />
           )}
 
           {activeSection === "groups" && <GroupsSection />}
@@ -222,7 +223,7 @@ export default function HomePage() {
           {activeSection === "requests" && <RequestsSection />}
 
           {activeSection === "contacts" && (
-            <ContactsSection onStartCall={handleStartCall} onOpenChat={handleOpenChat} />
+            <ContactsSection /* onStartCall={handleStartCall} */ onOpenChat={handleOpenChat} />
           )}
 
           {activeSection === "settings" && <SettingsSection />}
@@ -231,35 +232,7 @@ export default function HomePage() {
         </main>
       </div>
 
-      {isCallModalOpen && callRecipient && (
-        <CallModal
-          isOpen={isCallModalOpen}
-          onClose={endCall}
-          callType={callType}
-          recipient={callRecipient}
-        />
-      )}
 
-      {incomingCall && (
-        <CallRequestDialog
-          isOpen={true}
-          incoming={true}
-          callType={incomingCall.callType}
-          participant={{ name: incomingCall.name }}
-          onAccept={acceptCall}
-          onDecline={declineCall}
-        />
-      )}
-
-      {isCalling && callRecipient && (
-        <CallRequestDialog
-          isOpen={true}
-          incoming={false}
-          callType={callType}
-          participant={{ name: callRecipient.name }}
-          onDecline={cancelOutgoingCall}
-        />
-      )}
 
       {retriesLeft === 0 && connectionStatus !== 'open' && (
         <ConnectionBanner onReconnect={reconnect} />

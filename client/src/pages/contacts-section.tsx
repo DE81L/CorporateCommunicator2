@@ -20,14 +20,14 @@ import { apiClient } from "@/lib/api-client";
 // Удалите строку: const apiClient = createApiClient();
 
 interface ContactsProps {
-  onStartCall: (
-    type: "video" | "audio",
-    recipient: { id: number; name: string },
-  ) => void;
+  // onStartCall: (
+  //   type: "video" | "audio",
+  //   recipient: { id: number; name: string },
+  // ) => void;
   onOpenChat: (contact: User) => void;
 }
 
-export default function ContactsSection({ onStartCall, onOpenChat }: ContactsProps) {
+export default function ContactsSection({ onStartCall, onOpenChat }: any) {
   const { user } = useAuth();
   const { setChatUser } = useChat();
   const { t } = useTranslation();
@@ -154,6 +154,7 @@ export default function ContactsSection({ onStartCall, onOpenChat }: ContactsPro
                   >
                     <MessageSquare className="h-5 w-5" />
                   </Button>
+                  {/*
                   <Button
                     variant="ghost"
                     size="icon"
@@ -180,6 +181,7 @@ export default function ContactsSection({ onStartCall, onOpenChat }: ContactsPro
                   >
                     <Video className="h-5 w-5" />
                   </Button>
+                  */}
                 </div>
               </CardContent>
             </Card>
