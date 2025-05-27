@@ -94,20 +94,61 @@ export default function AdminPage() {
     });
   }
 
+  function addRow() {
+    const empty: any = {};
+    columns.forEach(c => {
+      if (c !== 'id') empty[c] = '';
+    });
+    setEditedRows(prev => [...prev, empty]);
+  }
+
+  async function deleteRow(index: number) {
+    try {
+      const row = editedRows[index];
+      if (row.id !== undefined && row.id !== null && row.id !== '') {
+        await apiClient.request(`/api/admin/table/${selectedTable}/${row.id}`, {
+          method: 'DELETE',
+        });
+      }
+      setRows(prev => prev.filter((_, i) => i !== index));
+      setEditedRows(prev => prev.filter((_, i) => i !== index));
+    } catch (err) {
+      showError(err);
+    }
+  }
+
   async function saveRow(index: number) {
     try {
       setError(null);
       const row = editedRows[index];
-      const data = await apiClient.request<{ rows: any[] }>(`/api/admin/table/${selectedTable}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ row }),
-      });
-      setRows(prev => {
-        const copy = [...prev];
-        copy[index] = row;
-        return copy;
-      });
+      if (row.id === undefined || row.id === null || row.id === '') {
+        const data = await apiClient.request<{ row: any }>(
+          `/api/admin/table/${selectedTable}/insert`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ row }),
+          }
+        );
+        const newRow = data?.row ?? row;
+        setRows(prev => [...prev, newRow]);
+        setEditedRows(prev => {
+          const copy = [...prev];
+          copy[index] = newRow;
+          return copy;
+        });
+      } else {
+        await apiClient.request(`/api/admin/table/${selectedTable}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ row }),
+        });
+        setRows(prev => {
+          const copy = [...prev];
+          copy[index] = row;
+          return copy;
+        });
+      }
     } catch (err) {
       setError((err as Error).message);
       showError(err);
@@ -299,6 +340,9 @@ export default function AdminPage() {
                 </SelectContent>
               </Select>
               <Button variant="secondary" onClick={() => setLocation('/')}>{t('common.back')}</Button>
+              {selectedTable && (
+                <Button variant="outline" onClick={addRow}>{t('common.create')}</Button>
+              )}
             </div>
 
             {selectedTable && (
@@ -333,8 +377,9 @@ export default function AdminPage() {
                           />
                         </td>
                       ))}
-                      <td className="px-3 py-2 text-center">
-                        <Button size="sm" onClick={() => saveRow(rowIndex)}>Save</Button>
+                      <td className="px-3 py-2 space-x-2 text-center">
+                        <Button size="sm" onClick={() => saveRow(rowIndex)}>{t('common.save')}</Button>
+                        <Button size="sm" variant="destructive" onClick={() => deleteRow(rowIndex)}>{t('common.delete')}</Button>
                       </td>
                     </tr>
                   ))}

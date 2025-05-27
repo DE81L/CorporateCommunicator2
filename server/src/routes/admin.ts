@@ -112,6 +112,71 @@ router.post('/table/:name', isAuthenticated, async (req: Request, res: Response)
   }
 });
 
+// POST /api/admin/table/:name/insert - insert a new row
+router.post('/table/:name/insert', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = req.session.userId as number;
+    const { rows } = await db!.query<{ is_admin: boolean }>(
+      'SELECT is_admin FROM users WHERE id = $1',
+      [userId]
+    );
+    if (!rows[0]?.is_admin) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const table = req.params.name;
+    if (!/^[a-zA-Z0-9_]+$/.test(table)) {
+      return res.status(400).json({ error: 'Invalid table name' });
+    }
+
+    const { row } = req.body as { row?: Record<string, any> };
+    if (!row) {
+      return res.status(400).json({ error: 'Row data required' });
+    }
+
+    const keys = Object.keys(row);
+    const values = keys.map(k => row[k]);
+    const cols = keys.map(k => `"${k}"`).join(', ');
+    const params = keys.map((_, idx) => `$${idx + 1}`).join(', ');
+    const query = `INSERT INTO ${table} (${cols}) VALUES (${params}) RETURNING *`;
+    const result = await db!.query(query, values);
+    res.status(201).json({ row: result.rows[0] });
+  } catch (err) {
+    logger.error('Admin table insert error:', err);
+    res.status(400).json({ error: (err as Error).message });
+  }
+});
+
+// DELETE /api/admin/table/:name/:id - delete row by id
+router.delete('/table/:name/:id', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = req.session.userId as number;
+    const { rows } = await db!.query<{ is_admin: boolean }>(
+      'SELECT is_admin FROM users WHERE id = $1',
+      [userId]
+    );
+    if (!rows[0]?.is_admin) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const table = req.params.name;
+    if (!/^[a-zA-Z0-9_]+$/.test(table)) {
+      return res.status(400).json({ error: 'Invalid table name' });
+    }
+
+    const id = Number(req.params.id);
+    if (!id) {
+      return res.status(400).json({ error: 'Invalid id' });
+    }
+
+    await db!.query(`DELETE FROM ${table} WHERE id = $1`, [id]);
+    res.json({ success: true });
+  } catch (err) {
+    logger.error('Admin table delete error:', err);
+    res.status(400).json({ error: (err as Error).message });
+  }
+});
+
 // GET /api/admin/users - list all users
 router.get('/users', isAuthenticated, async (req: Request, res: Response) => {
   try {
