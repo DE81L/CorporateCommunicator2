@@ -37,7 +37,7 @@ export default function GroupChatSection({ group }: Props) {
   const { data: messages = [], refetch } = useQuery<GroupMessage[]>({
     queryKey: ['group-messages', group.id],
     queryFn: async () =>
-      (await apiClient.request<GroupMessage[]>(`/groups/${group.id}/messages`)) ?? [],
+      (await apiClient.request<GroupMessage[]>(`/api/groups/${group.id}/messages`)) ?? [],
   });
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export default function GroupChatSection({ group }: Props) {
     e.preventDefault();
     if (!msgInput.trim()) return;
     try {
-      await apiClient.request(`/groups/${group.id}/messages`, {
+      await apiClient.request(`/api/groups/${group.id}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: msgInput }),
