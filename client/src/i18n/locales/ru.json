@@ -118,6 +118,7 @@
     "appearance": "Внешний вид",
     "language": "Язык",
     "audioInput": "Микрофон",
+    "audioOutput": "Вывод звука",
     "noAudioDevices": "Устройства не найдены",
     "darkMode": "Темный режим",
     "lightMode": "Светлый режим",

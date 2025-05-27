@@ -14,8 +14,16 @@ import { Label } from "@/components/ui/label";
 export default function SettingsSection() {
   const { user } = useAuth();
   const { t } = useTranslations();
-  const { language, setLanguage, audioInputId, setAudioInputId } = useSettings();
-  const { devices } = useAudioDevices();
+  const {
+    language,
+    setLanguage,
+    audioInputId,
+    setAudioInputId,
+    audioOutputId,
+    setAudioOutputId,
+  } = useSettings();
+  const { devices: inputDevices } = useAudioDevices('audioinput');
+  const { devices: outputDevices } = useAudioDevices('audiooutput');
 
   if (!user) return null;
 
@@ -45,10 +53,33 @@ export default function SettingsSection() {
             <SelectValue placeholder={t('settings.audioInput')} />
           </SelectTrigger>
           <SelectContent>
-            {devices.length === 0 ? (
+            {inputDevices.length === 0 ? (
               <SelectItem value="none">{t('settings.noAudioDevices')}</SelectItem>
             ) : (
-              devices.map((d) => (
+              inputDevices.map((d) => (
+                <SelectItem key={d.deviceId} value={d.deviceId}>
+                  {d.label}
+                </SelectItem>
+              ))
+            )}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2 max-w-xs mt-4">
+        <Label htmlFor="audioOutput">{t('settings.audioOutput')}</Label>
+        <Select
+          value={audioOutputId ?? 'none'}
+          onValueChange={(val) => setAudioOutputId(val === 'none' ? null : val)}
+        >
+          <SelectTrigger id="audioOutput">
+            <SelectValue placeholder={t('settings.audioOutput')} />
+          </SelectTrigger>
+          <SelectContent>
+            {outputDevices.length === 0 ? (
+              <SelectItem value="none">{t('settings.noAudioDevices')}</SelectItem>
+            ) : (
+              outputDevices.map((d) => (
                 <SelectItem key={d.deviceId} value={d.deviceId}>
                   {d.label}
                 </SelectItem>

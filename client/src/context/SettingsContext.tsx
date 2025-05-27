@@ -8,9 +8,11 @@ interface SettingsContextType {
   theme: Theme;
   language: string;
   audioInputId: string | null;
+  audioOutputId: string | null;
   setTheme: (theme: Theme) => void;
   setLanguage: (lang: string) => Promise<void>;
   setAudioInputId: (id: string | null) => void;
+  setAudioOutputId: (id: string | null) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -29,11 +31,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('system');
   const [language, setLanguageState] = useState<string>(i18n.language || 'en');
   const [audioInputId, setAudioInputIdState] = useState<string | null>(null);
+  const [audioOutputId, setAudioOutputIdState] = useState<string | null>(null);
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme') as Theme | null;
     const storedLang = localStorage.getItem('language');
     const storedAudio = localStorage.getItem('audioInputId');
+    const storedOutput = localStorage.getItem('audioOutputId');
     if (storedTheme) {
       setThemeState(storedTheme);
       applyTheme(storedTheme);
@@ -44,6 +48,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
     if (storedAudio) {
       setAudioInputIdState(storedAudio);
+    }
+    if (storedOutput) {
+      setAudioOutputIdState(storedOutput);
     }
   }, []);
 
@@ -65,15 +72,23 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     else localStorage.removeItem('audioInputId');
   };
 
+  const setAudioOutputId = (id: string | null) => {
+    setAudioOutputIdState(id);
+    if (id) localStorage.setItem('audioOutputId', id);
+    else localStorage.removeItem('audioOutputId');
+  };
+
   return (
     <SettingsContext.Provider
       value={{
         theme,
         language,
         audioInputId,
+        audioOutputId,
         setTheme,
         setLanguage,
         setAudioInputId,
+        setAudioOutputId,
       }}
     >
       {children}
