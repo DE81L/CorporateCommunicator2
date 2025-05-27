@@ -35,7 +35,7 @@ router.post(['/', '/entries'], async (req, res) => {
   const creatorId = req.session.userId;
   try {
     const { rows } = await db!.query(
-      'INSERT INTO wiki_entries(title, content, category, creator_id, created_at) VALUES($1,$2,$3,$4,NOW()) RETURNING *',
+      'INSERT INTO wiki_entries(title, content, category, creator_id, created_at, updated_at) VALUES($1,$2,$3,$4,NOW(),NOW()) RETURNING *',
       [title, content, category, creatorId],
     );
     const entry = rows[0];
