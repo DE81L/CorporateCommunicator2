@@ -56,6 +56,13 @@ export default function JitsiFrame({
         },
       };
       api = new (window as any).JitsiMeetExternalAPI(domain, options);
+      const iframe = containerRef.current?.querySelector('iframe');
+      if (iframe) {
+        const allow = iframe.getAttribute('allow') ?? '';
+        if (allow.includes('speaker-selection')) {
+          iframe.setAttribute('allow', allow.replace(/\bspeaker-selection;?/g, ''));
+        }
+      }
       onApiReady?.(api);
     };
 
