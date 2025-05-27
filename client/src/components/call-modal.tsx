@@ -23,6 +23,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { createApiClient } from "@/lib/api-client";
 import { showError } from "@/lib/error-toast";
 import JitsiFrame from "./jitsi-frame";
+import { useSettings } from "@/context/SettingsContext";
 
 export type TranslationKey =
   | "call.video"
@@ -59,6 +60,7 @@ export default function CallModal({
   const [callLogId, setCallLogId] = useState<number | null>(null);
   const { t } = useTranslations();
   const { user } = useAuth();
+  const { audioInputId, audioOutputId } = useSettings();
   const apiClient = createApiClient();
   const startLog = async () => {
     try {
@@ -112,6 +114,24 @@ export default function CallModal({
       jitsiApi.removeEventListener('screenSharingStatusChanged', handleScreen);
     };
   }, [jitsiApi]);
+
+  useEffect(() => {
+    if (!jitsiApi) return;
+    if (audioInputId) {
+      try {
+        jitsiApi.setAudioInputDevice(audioInputId);
+      } catch (err) {
+        console.warn('Failed to set audio input device', err);
+      }
+    }
+    if (audioOutputId) {
+      try {
+        jitsiApi.setAudioOutputDevice(audioOutputId);
+      } catch (err) {
+        console.warn('Failed to set audio output device', err);
+      }
+    }
+  }, [jitsiApi, audioInputId, audioOutputId]);
 
   useEffect(() => {
     return () => {

@@ -106,6 +106,7 @@
     "appearance": "Appearance",
     "language": "Language",
     "audioInput": "Microphone",
+    "audioOutput": "Speakers",
     "noAudioDevices": "No devices found",
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",

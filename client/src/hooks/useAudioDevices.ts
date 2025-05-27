@@ -5,7 +5,9 @@ export interface AudioDevice {
   label: string;
 }
 
-export function useAudioDevices() {
+export function useAudioDevices(
+  kind: 'audioinput' | 'audiooutput' = 'audioinput'
+) {
   const [devices, setDevices] = useState<AudioDevice[]>([]);
 
   const updateDevices = async () => {
@@ -13,8 +15,13 @@ export function useAudioDevices() {
       const list = await navigator.mediaDevices.enumerateDevices();
       setDevices(
         list
-          .filter((d) => d.kind === 'audioinput')
-          .map((d) => ({ deviceId: d.deviceId, label: d.label || `Microphone ${d.deviceId}` }))
+          .filter((d) => d.kind === kind)
+          .map((d) => ({
+            deviceId: d.deviceId,
+            label:
+              d.label ||
+              `${kind === 'audioinput' ? 'Microphone' : 'Speaker'} ${d.deviceId}`,
+          }))
       );
     } catch (err) {
       console.warn('Failed to enumerate audio devices', err);
