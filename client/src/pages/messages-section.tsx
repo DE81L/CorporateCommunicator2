@@ -351,7 +351,7 @@ export default function MessagesSection({ onStartCall }: any) {
     appendMessage(user!.id, selectedUser!.id, tempMsg);
     setLocalMessages((prev) => [...prev, tempMsg]);
 
-    if (p2pStatus !== 'open') {
+    if (!viaP2P) {
       try {
         const saved = await apiClient.request<Message>('/messages', {
           method: 'POST',
