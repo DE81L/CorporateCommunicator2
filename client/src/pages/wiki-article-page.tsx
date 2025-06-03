@@ -147,7 +147,7 @@ export default function WikiArticlePage() {
               </Button>
             )}
           </div>
-          <div className="prose max-w-none">
+          <div className="prose max-w-none dark:prose-invert">
             <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
               {entry.content}
             </ReactMarkdown>
