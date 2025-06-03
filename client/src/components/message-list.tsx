@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkBreaks from '@/lib/remark-breaks';
 import MessageStatusDot from './message-status-dot';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import UserHoverCard from '@/components/user-hover-card';
@@ -130,7 +133,11 @@ export function MessageList({ messages, myId, groupMode = false, users = {} }: M
               </div>
             </UserHoverCard>
           )}
-          <div>{m.content}</div>
+          <div className="prose prose-sm max-w-none dark:prose-invert">
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+              {m.content}
+            </ReactMarkdown>
+          </div>
           {m.file && (
             isImage(m.file) ? (
               <img
