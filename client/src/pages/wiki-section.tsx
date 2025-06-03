@@ -65,7 +65,7 @@ import { useLocation } from "wouter";
 
 import { MarkdownPreview } from "../components/wiki/markdown-preview";
 import { MarkdownEditor } from "../components/wiki/markdown-editor";
-import { getExcerpt } from "../lib/markdown";
+import { getExcerpt, getMarkdownSnippet } from "../lib/markdown";
 
 // Схема формы для статей wiki
 const wikiEntryFormSchema = z.object({
@@ -605,7 +605,7 @@ export default function WikiSection() {
                       <CardContent>
                         <div className="prose max-w-none dark:prose-invert">
                           <MarkdownPreview
-                            content={getExcerpt(entry.content, 200)}
+                            content={getMarkdownSnippet(entry.content, 200)}
                           />
                         </div>
                         <div className="text-xs text-gray-500 mt-4">
