@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import remarkBreaks from 'remark-breaks';
+import remarkBreaks from '@/lib/remark-breaks';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { createApiClient } from '@/lib/api-client';
 import { useAuth } from '@/hooks/use-auth';
