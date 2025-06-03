@@ -13,6 +13,7 @@
 - **API client**: Prefer `createApiClient()` for all `fetch` calls.
 - **Push**: Register device tokens via `/api/notifications/register` and set
   `FCM_SERVER_KEY` in `.env` for push notifications.
+- **Sidebar**: Record all sidebar related work in `docs/sidebar-actions.md`.
 Feel free to add new things to the guidelines. This may be your notes on the project. See `docs/DEVELOPER_CHECKLIST_RU.md` for a high level TODO list in Russian.
 
 Note: Message bubbles use a lighter primary color for sent messages on the right and a darker gray for received messages on the left.
