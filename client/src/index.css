@@ -98,3 +98,10 @@
     --tw-ring-color: hsl(var(--sidebar-ring));
   }
 }
+
+/* Fix emoji overlap in messages */
+.emoji-text {
+  font-family: inherit, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+  line-height: 1.2;
+}
+
