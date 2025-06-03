@@ -17,6 +17,7 @@ import wikiRouter from './wiki';
 import requestsRouter from './requests';
 import adminRouter from './admin';
 import groupsRouter from './groups';
+import tasksRouter from './tasks';
 import notificationsRouter from './notifications';
 // import callLogsRouter from './call-logs';
 import {
@@ -33,6 +34,7 @@ const router = Router();
 router.use('/departments', isAuthenticated, departmentsRouter);
 router.use('/jobs', isAuthenticated, jobsRouter);
 router.use('/groups', isAuthenticated, groupsRouter);
+router.use('/tasks', isAuthenticated, tasksRouter);
 router.use('/requests', isAuthenticated, requestsRouter);
 router.use('/wiki', isAuthenticated, wikiRouter);
 router.use('/admin', isAuthenticated, adminRouter);

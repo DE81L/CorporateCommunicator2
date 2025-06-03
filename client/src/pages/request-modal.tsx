@@ -34,6 +34,7 @@ import { insertRequestSchema } from "@shared/schema";
 import { z } from "zod";
 import { createApiClient } from "@/lib/api-client";
 import type { Request } from "./requests-section";
+import { getTasks } from "@/api/tasks";
 import { updateRequest } from "@/api/requests";
 
 export type Department = {
@@ -74,12 +75,12 @@ export function RequestModal({ request, open, onOpenChange, onSuccess }: Props) 
 
   const [isError, setIsError] = useState<boolean>(false);
 
-  const taskOptions = [
-    { id: 1, name: "Не работает принтер" },
-    { id: 2, name: "Нет интернета" },
-    { id: 3, name: "Не работает проектор" },
-    { id: 4, name: "другое" },
-  ];
+  const { data: taskOptions = [], isLoading: tasksLoading, error: tasksError } =
+    useQuery({
+      queryKey: ["/api/tasks"],
+      queryFn: getTasks,
+      enabled: open,
+    });
 
   const form = useForm<RequestFormValues>({
     resolver: zodResolver(insertRequestSchema),
@@ -116,6 +117,19 @@ export function RequestModal({ request, open, onOpenChange, onSuccess }: Props) 
       showError(departmentsError, 'Failed to load departments');
     }
   }, [departmentsError]);
+
+  useEffect(() => {
+    if (tasksError) {
+      setIsError(true);
+      showError(tasksError, 'Failed to load tasks');
+    }
+  }, [tasksError]);
+
+  useEffect(() => {
+    if (taskOptions.length && form.getValues().taskId === 0) {
+      form.setValue('taskId', taskOptions[0].id);
+    }
+  }, [taskOptions]);
 
   const saveRequest = useMutation({
     mutationFn: async (data: RequestFormValues) => {
@@ -210,11 +224,21 @@ export function RequestModal({ request, open, onOpenChange, onSuccess }: Props) 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {taskOptions.map((t) => (
-                        <SelectItem key={t.id} value={t.id.toString()}>
-                          {t.name}
-                        </SelectItem>
-                      ))}
+                      {tasksLoading ? (
+                        <div className="flex justify-center items-center h-10">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                      ) : tasksError ? (
+                        <div className="text-center py-2 text-red-500">
+                          Error loading tasks. Please try again.
+                        </div>
+                      ) : (
+                        taskOptions.map((t) => (
+                          <SelectItem key={t.id} value={t.id.toString()}>
+                            {t.name}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </FormItem>
