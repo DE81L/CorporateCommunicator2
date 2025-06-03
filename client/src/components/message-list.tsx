@@ -130,7 +130,9 @@ export function MessageList({ messages, myId, groupMode = false, users = {} }: M
               </div>
             </UserHoverCard>
           )}
-          <div>{m.content}</div>
+          <div className="whitespace-pre-wrap leading-tight emoji-text">
+            {m.content}
+          </div>
           {m.file && (
             isImage(m.file) ? (
               <img
