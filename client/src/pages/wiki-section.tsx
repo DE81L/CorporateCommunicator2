@@ -603,7 +603,7 @@ export default function WikiSection() {
                         )}
                       </CardHeader>
                       <CardContent>
-                        <div className="prose max-w-none">
+                        <div className="prose max-w-none dark:prose-invert">
                           <MarkdownPreview
                             content={getExcerpt(entry.content, 200)}
                           />
