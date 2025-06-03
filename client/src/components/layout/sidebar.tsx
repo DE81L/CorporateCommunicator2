@@ -85,7 +85,7 @@ export default function Sidebar({
       {/* Backdrop for mobile */}
       <div
         className={cn(
-          "fixed inset-0 bg-black/30 z-20 md:hidden transition-opacity duration-200",
+          "fixed inset-0 bg-black/80 z-20 md:hidden transition-opacity duration-200",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onClick={() => setIsOpen(false)}
