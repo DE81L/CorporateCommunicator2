@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { db } from '../db';
 import { logger } from '../util/logger';
 import { isAuthenticated } from '../middleware/auth';
+import { register } from '../lib/api/auth';
 
 const router = Router();
 
