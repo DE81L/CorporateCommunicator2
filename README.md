@@ -72,8 +72,8 @@ The `LOG_LEVEL` environment variable controls server log verbosity. Leaving it
 unset uses `info` level logging. Set `LOG_LEVEL=debug` for detailed WebSocket
 traces when troubleshooting connection issues.
 
-To enable push notifications set the `FCM_SERVER_KEY` in `.env` with your
-Firebase Cloud Messaging server key.
+The server sends `notify` events over WebSocket after a message is stored.
+Mobile push via Firebase Cloud Messaging was removed.
 
 Set `VITE_STUN_SERVER` in `.env` to override the STUN server used by the client
 for peer connections. Use `VITE_STUN_SERVER=none` to disable STUN entirely when
