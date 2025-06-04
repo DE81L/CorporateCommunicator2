@@ -3,9 +3,9 @@ import { db } from '../db';
 
 const router = Router();
 
-// GET /api/departments - list all departments
+// GET /api/departments - list all subdivisions
 router.get('/', async (_req, res) => {
-  const { rows } = await db!.query('SELECT id, name FROM departments ORDER BY name');
+  const { rows } = await db!.query('SELECT id, name FROM subdivisions ORDER BY name');
   res.json(rows);
 });
 

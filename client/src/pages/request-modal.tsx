@@ -37,13 +37,13 @@ import type { Request } from "./requests-section";
 import { getTasks } from "@/api/tasks";
 import { updateRequest } from "@/api/requests";
 
-export type Department = {
+export type Subdivision = {
   id: number;
   name: string;
 };
 
 interface RequestFormValues {
-  receiverDepartmentId?: number;
+  receiverSubdivisionId?: number;
   taskId: number;
   cabinet: string;
   phone: string;
@@ -64,12 +64,16 @@ export function RequestModal({ request, open, onOpenChange, onSuccess }: Props) 
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const apiClient = createApiClient();
-  const { data: departments = [], isLoading: isDepartmentsLoading, error: departmentsError } = useQuery<{ id: number; name: string }[]>({
+  const {
+    data: subdivisions = [],
+    isLoading: isSubdivisionsLoading,
+    error: subdivisionsError,
+  } = useQuery<{ id: number; name: string }[]>({
     queryKey: ["/api/departments"],
-      queryFn: async (): Promise<{ id:number; name:string }[]> => {
-        const depts = await apiClient.request<Department[]>('/api/departments');
-        return depts ?? [];    // никогда не null
-      },
+    queryFn: async (): Promise<{ id: number; name: string }[]> => {
+      const depts = await apiClient.request<Subdivision[]>("/api/departments");
+      return depts ?? [];
+    },
     enabled: open
   });
 
@@ -86,7 +90,7 @@ export function RequestModal({ request, open, onOpenChange, onSuccess }: Props) 
     resolver: zodResolver(insertRequestSchema),
     defaultValues: request
       ? {
-          receiverDepartmentId: request.receiverDepartmentId,
+          receiverSubdivisionId: request.receiverSubdivisionId,
           taskId: request.taskId,
           cabinet: request.cabinet ?? '',
           phone: request.phone ?? '',
@@ -95,7 +99,7 @@ export function RequestModal({ request, open, onOpenChange, onSuccess }: Props) 
           comment: request.comment ?? ''
         }
       : {
-          receiverDepartmentId: 0,
+          receiverSubdivisionId: 0,
           taskId: 0,
           cabinet: '',
           phone: '',
@@ -106,17 +110,17 @@ export function RequestModal({ request, open, onOpenChange, onSuccess }: Props) 
   });
 
   useEffect(() => {
-    if (departments.length && form.getValues().receiverDepartmentId === undefined) {
-      form.reset({ ...form.getValues(), receiverDepartmentId: departments[0].id });
+    if (subdivisions.length && form.getValues().receiverSubdivisionId === undefined) {
+      form.reset({ ...form.getValues(), receiverSubdivisionId: subdivisions[0].id });
     }
-  }, [departments]);
+  }, [subdivisions]);
 
   useEffect(() => {
-    if (departmentsError) {
+    if (subdivisionsError) {
       setIsError(true);
-      showError(departmentsError, 'Failed to load departments');
+      showError(subdivisionsError, 'Failed to load departments');
     }
-  }, [departmentsError]);
+  }, [subdivisionsError]);
 
   useEffect(() => {
     if (tasksError) {
@@ -172,11 +176,11 @@ export function RequestModal({ request, open, onOpenChange, onSuccess }: Props) 
           <form onSubmit={form.handleSubmit((data) => saveRequest.mutate(data))} className="space-y-4">
             <FormField
               control={form.control}
-              name="receiverDepartmentId"
+              name="receiverSubdivisionId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Подразделение</FormLabel>
-                  {isDepartmentsLoading ? (
+                  {isSubdivisionsLoading ? (
                     <div className="flex justify-center items-center h-10">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
@@ -196,7 +200,7 @@ export function RequestModal({ request, open, onOpenChange, onSuccess }: Props) 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {departments.map((department: { id: number; name: string }) => (
+                      {subdivisions.map((department: { id: number; name: string }) => (
                         <SelectItem key={department.id} value={department.id.toString()}>
                           {department.name}
                         </SelectItem>

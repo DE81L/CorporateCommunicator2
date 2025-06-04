@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
     `SELECT
        r.id,
        r.sender_id              AS "senderId",
-       r.receiver_department_id AS "receiverDepartmentId",
+       r.receiver_department_id AS "receiverSubdivisionId",
        json_build_object('id', d.id, 'name', d.name)            AS subdivision,
        r.task_id                AS "taskId",
        json_build_object('id', t.id, 'name', t.name, 'category', t.category) AS task,
@@ -28,11 +28,14 @@ router.get('/', async (req, res) => {
        r.status,
        r.created_at             AS "createdAt"
      FROM requests r
-       LEFT JOIN departments d ON r.receiver_department_id = d.id
+       LEFT JOIN subdivisions d ON r.receiver_department_id = d.id
        LEFT JOIN tasks_catalog t ON r.task_id = t.id
        LEFT JOIN users u ON r.who_accepted = u.id
     WHERE r.sender_id = $1
-       OR r.receiver_department_id IN (SELECT department_id FROM users WHERE id = $1)
+       OR r.receiver_department_id IN (
+            SELECT id FROM subdivisions
+            WHERE parent_id = (SELECT department_id FROM users WHERE id = $1)
+          )
     ORDER BY r.created_at DESC`,
     [userId]
   );
@@ -45,7 +48,7 @@ router.post('/', async (req, res) => {
   if (!parseResult.success) {
     return res.status(400).json({ error: 'Invalid request data' });
   }
-  const { receiverDepartmentId, taskId, cabinet, phone, isUrgent, deadline, comment } = parseResult.data;
+  const { receiverSubdivisionId, taskId, cabinet, phone, isUrgent, deadline, comment } = parseResult.data;
   const senderId = req.session.userId;
 
   // Normalize optional fields. Empty strings should be stored as NULL to avoid
@@ -60,7 +63,7 @@ router.post('/', async (req, res) => {
       'INSERT INTO requests(sender_id, receiver_department_id, task_id, cabinet, phone, is_urgent, deadline, comment) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
       [
         senderId,
-        receiverDepartmentId,
+        receiverSubdivisionId,
         taskId,
         sanitizedCabinet,
         sanitizedPhone,
