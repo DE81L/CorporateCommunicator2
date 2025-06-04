@@ -69,7 +69,7 @@ ipcMain.handle('open-doom', () => {
   if (fs.existsSync(doomPath)) {
     win.loadFile(doomPath);
   } else {
-    win.loadURL('data:text/html,DOOM files not found');
+    win.loadURL('https://js-dos.com/games/doom.exe.html');
   }
 });
 
