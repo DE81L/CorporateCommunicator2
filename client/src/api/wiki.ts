@@ -14,6 +14,16 @@ export async function getWikiCategories(): Promise<WikiCategory[]> {
   return (await apiClient.request<WikiCategory[]>('/api/wiki/categories')) ?? [];
 }
 
+export async function getEntriesByCategory(
+  categoryId: number,
+): Promise<WikiEntry[]> {
+  return (
+    await apiClient.request<WikiEntry[]>(
+      `/api/wiki/categories/${categoryId}/entries`,
+    )
+  ) ?? [];
+}
+
 export async function getWikiEntry(id: number): Promise<WikiEntry | undefined> {
   return apiClient.request<WikiEntry>(`/api/wiki/entries/${id}`);
 }
