@@ -3,6 +3,7 @@ import "./config/env";
 import * as http from "http";
 import { createApp } from "./app";
 import { connectDb, resetAllOnlineStatus } from "./db";
+import { ensureIsExplanationColumn } from "./db-migrations";
 import { config } from "./config/env";
 import { logger } from "./util/logger";
 import { scheduleMessageCleanup } from "./util/messageCleanup";
@@ -10,6 +11,7 @@ import { initWebSocket } from "./ws";
 
 async function main() {
   await connectDb();
+  await ensureIsExplanationColumn();
   await resetAllOnlineStatus();
   scheduleMessageCleanup();
 

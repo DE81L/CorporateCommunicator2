@@ -188,7 +188,8 @@
     "noGroups": "No groups found",
     "createGroup": "Create Group",
     "addFirst": "Create your first group to start collaborating with your team.",
-    "errorLoading": "Error loading groups. Please try again."
+    "errorLoading": "Error loading groups. Please try again.",
+    "selectUser": "Select user"
   },
   "call": {
     "video": "Video call",
