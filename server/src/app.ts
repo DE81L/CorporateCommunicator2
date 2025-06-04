@@ -6,8 +6,6 @@ import express, {
   RequestHandler,
 } from 'express';
 import session from 'express-session';
-import connectPgSimple from 'connect-pg-simple';
-import { Pool } from 'pg';
 import cors from 'cors';
 import morgan from 'morgan';
 import pinoHttp from 'pino-http';
@@ -29,13 +27,7 @@ export function createApp(): AppInit {
   app.set('etag', false);
 
   /* ───────── SESSIONS ───────── */
-  const PgSession = connectPgSimple(session);
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  const store = new PgSession({
-    pool,
-    tableName: 'session',
-    ttl: 7 * 24 * 60 * 60,
-  });
+  const store = new session.MemoryStore();
   const cookieDomain = process.env.COOKIE_DOMAIN;
   const sess = session({
     store,
