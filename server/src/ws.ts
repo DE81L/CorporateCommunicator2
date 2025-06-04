@@ -136,6 +136,20 @@ export function broadcastStatus(
 }
 
 /**
+ * Broadcast notification that a group was created
+ */
+export function broadcastGroupCreated(group: any): void {
+  if (!wss) return;
+  const msg = JSON.stringify({
+    type: 'group-created',
+    payload: group,
+  });
+  wss.clients.forEach((c) => {
+    if (c.readyState === WebSocket.OPEN) c.send(msg);
+  });
+}
+
+/**
  * Серверная пересылка “chat” (если оба онлайн)
  */
 export function sendChatMessage(

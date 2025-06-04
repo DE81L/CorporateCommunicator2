@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { db } from '../db';
 import { isAuthenticated } from '../middleware/auth';
 import { logger } from '../util/logger';
+import { broadcastGroupCreated } from '../ws';
 
 const router = Router();
 
@@ -50,6 +51,7 @@ router.post('/', isAuthenticated, async (req: Request, res: Response) => {
       'INSERT INTO group_members (group_id, user_id, is_admin) VALUES ($1, $2, 1)',
       [group.id, creatorId]
     );
+    broadcastGroupCreated(group);
     res.status(201).json(group);
   } catch (err) {
     logger.error('POST /groups error:', err);
