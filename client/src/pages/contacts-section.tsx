@@ -62,20 +62,6 @@ export default function ContactsSection({ onStartCall, onOpenChat }: any) {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
-  // Временная функция для получения должностей (демо)
-  const getJobTitle = (userId: number) => {
-    const titles = [
-      "Marketing Director",
-      "Senior Developer",
-      "UX Designer",
-      "Product Manager",
-      "HR Specialist",
-      "Sales Executive",
-      "Finance Manager",
-      "Content Writer",
-    ];
-    return titles[userId % titles.length];
-  };
 
   return (
     <div className="flex-1 overflow-auto p-6">
@@ -132,7 +118,7 @@ export default function ContactsSection({ onStartCall, onOpenChat }: any) {
                       {contact.firstName} {contact.lastName}
                     </h3>
                     <p className="text-sm text-gray-500">
-                      {contact.jobTitle || getJobTitle(Number(contact.id))}
+                      {contact.jobTitle ?? ''}
                     </p>
                   </div>
                 </div>

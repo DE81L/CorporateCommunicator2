@@ -32,6 +32,14 @@ const createAnnouncementSchema = z.object({
 
 type CreateAnnouncementFormValues = z.infer<typeof createAnnouncementSchema>;
 
+interface Announcement {
+  id: number;
+  name: string;
+  description?: string | null;
+  creatorId: number;
+  departmentName?: string | null;
+}
+
 export default function AnnouncementsSection() {
   const { toast } = useToast();
   const { } = useAuth();
@@ -40,11 +48,11 @@ export default function AnnouncementsSection() {
   const apiClient = createApiClient();
 
   // Fetch announcements
-  const { data: announcements = [], isLoading: isAnnouncementsLoading, error: announcementsError } = 
-    useQuery<any[], Error>({
+  const { data: announcements = [], isLoading: isAnnouncementsLoading, error: announcementsError } =
+    useQuery<Announcement[], Error>({
       queryKey: ['announcements'],
-      queryFn: async (): Promise<any[]> => {
-        const result = (await apiClient.request<any[]>('/api/announcements')) ?? [];
+      queryFn: async (): Promise<Announcement[]> => {
+        const result = (await apiClient.request<Announcement[]>('/api/announcements')) ?? [];
         return result;
       },
     });
@@ -96,11 +104,6 @@ export default function AnnouncementsSection() {
     showError(announcementsError, 'Error fetching announcements');
   }
 
-  // Mock function to get department name for demo
-  const getDepartmentName = (id: number) => {
-    const departments = ["HR Department", "Executive Team", "Marketing Team", "Engineering Team"];
-    return departments[id % departments.length];
-  };
 
   // Mock function to get post date for demo
   const getRelativeTime = (id: number) => {
@@ -197,7 +200,7 @@ export default function AnnouncementsSection() {
               <div className="mt-4 flex justify-between items-center">
                 <div className="flex items-center text-gray-500 text-sm">
                   <User className="h-4 w-4 mr-1" />
-                  Posted by {getDepartmentName(announcement.creatorId)}
+                  Posted by {announcement.departmentName ?? ''}
                 </div>
                 <Button variant="link" className="text-primary p-0 h-auto">View Details</Button>
               </div>
