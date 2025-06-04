@@ -189,6 +189,12 @@ export default function GroupChatSection({ group, readOnly }: Props) {
             className="flex-1 resize-none max-h-24 overflow-y-auto"
             value={msgInput}
             onChange={handleInput}
+            onKeyDown={(e) => {
+              if (e.shiftKey && e.key === 'Enter') {
+                e.preventDefault();
+                void sendMessage(e as unknown as FormEvent);
+              }
+            }}
           />
           <input
             ref={fileInputRef}
