@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DOOM</title>
+<style>
+  html, body, #dos {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    background: black;
+  }
+</style>
+<script src="https://js-dos.com/6.22/current/js-dos.js"></script>
+</head>
+<body>
+<div id="dos"></div>
+<script>
+  Dos("#dos", { wdosboxUrl: "https://js-dos.com/6.22/current/wdosbox.js" })
+    .run("https://js-dos.com/games/doom.exe.jsdos");
+</script>
+</body>
+</html>
