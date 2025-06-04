@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus, User } from "lucide-react";
+import GroupChatSection from "@/pages/group-chat-section";
 
 import { z } from "zod";
 
@@ -42,9 +43,10 @@ interface Announcement {
 
 export default function AnnouncementsSection() {
   const { toast } = useToast();
-  const { } = useAuth();
+  const { user } = useAuth();
   const { t } = useTranslation();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState<boolean>(false);
+  const [selectedGroup, setSelectedGroup] = useState<Announcement | null>(null);
   const apiClient = createApiClient();
 
   // Fetch announcements
@@ -110,6 +112,35 @@ export default function AnnouncementsSection() {
     const times = ["2 hours ago", "Yesterday", "2 days ago", "Last week"];
     return times[id % times.length];
   };
+
+  const openAnnouncement = async (a: Announcement) => {
+    try {
+      await apiClient.request(`/api/groups/${a.id}/join`, { method: 'POST' });
+    } catch (err) {
+      // ignore if already joined
+    }
+    setSelectedGroup(a);
+  };
+
+  if (selectedGroup) {
+    const readOnly = !user?.isAdmin && user?.id !== selectedGroup.creatorId;
+    return (
+      <div className="flex-1 overflow-auto">
+        <Button className="m-2" variant="ghost" onClick={() => setSelectedGroup(null)}>
+          {t('common.back', 'Back')}
+        </Button>
+        <GroupChatSection
+          group={{
+            id: selectedGroup.id,
+            name: selectedGroup.name,
+            creatorId: selectedGroup.creatorId,
+            isAnnouncement: true,
+          }}
+          readOnly={readOnly}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-auto p-6">
@@ -190,7 +221,7 @@ export default function AnnouncementsSection() {
         </div>
       ) : announcements.length > 0 ? (
         <div className="space-y-4">
-          {announcements.map((announcement: any) => (
+          {announcements.map((announcement: Announcement) => (
             <div key={announcement?.id} className="bg-white rounded-lg shadow-sm p-4">
               <div className="flex justify-between">
                 <h3 className="font-medium">{announcement.name}</h3>
@@ -202,7 +233,13 @@ export default function AnnouncementsSection() {
                   <User className="h-4 w-4 mr-1" />
                   Posted by {announcement.departmentName ?? ''}
                 </div>
-                <Button variant="link" className="text-primary p-0 h-auto">View Details</Button>
+                <Button
+                  variant="link"
+                  className="text-primary p-0 h-auto"
+                  onClick={() => openAnnouncement(announcement)}
+                >
+                  View Details
+                </Button>
               </div>
             </div>
           ))}
