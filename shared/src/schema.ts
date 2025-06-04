@@ -26,7 +26,7 @@ export interface Group {
 }
 
 export const insertRequestSchema = z.object({
-  receiverDepartmentId: z.number(),
+  receiverSubdivisionId: z.number(),
   taskId: z.number(),
   cabinet: z.string().optional(),
   phone: z

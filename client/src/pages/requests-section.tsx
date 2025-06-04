@@ -19,7 +19,7 @@ export interface Request {
   id: number;
   senderId: number;
   status: 'новая' | 'в работе' | 'готово';
-  receiverDepartmentId: number;
+  receiverSubdivisionId: number;
   subdivision?: { id: number; name: string };
   taskId: number;
   task?: { id: number; name: string; category: string };
