@@ -115,6 +115,7 @@
     "account": "Учетная запись",
     "privacy": "Конфиденциальность",
     "notifications": "Уведомления",
+    "secrets": "Секреты",
     "appearance": "Внешний вид",
     "language": "Язык",
     "audioDevices": "Аудио устройства",
@@ -142,7 +143,8 @@
     "privacySettings": "Настройки конфиденциальности",
     "manageNotifications": "Управление уведомлениями",
     "pushNotificationsDescription": "Получать push-уведомления на устройстве",
-    "desktopNotificationsDescription": "Получать уведомления на рабочем столе"
+    "desktopNotificationsDescription": "Получать уведомления на рабочем столе",
+    "secretMessage": "Вы открыли секреты!"
   },
   "messages": {
     "title": "Сообщения",

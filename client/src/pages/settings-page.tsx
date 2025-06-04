@@ -36,6 +36,7 @@ import { createApiClient } from '@/lib/api-client';
 import { Bell, Moon, Sun, Globe, User, Lock, Settings as SettingsIcon, ArrowLeft } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
+import { useKonami } from '@/hooks/useKonami';
 
 const SettingsPage: React.FC = () => {
   const { t } = useTranslations();
@@ -58,6 +59,7 @@ const SettingsPage: React.FC = () => {
   const [, setLocation] = useLocation();
   const [pushNotifications, setPushNotifications] = React.useState(true);
   const [desktopNotifications, setDesktopNotifications] = React.useState(true);
+  const secretUnlocked = useKonami();
 
   const { data: jobs = [] } = useQuery<{ id: number; name: string }[]>({
     queryKey: ['/api/jobs'],
@@ -242,6 +244,12 @@ const SettingsPage: React.FC = () => {
             <Bell className="h-4 w-4" />
             <span>{t('settings.notifications')}</span>
           </TabsTrigger>
+          {secretUnlocked && (
+            <TabsTrigger value="secrets" className="flex items-center gap-2">
+              <Lock className="h-4 w-4" />
+              <span>{t('settings.secrets')}</span>
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="general">
@@ -458,6 +466,18 @@ const SettingsPage: React.FC = () => {
             </CardContent>
           </Card>
         </TabsContent>
+        {secretUnlocked && (
+          <TabsContent value="secrets">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('settings.secrets')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>{t('settings.secretMessage')}</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
 
       <div className="mt-8 flex justify-end">
