@@ -11,8 +11,8 @@
 - **Client errors**: Use `showError` from `client/src/lib/error-toast.ts` instead of `console.error`.
 - **Admin panel**: The app lacks a dedicated admin UI. Build or integrate an admin dashboard to manage users, groups and settings as described in docs/admin-panel-notes.md.
 - **API client**: Prefer `createApiClient()` for all `fetch` calls.
-- **Push**: Register device tokens via `/api/notifications/register` and set
-  `FCM_SERVER_KEY` in `.env` for push notifications.
+- **Push**: Register device tokens via `/api/notifications/register`. The server
+  sends local notifications over WebSocket when new messages are stored.
 - **Sidebar**: Record all sidebar related work in `docs/sidebar-actions.md`. This file was created to track every sidebar update.
 Feel free to add new things to the guidelines. This may be your notes on the project. See `docs/DEVELOPER_CHECKLIST_RU.md` for a high level TODO list in Russian.
 
