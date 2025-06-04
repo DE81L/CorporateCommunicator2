@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useRoute } from 'wouter';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkBreaks from '@/lib/remark-breaks';
+import { MarkdownPreview } from '../components/wiki/markdown-preview';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { createApiClient } from '@/lib/api-client';
 import { useAuth } from '@/hooks/use-auth';
@@ -148,9 +146,7 @@ export default function WikiArticlePage() {
             )}
           </div>
           <div className="prose max-w-none dark:prose-invert">
-            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-              {entry.content}
-            </ReactMarkdown>
+            <MarkdownPreview content={entry.content} />
           </div>
         </>
       )}
