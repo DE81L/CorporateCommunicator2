@@ -5,7 +5,9 @@ import express, {
   NextFunction,
   RequestHandler,
 } from 'express';
-import session from 'express-session';   
+import session from 'express-session';
+import connectPgSimple from 'connect-pg-simple';
+import { Pool } from 'pg';
 import cors from 'cors';
 import morgan from 'morgan';
 import pinoHttp from 'pino-http';
@@ -27,7 +29,13 @@ export function createApp(): AppInit {
   app.set('etag', false);
 
   /* ───────── SESSIONS ───────── */
-  const store = new session.MemoryStore();
+  const PgSession = connectPgSimple(session);
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const store = new PgSession({
+    pool,
+    tableName: 'session',
+    ttl: 7 * 24 * 60 * 60,
+  });
   const cookieDomain = process.env.COOKIE_DOMAIN;
   const sess = session({
     store,
@@ -39,15 +47,12 @@ export function createApp(): AppInit {
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
       sameSite: 'lax',
-      maxAge: 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
       ...(cookieDomain ? { domain: cookieDomain } : {}),
     },
   });
-  if (typeof (store as any).prune === 'function') {
-    setInterval(() => (store as any).prune(), 60 * 60 * 1000);
-  }
   app.use(sess);
-  app.set('session-middleware', sess as RequestHandler); 
+  app.set('session-middleware', sess as RequestHandler);
 
   /* ───────── COMMON MIDDLEWARE ───────── */
   app.use(pinoHttp({ logger: logger as any, autoLogging: false }));
