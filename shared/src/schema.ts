@@ -22,6 +22,8 @@ export interface Group {
   name: string;
   description?: string;
   isAnnouncement?: boolean;
+  creatorId?: number;
+  isExplanation?: boolean;
   members: User[];
 }
 

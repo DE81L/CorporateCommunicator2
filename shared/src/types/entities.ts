@@ -15,4 +15,8 @@ export interface Group {
   description?: string;
   /** "Announcements‑only" channel, hides text‑input on the client */
   isAnnouncement?: boolean;
+  /** Creator ID for permission checks */
+  creatorId?: number;
+  /** Read-only explanation channel */
+  isExplanation?: boolean;
 }

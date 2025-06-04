@@ -18,6 +18,7 @@ import requestsRouter from './requests';
 import adminRouter from './admin';
 import groupsRouter from './groups';
 import announcementsRouter from './announcements';
+import explanationsRouter from './explanations';
 import tasksRouter from './tasks';
 import notificationsRouter from './notifications';
 // import callLogsRouter from './call-logs';
@@ -36,6 +37,7 @@ router.use('/departments', isAuthenticated, departmentsRouter);
 router.use('/jobs', isAuthenticated, jobsRouter);
 router.use('/groups', isAuthenticated, groupsRouter);
 router.use('/announcements', isAuthenticated, announcementsRouter);
+router.use('/explanations', isAuthenticated, explanationsRouter);
 router.use('/tasks', isAuthenticated, tasksRouter);
 router.use('/requests', isAuthenticated, requestsRouter);
 router.use('/wiki', isAuthenticated, wikiRouter);
@@ -550,6 +552,22 @@ router.post('/groups/:groupId/messages', isAuthenticated, async (req: Request, r
     const senderId = req.session.userId as number;
     const groupId = Number(req.params.groupId);
     if (!groupId) return res.status(400).json({ error: 'Invalid group' });
+
+    const info = await db!.query<{ creator_id: number; is_explanation: number }>(
+      'SELECT creator_id, is_explanation FROM groups WHERE id = $1',
+      [groupId]
+    );
+    const groupInfo = info.rows[0];
+    if (groupInfo?.is_explanation) {
+      const { rows } = await db!.query<{ is_admin: boolean }>(
+        'SELECT is_admin FROM users WHERE id = $1',
+        [senderId]
+      );
+      const isAdmin = rows[0]?.is_admin;
+      if (!isAdmin && groupInfo.creator_id !== senderId) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+    }
 
     const { content, file } = req.body as { content: string; file?: string };
     const insert = await db!.query(

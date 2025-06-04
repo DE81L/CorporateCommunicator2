@@ -15,6 +15,8 @@ import { showError } from '@/lib/error-toast';
 interface Group {
   id: number;
   name: string;
+  creatorId?: number;
+  isExplanation?: boolean;
 }
 
 interface GroupMessage extends MessageItem {
@@ -26,9 +28,10 @@ interface GroupMessage extends MessageItem {
 
 interface Props {
   group: Group;
+  readOnly?: boolean;
 }
 
-export default function GroupChatSection({ group }: Props) {
+export default function GroupChatSection({ group, readOnly }: Props) {
   const { user } = useAuth();
   const apiClient = createApiClient();
   const { t } = useTranslation();
@@ -39,6 +42,8 @@ export default function GroupChatSection({ group }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
+
+  const isReadOnly = readOnly ?? (group.isExplanation && !user?.isAdmin && user?.id !== group.creatorId);
 
   const { data: messages = [], refetch } = useQuery<GroupMessage[]>({
     queryKey: ['group-messages', group.id],
@@ -119,6 +124,7 @@ export default function GroupChatSection({ group }: Props) {
       <div className="flex-1 overflow-y-auto p-4">
         <MessageList messages={plainMessages} myId={user.id} groupMode users={usersMap} />
       </div>
+      {!isReadOnly && (
       <form
         onSubmit={sendMessage}
         onDragOver={(e) => {
@@ -201,11 +207,12 @@ export default function GroupChatSection({ group }: Props) {
               e.target.value = '';
             }}
           />
-          <Button type="submit" disabled={!msgInput.trim() && files.length === 0}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button type="submit" disabled={!msgInput.trim() && files.length === 0}>
+          <Send className="h-4 w-4" />
+        </Button>
+      </div>
       </form>
+      )}
     </div>
   );
 }
