@@ -88,7 +88,7 @@ router.put('/:id', isAuthenticated, async (req: Request, res: Response) => {
     }
     if (!fields.length) return res.status(400).json({ error: 'No fields' });
     values.push(id);
-    const query = `UPDATE groups SET ${fields.join(', ')} WHERE id = $$${idx} RETURNING id, name, description, creator_id AS "creatorId", is_announcement AS "isAnnouncement", is_explanation AS "isExplanation"`;
+    const query = `UPDATE groups SET ${fields.join(', ')} WHERE id = $${idx} RETURNING id, name, description, creator_id AS "creatorId", is_announcement AS "isAnnouncement", is_explanation AS "isExplanation"`;
     const { rows } = await db!.query(query, values);
     res.json(rows[0]);
   } catch (err) {
