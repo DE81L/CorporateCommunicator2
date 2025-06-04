@@ -131,7 +131,26 @@ export function MessageList({ messages, myId, groupMode = false, users = {} }: M
             </UserHoverCard>
           )}
           <div className="whitespace-pre-wrap leading-tight emoji-text">
-            {m.content}
+            {(() => {
+              const match = m.content.match(/\[([^\]]+)\]\((https?:[^)]+)\)$/);
+              if (match) {
+                return (
+                  <>
+                    {m.content.replace(match[0], '').trim()}
+                    <div className="mt-2">
+                      <a
+                        href={match[2]}
+                        target="_blank"
+                        className="px-2 py-1 bg-primary text-white rounded text-xs"
+                      >
+                        {match[1]}
+                      </a>
+                    </div>
+                  </>
+                );
+              }
+              return m.content;
+            })()}
           </div>
           {m.file && (
             isImage(m.file) ? (

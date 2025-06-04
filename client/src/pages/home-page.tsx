@@ -4,6 +4,7 @@ import Sidebar from "@/components/layout/sidebar";
 import MessagesSection from "@/pages/messages-section";
 import { GroupsSection } from "@/pages/groups-section";
 import AnnouncementsSection from "@/pages/announcements-section";
+import ExplanationsSection from "@/pages/explanations-section";
 import RequestsSection from "@/pages/requests-section";
 import ContactsSection from "@/pages/contacts-section";
 import SettingsSection from "@/pages/settings-section";
@@ -217,6 +218,8 @@ export default function HomePage() {
           )}
 
           {activeSection === "groups" && <GroupsSection />}
+
+          {activeSection === "explanations" && <ExplanationsSection />}
 
           {activeSection === "announcements" && <AnnouncementsSection />}
 

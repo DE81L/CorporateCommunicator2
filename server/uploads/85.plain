@@ -8246,8 +8246,11 @@ export { useToast, toast };
 
 --- File: C:\Users\DE81L\Downloads\CCNew\client\src\hooks\useAudioDevices.ts ---
 import { useEffect, useState } from 'react';
-
-export interface AudioDevice {
+  creatorId: integer("creator_id").references(() => users.id),
+  isAnnouncement: integer("is_announcement").default(0),
+  isExplanation: integer("is_explanation").default(0)
+});
+
   deviceId: string;
   label: string;
 }
@@ -8609,7 +8612,9 @@ export function useWiki() {
     mutationFn: async (id: number) => {
       const res = await fetch(`${API_BASE}/${id}`, {
         method: "DELETE",
-        credentials: "include",
+    isAnnouncement: (0, pg_core_1.integer)("is_announcement").default(0),
+    isExplanation: (0, pg_core_1.integer)("is_explanation").default(0)
+});
       });
       if (!res.ok) throw new Error(`DELETE ${API_BASE}/${id} → ${res.status}`);
     },

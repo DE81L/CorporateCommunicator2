@@ -152,7 +152,8 @@ CREATE TABLE public.groups (
     name text NOT NULL,
     description text,
     creator_id integer,
-    is_announcement integer DEFAULT 0
+    is_announcement integer DEFAULT 0,
+    is_explanation integer DEFAULT 0
 );
 
 
