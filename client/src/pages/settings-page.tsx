@@ -61,7 +61,7 @@ const SettingsPage: React.FC = () => {
   const [pushNotifications, setPushNotifications] = React.useState(true);
   const [desktopNotifications, setDesktopNotifications] = React.useState(true);
   const secretUnlocked = useKonami();
-  const { api, isElectron } = useElectron();
+  const { api } = useElectron();
 
   const { data: jobs = [] } = useQuery<{ id: number; name: string }[]>({
     queryKey: ['/api/jobs'],
@@ -480,11 +480,9 @@ const SettingsPage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <p>{t('settings.secretMessage')}</p>
-                {isElectron && (
-                  <Button className="mt-4" onClick={handlePlayDoom}>
-                    {t('settings.playDoom')}
-                  </Button>
-                )}
+                <Button className="mt-4" onClick={handlePlayDoom}>
+                  {t('settings.playDoom')}
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
