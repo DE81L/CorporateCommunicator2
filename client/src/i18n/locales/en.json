@@ -103,6 +103,7 @@
     "account": "Account",
     "privacy": "Privacy",
     "notifications": "Notifications",
+    "secrets": "Secrets",
     "appearance": "Appearance",
     "language": "Language",
     "audioDevices": "Audio Devices",
@@ -130,7 +131,8 @@
     "privacySettings": "Privacy settings",
     "manageNotifications": "Manage notification preferences",
     "pushNotificationsDescription": "Receive push notifications on your device",
-    "desktopNotificationsDescription": "Receive notifications on your desktop"
+    "desktopNotificationsDescription": "Receive notifications on your desktop",
+    "secretMessage": "You've unlocked the secrets!"
   },
   "messages": {
     "noChat": "No chat",
