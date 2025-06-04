@@ -735,6 +735,12 @@ export default function MessagesSection({ onStartCall }: any) {
                   placeholder={t('messages.enterMessage')}
                   value={msgInput}
                   onChange={handleInput}
+                  onKeyDown={(e) => {
+                    if (e.shiftKey && e.key === 'Enter') {
+                      e.preventDefault();
+                      void sendMessage(e as unknown as FormEvent);
+                    }
+                  }}
                 />
                 <input
                   ref={fileInputRef}
