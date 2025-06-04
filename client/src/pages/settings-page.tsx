@@ -1,43 +1,54 @@
-import React from 'react';
-import { useTranslations } from '@/hooks/use-translations';
-import { useSettings } from '@/context/SettingsContext';
-import { useAudioDevices } from '@/hooks/useAudioDevices';
+import React from "react";
+import { useTranslations } from "@/hooks/use-translations";
+import { useSettings } from "@/context/SettingsContext";
+import { useAudioDevices } from "@/hooks/useAudioDevices";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createApiClient } from '@/lib/api-client';
-import { Bell, Moon, Sun, Globe, User, Lock, Settings as SettingsIcon, ArrowLeft } from 'lucide-react';
-import { useLocation } from 'wouter';
-import { useAuth } from '@/hooks/use-auth';
-import { useKonami } from '@/hooks/useKonami';
-import { useElectron } from '@/hooks/use-electron';
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createApiClient } from "@/lib/api-client";
+import {
+  Bell,
+  Moon,
+  Sun,
+  Globe,
+  User,
+  Lock,
+  Settings as SettingsIcon,
+  ArrowLeft,
+} from "lucide-react";
+import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
+import { useKonami } from "@/hooks/useKonami";
+import DoomDialog from "@/components/doom-dialog";
 
 const SettingsPage: React.FC = () => {
   const { t } = useTranslations();
@@ -51,8 +62,8 @@ const SettingsPage: React.FC = () => {
     audioOutputId,
     setAudioOutputId,
   } = useSettings();
-  const { devices: inputDevices } = useAudioDevices('audioinput');
-  const { devices: outputDevices } = useAudioDevices('audiooutput');
+  const { devices: inputDevices } = useAudioDevices("audioinput");
+  const { devices: outputDevices } = useAudioDevices("audiooutput");
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -61,83 +72,92 @@ const SettingsPage: React.FC = () => {
   const [pushNotifications, setPushNotifications] = React.useState(true);
   const [desktopNotifications, setDesktopNotifications] = React.useState(true);
   const secretUnlocked = useKonami();
-  const { api } = useElectron();
+  const [doomOpen, setDoomOpen] = React.useState(false);
 
   const { data: jobs = [] } = useQuery<{ id: number; name: string }[]>({
-    queryKey: ['/api/jobs'],
+    queryKey: ["/api/jobs"],
     queryFn: async () =>
-      (await apiClient.request<{ id: number; name: string }[]>('/api/jobs')) ?? [],
+      (await apiClient.request<{ id: number; name: string }[]>("/api/jobs")) ??
+      [],
   });
 
   const updateJob = useMutation({
     mutationFn: async (jobId: number | null) => {
-      await apiClient.request('/api/user/job', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+      await apiClient.request("/api/user/job", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ jobId }),
       });
     },
     onSuccess: (_data, jobId) => {
-      queryClient.setQueryData(['/api/user'], (prev: any) =>
-        prev ? { ...prev, jobId, jobTitle: jobs.find(j => j.id === jobId)?.name ?? null } : prev
+      queryClient.setQueryData(["/api/user"], (prev: any) =>
+        prev
+          ? {
+              ...prev,
+              jobId,
+              jobTitle: jobs.find((j) => j.id === jobId)?.name ?? null,
+            }
+          : prev,
       );
-      toast({ title: t('common.changesApplied') });
+      toast({ title: t("common.changesApplied") });
     },
     onError: (error: Error) => {
-      toast({ variant: 'destructive', title: error.message });
+      toast({ variant: "destructive", title: error.message });
     },
   });
 
-  const handleThemeChange = (value: 'light' | 'dark' | 'system') => {
+  const handleThemeChange = (value: "light" | "dark" | "system") => {
     setTheme(value);
-    
+
     toast({
-      title: t('settings.changesApplied'),
-      description: t('settings.theme') + ': ' + 
-        (value === 'light' 
-          ? t('settings.lightMode') 
-          : value === 'dark' 
-            ? t('settings.darkMode') 
-            : t('settings.system')),
+      title: t("settings.changesApplied"),
+      description:
+        t("settings.theme") +
+        ": " +
+        (value === "light"
+          ? t("settings.lightMode")
+          : value === "dark"
+            ? t("settings.darkMode")
+            : t("settings.system")),
       duration: 2000,
     });
   };
 
   const handleNotificationChange = (
-    type: 'push' | 'desktop',
-    value: boolean
+    type: "push" | "desktop",
+    value: boolean,
   ) => {
     switch (type) {
-      case 'push':
+      case "push":
         setPushNotifications(value);
         break;
-      case 'desktop':
+      case "desktop":
         setDesktopNotifications(value);
         break;
     }
 
     toast({
-      title: t('settings.changesApplied'),
+      title: t("settings.changesApplied"),
       description: value
-        ? `${t('settings.' + type + 'Notifications')} ${t('common.enabled')}`
-        : `${t('settings.' + type + 'Notifications')} ${t('common.disabled')}`,
+        ? `${t("settings." + type + "Notifications")} ${t("common.enabled")}`
+        : `${t("settings." + type + "Notifications")} ${t("common.disabled")}`,
       duration: 2000,
     });
   };
 
   const handlePlayDoom = () => {
-    api?.app?.openDoom?.();
+    setDoomOpen(true);
   };
 
   const changePasswordSchema = z
     .object({
-      currentPassword: z.string().min(1, 'Current password is required'),
-      newPassword: z.string().min(6, 'Password too short'),
+      currentPassword: z.string().min(1, "Current password is required"),
+      newPassword: z.string().min(6, "Password too short"),
       confirmPassword: z.string(),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
-      message: 'Passwords do not match',
-      path: ['confirmPassword'],
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
     });
 
   function ChangePasswordForm() {
@@ -148,9 +168,9 @@ const SettingsPage: React.FC = () => {
     const mutation = useMutation({
       mutationFn: async (data: z.infer<typeof changePasswordSchema>) => {
         const { confirmPassword, ...payload } = data;
-        await apiClient.request('/api/change-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        await apiClient.request("/api/change-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             currentPassword: payload.currentPassword,
             newPassword: payload.newPassword,
@@ -158,11 +178,11 @@ const SettingsPage: React.FC = () => {
         });
       },
       onSuccess: () => {
-        toast({ title: t('common.changesApplied') });
+        toast({ title: t("common.changesApplied") });
         form.reset();
       },
       onError: (error: Error) => {
-        toast({ variant: 'destructive', title: error.message });
+        toast({ variant: "destructive", title: error.message });
       },
     });
 
@@ -178,7 +198,7 @@ const SettingsPage: React.FC = () => {
             name="currentPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('profile.currentPassword')}</FormLabel>
+                <FormLabel>{t("profile.currentPassword")}</FormLabel>
                 <FormControl>
                   <Input type="password" {...field} />
                 </FormControl>
@@ -191,7 +211,7 @@ const SettingsPage: React.FC = () => {
             name="newPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('profile.newPassword')}</FormLabel>
+                <FormLabel>{t("profile.newPassword")}</FormLabel>
                 <FormControl>
                   <Input type="password" {...field} />
                 </FormControl>
@@ -204,7 +224,7 @@ const SettingsPage: React.FC = () => {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('auth.confirmPassword')}</FormLabel>
+                <FormLabel>{t("auth.confirmPassword")}</FormLabel>
                 <FormControl>
                   <Input type="password" {...field} />
                 </FormControl>
@@ -213,7 +233,7 @@ const SettingsPage: React.FC = () => {
             )}
           />
           <Button type="submit" disabled={mutation.isPending}>
-            {t('profile.changePassword')}
+            {t("profile.changePassword")}
           </Button>
         </form>
       </Form>
@@ -224,10 +244,10 @@ const SettingsPage: React.FC = () => {
     <div className="container mx-auto py-10">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => setLocation('/') }>
+          <Button variant="ghost" size="icon" onClick={() => setLocation("/")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
+          <h1 className="text-3xl font-bold">{t("settings.title")}</h1>
         </div>
         <SettingsIcon className="h-6 w-6" />
       </div>
@@ -236,24 +256,27 @@ const SettingsPage: React.FC = () => {
         <TabsList className="grid grid-cols-4 mb-8">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <SettingsIcon className="h-4 w-4" />
-            <span>{t('settings.general')}</span>
+            <span>{t("settings.general")}</span>
           </TabsTrigger>
           <TabsTrigger value="account" className="flex items-center gap-2">
             <User className="h-4 w-4" />
-            <span>{t('settings.account')}</span>
+            <span>{t("settings.account")}</span>
           </TabsTrigger>
           <TabsTrigger value="privacy" className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
-            <span>{t('settings.privacy')}</span>
+            <span>{t("settings.privacy")}</span>
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
+          <TabsTrigger
+            value="notifications"
+            className="flex items-center gap-2"
+          >
             <Bell className="h-4 w-4" />
-            <span>{t('settings.notifications')}</span>
+            <span>{t("settings.notifications")}</span>
           </TabsTrigger>
           {secretUnlocked && (
             <TabsTrigger value="secrets" className="flex items-center gap-2">
               <Lock className="h-4 w-4" />
-              <span>{t('settings.secrets')}</span>
+              <span>{t("settings.secrets")}</span>
             </TabsTrigger>
           )}
         </TabsList>
@@ -262,32 +285,40 @@ const SettingsPage: React.FC = () => {
           <div className="grid gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t('settings.appearance')}</CardTitle>
+                <CardTitle>{t("settings.appearance")}</CardTitle>
                 <CardDescription>
-                  {t('settings.customizeAppearance')}
+                  {t("settings.customizeAppearance")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="theme">{t('settings.theme')}</Label>
+                  <Label htmlFor="theme">{t("settings.theme")}</Label>
                   <Select
                     value={theme}
-                    onValueChange={(value) => handleThemeChange(value as 'light' | 'dark' | 'system')}
+                    onValueChange={(value) =>
+                      handleThemeChange(value as "light" | "dark" | "system")
+                    }
                   >
                     <SelectTrigger id="theme">
-                      <SelectValue placeholder={t('settings.theme')} />
+                      <SelectValue placeholder={t("settings.theme")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="light" className="flex items-center gap-2">
+                      <SelectItem
+                        value="light"
+                        className="flex items-center gap-2"
+                      >
                         <div className="flex items-center gap-2">
                           <Sun className="h-4 w-4" />
-                          <span>{t('settings.lightMode')}</span>
+                          <span>{t("settings.lightMode")}</span>
                         </div>
                       </SelectItem>
-                      <SelectItem value="dark" className="flex items-center gap-2">
+                      <SelectItem
+                        value="dark"
+                        className="flex items-center gap-2"
+                      >
                         <div className="flex items-center gap-2">
                           <Moon className="h-4 w-4" />
-                          <span>{t('settings.darkMode')}</span>
+                          <span>{t("settings.darkMode")}</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="system">System</SelectItem>
@@ -299,21 +330,21 @@ const SettingsPage: React.FC = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>{t('settings.language')}</CardTitle>
+                <CardTitle>{t("settings.language")}</CardTitle>
                 <CardDescription>
-                  {t('settings.changeLanguage')}
+                  {t("settings.changeLanguage")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="language">{t('settings.language')}</Label>
-                  <Select
-                    value={language}
-                    onValueChange={setLanguage}
-                  >
-                    <SelectTrigger id="language" className="flex items-center gap-2">
+                  <Label htmlFor="language">{t("settings.language")}</Label>
+                  <Select value={language} onValueChange={setLanguage}>
+                    <SelectTrigger
+                      id="language"
+                      className="flex items-center gap-2"
+                    >
                       <Globe className="h-4 w-4" />
-                      <SelectValue placeholder={t('settings.language')} />
+                      <SelectValue placeholder={t("settings.language")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ru">Русский</SelectItem>
@@ -326,22 +357,28 @@ const SettingsPage: React.FC = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>{t('settings.audioDevices')}</CardTitle>
-                <CardDescription>{t('settings.selectAudioDevices')}</CardDescription>
+                <CardTitle>{t("settings.audioDevices")}</CardTitle>
+                <CardDescription>
+                  {t("settings.selectAudioDevices")}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="audioInput">{t('settings.audioInput')}</Label>
+                  <Label htmlFor="audioInput">{t("settings.audioInput")}</Label>
                   <Select
-                    value={audioInputId ?? 'none'}
-                    onValueChange={(val) => setAudioInputId(val === 'none' ? null : val)}
+                    value={audioInputId ?? "none"}
+                    onValueChange={(val) =>
+                      setAudioInputId(val === "none" ? null : val)
+                    }
                   >
                     <SelectTrigger id="audioInput">
-                      <SelectValue placeholder={t('settings.audioInput')} />
+                      <SelectValue placeholder={t("settings.audioInput")} />
                     </SelectTrigger>
                     <SelectContent>
                       {inputDevices.length === 0 ? (
-                        <SelectItem value="none">{t('settings.noAudioDevices')}</SelectItem>
+                        <SelectItem value="none">
+                          {t("settings.noAudioDevices")}
+                        </SelectItem>
                       ) : (
                         inputDevices.map((d) => (
                           <SelectItem key={d.deviceId} value={d.deviceId}>
@@ -353,17 +390,23 @@ const SettingsPage: React.FC = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="audioOutput">{t('settings.audioOutput')}</Label>
+                  <Label htmlFor="audioOutput">
+                    {t("settings.audioOutput")}
+                  </Label>
                   <Select
-                    value={audioOutputId ?? 'none'}
-                    onValueChange={(val) => setAudioOutputId(val === 'none' ? null : val)}
+                    value={audioOutputId ?? "none"}
+                    onValueChange={(val) =>
+                      setAudioOutputId(val === "none" ? null : val)
+                    }
                   >
                     <SelectTrigger id="audioOutput">
-                      <SelectValue placeholder={t('settings.audioOutput')} />
+                      <SelectValue placeholder={t("settings.audioOutput")} />
                     </SelectTrigger>
                     <SelectContent>
                       {outputDevices.length === 0 ? (
-                        <SelectItem value="none">{t('settings.noAudioDevices')}</SelectItem>
+                        <SelectItem value="none">
+                          {t("settings.noAudioDevices")}
+                        </SelectItem>
                       ) : (
                         outputDevices.map((d) => (
                           <SelectItem key={d.deviceId} value={d.deviceId}>
@@ -382,28 +425,28 @@ const SettingsPage: React.FC = () => {
         <TabsContent value="account">
           <Card>
             <CardHeader>
-              <CardTitle>{t('settings.account')}</CardTitle>
-              <CardDescription>
-                {t('settings.manageAccount')}
-              </CardDescription>
+              <CardTitle>{t("settings.account")}</CardTitle>
+              <CardDescription>{t("settings.manageAccount")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p>{t('settings.accountSettings')}</p>
+              <p>{t("settings.accountSettings")}</p>
               <div className="space-y-2">
-                <Label htmlFor="position">{t('profile.position')}</Label>
+                <Label htmlFor="position">{t("profile.position")}</Label>
                 <Select
-                  value={user?.jobId ? String(user.jobId) : 'none'}
+                  value={user?.jobId ? String(user.jobId) : "none"}
                   onValueChange={(val) =>
-                    updateJob.mutate(val === 'none' ? null : Number(val))
+                    updateJob.mutate(val === "none" ? null : Number(val))
                   }
                 >
                   <SelectTrigger id="position">
-                    <SelectValue placeholder={t('profile.selectPosition')} />
+                    <SelectValue placeholder={t("profile.selectPosition")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">-</SelectItem>
                     {jobs.map((j) => (
-                      <SelectItem key={j.id} value={String(j.id)}>{j.name}</SelectItem>
+                      <SelectItem key={j.id} value={String(j.id)}>
+                        {j.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -416,13 +459,11 @@ const SettingsPage: React.FC = () => {
         <TabsContent value="privacy">
           <Card>
             <CardHeader>
-              <CardTitle>{t('settings.privacy')}</CardTitle>
-              <CardDescription>
-                {t('settings.managePrivacy')}
-              </CardDescription>
+              <CardTitle>{t("settings.privacy")}</CardTitle>
+              <CardDescription>{t("settings.managePrivacy")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p>{t('settings.privacySettings')}</p>
+              <p>{t("settings.privacySettings")}</p>
               {/* Privacy settings will be implemented here */}
             </CardContent>
           </Card>
@@ -431,42 +472,45 @@ const SettingsPage: React.FC = () => {
         <TabsContent value="notifications">
           <Card>
             <CardHeader>
-              <CardTitle>{t('settings.notifications')}</CardTitle>
+              <CardTitle>{t("settings.notifications")}</CardTitle>
               <CardDescription>
-                {t('settings.manageNotifications')}
+                {t("settings.manageNotifications")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label htmlFor="push-notifications">
-                    {t('settings.pushNotifications')}
+                    {t("settings.pushNotifications")}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    {t('settings.pushNotificationsDescription')}
+                    {t("settings.pushNotificationsDescription")}
                   </p>
                 </div>
                 <Switch
                   id="push-notifications"
                   checked={pushNotifications}
-                  onCheckedChange={(checked) => handleNotificationChange('push', checked)}
+                  onCheckedChange={(checked) =>
+                    handleNotificationChange("push", checked)
+                  }
                 />
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label htmlFor="desktop-notifications">
-                    {t('settings.desktopNotifications')}
+                    {t("settings.desktopNotifications")}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    {t('settings.desktopNotificationsDescription')}
+                    {t("settings.desktopNotificationsDescription")}
                   </p>
                 </div>
                 <Switch
                   id="desktop-notifications"
                   checked={desktopNotifications}
-                  onCheckedChange={(checked) => handleNotificationChange('desktop', checked)}
+                  onCheckedChange={(checked) =>
+                    handleNotificationChange("desktop", checked)
+                  }
                 />
               </div>
             </CardContent>
@@ -476,12 +520,12 @@ const SettingsPage: React.FC = () => {
           <TabsContent value="secrets">
             <Card>
               <CardHeader>
-                <CardTitle>{t('settings.secrets')}</CardTitle>
+                <CardTitle>{t("settings.secrets")}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>{t('settings.secretMessage')}</p>
+                <p>{t("settings.secretMessage")}</p>
                 <Button className="mt-4" onClick={handlePlayDoom}>
-                  {t('settings.playDoom')}
+                  {t("settings.playDoom")}
                 </Button>
               </CardContent>
             </Card>
@@ -490,13 +534,16 @@ const SettingsPage: React.FC = () => {
       </Tabs>
 
       <div className="mt-8 flex justify-end">
-        <Button variant="outline" className="mr-2" onClick={() => setLocation('/') }>
-          {t('common.back')}
+        <Button
+          variant="outline"
+          className="mr-2"
+          onClick={() => setLocation("/")}
+        >
+          {t("common.back")}
         </Button>
-        <Button>
-          {t('common.save')}
-        </Button>
+        <Button>{t("common.save")}</Button>
       </div>
+      <DoomDialog open={doomOpen} onOpenChange={setDoomOpen} />
     </div>
   );
 };
