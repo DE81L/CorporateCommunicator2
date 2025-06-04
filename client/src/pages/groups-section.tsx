@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -38,6 +38,7 @@ import { Loader2, Plus, Users, Eye, Pencil, Trash2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useElectron } from "@/hooks/use-electron";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import { queryClient } from "@/lib/queryClient";
 import { createApiClient } from "@/lib/api-client";
 import { showError } from "@/lib/error-toast";
@@ -171,6 +172,7 @@ function GroupCard({
 }
 export function GroupsSection() {
   const apiClient = createApiClient();
+  const { lastRawMessage } = useWebSocket();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
@@ -196,6 +198,12 @@ export function GroupsSection() {
     queryFn: async (): Promise<User[]> =>
       (await apiClient.request<User[]>('/api/contacts')) ?? [],
   });
+
+  useEffect(() => {
+    if (lastRawMessage && (lastRawMessage as any).type === 'group-created') {
+      queryClient.invalidateQueries({ queryKey: ['/api/groups'] });
+    }
+  }, [lastRawMessage]);
   // Мутация создания группы
   const createGroupMutation = useMutation({
     mutationFn: (data: CreateGroupFormValues) =>
