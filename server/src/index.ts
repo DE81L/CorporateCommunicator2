@@ -5,11 +5,13 @@ import { createApp } from "./app";
 import { connectDb, resetAllOnlineStatus } from "./db";
 import { config } from "./config/env";
 import { logger } from "./util/logger";
+import { scheduleMessageCleanup } from "./util/messageCleanup";
 import { initWebSocket } from "./ws";
 
 async function main() {
   await connectDb();
   await resetAllOnlineStatus();
+  scheduleMessageCleanup();
 
   const { app, sessionMiddleware } = createApp();
 
