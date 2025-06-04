@@ -7,3 +7,4 @@ This file tracks all changes and decisions related to the sidebar component.
 
 - [2025-06-03] Updated sidebar background to use bg-sidebar for proper visibility on small screens.
 - [2025-06-04] Added explanations menu item in sidebar.
+- [2025-06-05] Renamed "Объяснения" menu item to "Объявления" in the Russian sidebar.
