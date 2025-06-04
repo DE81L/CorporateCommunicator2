@@ -217,6 +217,12 @@ router.patch('/users/:id', isAuthenticated, async (req: Request, res: Response) 
       return res.status(400).json({ error: 'Invalid request' });
     }
 
+    if (adminId === id && isAdmin === false) {
+      return res
+        .status(400)
+        .json({ error: "Can't remove your own admin rights" });
+    }
+
     await db!.query('UPDATE users SET is_admin = $1 WHERE id = $2', [isAdmin ? 1 : 0, id]);
     res.json({ success: true });
   } catch (err) {

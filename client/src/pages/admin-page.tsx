@@ -309,6 +309,7 @@ export default function AdminPage() {
                     <td className="px-3 py-2 text-center">
                       <Checkbox
                         checked={u.isAdmin}
+                        disabled={u.id === user?.id}
                         onCheckedChange={checked =>
                           setUserAdmin(u.id, checked === true)
                         }
