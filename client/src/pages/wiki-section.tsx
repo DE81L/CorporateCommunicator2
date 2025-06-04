@@ -1,4 +1,4 @@
-import { getWikiEntries } from "../api/wiki";
+import { getWikiEntries, getEntriesByCategory } from "../api/wiki";
 import { useState, useMemo } from "react";
 import { showError } from "@/lib/error-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -153,8 +153,10 @@ export default function WikiSection() {
   } = useQuery<WikiEntry[]>({
     queryKey: ["/api/wiki/categories", activeCategoryId, "entries"],
     queryFn: async (): Promise<WikiEntry[]> => {
-      const data = await getWikiEntries();
-      return data ?? [];
+      if (!activeCategoryId) return [];
+      return (
+        await getEntriesByCategory(activeCategoryId)
+      ) ?? [];
     },
     enabled: !!activeCategoryId,
     retry: false,
@@ -621,7 +623,8 @@ export default function WikiSection() {
           </TabsContent>
 
           <TabsContent value="categories" className="h-full">
-            {isLoadingCategories ? (
+            {isLoadingCategories ||
+            (activeCategoryId && isLoadingCategoryEntries) ? (
               <div className="h-full flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
@@ -681,7 +684,6 @@ export default function WikiSection() {
                     </Card>
                   ))}
                 </div>
-
                 {getSubcategories(activeCategoryId).length === 0 && (
                   <div className="flex flex-col items-center justify-center text-gray-500 py-8">
                     <p>No categories found</p>
@@ -695,6 +697,78 @@ export default function WikiSection() {
                         Create a new category
                       </Button>
                     )}
+                  </div>
+                )}
+
+                {categoryEntries.length > 0 && (
+                  <div className="mt-8">
+                    <h2 className="text-lg font-semibold mb-4">Wiki Entries</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {categoryEntries.map((entry: WikiEntry) => (
+                        <Card
+                          key={entry.id}
+                          className="h-full cursor-pointer hover:shadow-md transition-shadow"
+                          onClick={() => setLocation(`/wiki/${entry.id}`)}
+                        >
+                          <CardHeader className="pb-2">
+                            <div className="flex justify-between items-start">
+                              <CardTitle className="text-xl">
+                                {entry.title ?? "Untitled"}
+                              </CardTitle>
+                              {user?.isAdmin && (
+                                <div
+                                  className="flex space-x-1"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditEntry(entry);
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (
+                                        window.confirm(
+                                          "Are you sure you want to delete this entry?",
+                                        )
+                                      ) {
+                                        deleteEntryMutation.mutate(entry.id);
+                                      }
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                            {entry.category && (
+                              <CardDescription>
+                                Category: {entry.category}
+                              </CardDescription>
+                            )}
+                          </CardHeader>
+                          <CardContent>
+                            <div className="prose max-w-none dark:prose-invert">
+                              <MarkdownPreview
+                                content={getMarkdownSnippet(entry.content, 200)}
+                              />
+                            </div>
+                            <div className="text-xs text-gray-500 mt-4">
+                              Last updated: {" "}
+                              {new Date(entry.updatedAt).toLocaleDateString()}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   </div>
                 )}
               </ScrollArea>
