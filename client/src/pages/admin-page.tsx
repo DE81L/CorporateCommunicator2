@@ -36,6 +36,8 @@ export default function AdminPage() {
   const apiClient = createApiClient();
 
   const [users, setUsers] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<{ id: number; name: string }[]>([]);
+  const [jobs, setJobs] = useState<{ id: number; name: string }[]>([]);
 
   const [newUser, setNewUser] = useState({
     username: '',
@@ -66,7 +68,28 @@ export default function AdminPage() {
         showError(err);
       }
     }
+
+    async function fetchDepartments() {
+      try {
+        const data = await apiClient.request<{ id: number; name: string }[]>('/api/departments');
+        setDepartments(data ?? []);
+      } catch (err) {
+        showError(err);
+      }
+    }
+
+    async function fetchJobs() {
+      try {
+        const data = await apiClient.request<{ id: number; name: string }[]>('/api/jobs');
+        setJobs(data ?? []);
+      } catch (err) {
+        showError(err);
+      }
+    }
+
     fetchUsers();
+    fetchDepartments();
+    fetchJobs();
   }, []);
 
   useEffect(() => {
@@ -196,14 +219,31 @@ export default function AdminPage() {
     }
   }
 
-  async function setUserAdmin(id: number, isAdmin: boolean) {
+  async function updateUser(id: number, data: Record<string, any>) {
     try {
       await apiClient.request(`/api/admin/users/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isAdmin }),
+        body: JSON.stringify(data),
       });
-      setUsers(prev => prev.map(u => (u.id === id ? { ...u, isAdmin } : u)));
+      setUsers(prev =>
+        prev.map(u =>
+          u.id === id
+            ? {
+                ...u,
+                ...data,
+                jobTitle:
+                  'jobId' in data
+                    ? jobs.find(j => j.id === data.jobId)?.name ?? null
+                    : u.jobTitle,
+                departmentName:
+                  'departmentId' in data
+                    ? departments.find(d => d.id === data.departmentId)?.name ?? null
+                    : u.departmentName,
+              }
+            : u,
+        ),
+      );
     } catch (err) {
       showError(err);
     }
@@ -297,6 +337,8 @@ export default function AdminPage() {
                   <th className="px-3 py-2 text-left text-sm font-semibold">ID</th>
                   <th className="px-3 py-2 text-left text-sm font-semibold">Username</th>
                   <th className="px-3 py-2 text-left text-sm font-semibold">Email</th>
+                  <th className="px-3 py-2 text-left text-sm font-semibold">{t('profile.department')}</th>
+                  <th className="px-3 py-2 text-left text-sm font-semibold">{t('profile.position')}</th>
                   <th className="px-3 py-2 text-center text-sm font-semibold">Admin</th>
                 </tr>
               </thead>
@@ -306,12 +348,56 @@ export default function AdminPage() {
                     <td className="px-3 py-2">{u.id}</td>
                     <td className="px-3 py-2">{u.username}</td>
                     <td className="px-3 py-2">{u.email}</td>
+                    <td className="px-3 py-2">
+                      <Select
+                        value={u.departmentId ? String(u.departmentId) : 'none'}
+                        onValueChange={val =>
+                          updateUser(u.id, {
+                            departmentId: val === 'none' ? null : Number(val),
+                          })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="-" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">-</SelectItem>
+                          {departments.map(d => (
+                            <SelectItem key={d.id} value={String(d.id)}>
+                              {d.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="px-3 py-2">
+                      <Select
+                        value={u.jobId ? String(u.jobId) : 'none'}
+                        onValueChange={val =>
+                          updateUser(u.id, {
+                            jobId: val === 'none' ? null : Number(val),
+                          })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="-" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">-</SelectItem>
+                          {jobs.map(j => (
+                            <SelectItem key={j.id} value={String(j.id)}>
+                              {j.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </td>
                     <td className="px-3 py-2 text-center">
                       <Checkbox
                         checked={u.isAdmin}
                         disabled={u.id === user?.id}
                         onCheckedChange={checked =>
-                          setUserAdmin(u.id, checked === true)
+                          updateUser(u.id, { isAdmin: checked === true })
                         }
                       />
                     </td>

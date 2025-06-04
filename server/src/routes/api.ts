@@ -106,6 +106,7 @@ router.get('/user', isAuthenticated, async (req: Request, res: Response) => {
          email,
          first_name AS "firstName",
          last_name  AS "lastName",
+         department_id AS "departmentId",
          job_id     AS "jobId",
          job_title  AS "jobTitle",
          avatarurl  AS "avatarUrl",

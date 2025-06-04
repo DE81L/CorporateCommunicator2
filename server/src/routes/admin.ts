@@ -191,7 +191,21 @@ router.get('/users', isAuthenticated, async (req: Request, res: Response) => {
     }
 
     const result = await db!.query(
-      `SELECT id, username, email, first_name AS "firstName", last_name AS "lastName", job_title AS "jobTitle", is_admin AS "isAdmin", isonline AS "isOnline" FROM users ORDER BY id`,
+      `SELECT
+         u.id,
+         u.username,
+         u.email,
+         u.first_name AS "firstName",
+         u.last_name  AS "lastName",
+         u.department_id AS "departmentId",
+         d.name        AS "departmentName",
+         u.job_id      AS "jobId",
+         u.job_title   AS "jobTitle",
+         u.is_admin    AS "isAdmin",
+         u.isonline    AS "isOnline"
+       FROM users u
+       LEFT JOIN departments d ON u.department_id = d.id
+       ORDER BY u.id`,
     );
     res.json({ users: result.rows });
   } catch (err) {
@@ -223,7 +237,7 @@ router.post('/users', isAuthenticated, async (req: Request, res: Response) => {
   }
 });
 
-// PATCH /api/admin/users/:id - update user fields (currently only isAdmin)
+// PATCH /api/admin/users/:id - update user fields (isAdmin, department, job)
 router.patch('/users/:id', isAuthenticated, async (req: Request, res: Response) => {
   try {
     const adminId = req.session.userId as number;
@@ -236,18 +250,54 @@ router.patch('/users/:id', isAuthenticated, async (req: Request, res: Response) 
     }
 
     const id = Number(req.params.id);
-    const { isAdmin } = req.body as { isAdmin?: boolean };
-    if (!id || typeof isAdmin !== 'boolean') {
-      return res.status(400).json({ error: 'Invalid request' });
+    const { isAdmin, departmentId, jobId } = req.body as {
+      isAdmin?: boolean;
+      departmentId?: number | null;
+      jobId?: number | null;
+    };
+    if (!id) {
+      return res.status(400).json({ error: 'Invalid id' });
     }
 
-    if (adminId === id && isAdmin === false) {
-      return res
-        .status(400)
-        .json({ error: "Can't remove your own admin rights" });
+    const updates: string[] = [];
+    const params: any[] = [];
+
+    if (typeof isAdmin === 'boolean') {
+      if (adminId === id && isAdmin === false) {
+        return res
+          .status(400)
+          .json({ error: "Can't remove your own admin rights" });
+      }
+      updates.push(`is_admin = $${params.length + 1}`);
+      params.push(isAdmin ? 1 : 0);
     }
 
-    await db!.query('UPDATE users SET is_admin = $1 WHERE id = $2', [isAdmin ? 1 : 0, id]);
+    if (departmentId !== undefined) {
+      updates.push(`department_id = $${params.length + 1}`);
+      params.push(departmentId);
+    }
+
+    if (jobId !== undefined) {
+      let title: string | null = null;
+      if (jobId) {
+        const { rows } = await db!.query<{ name: string }>(
+          'SELECT name FROM jobs WHERE id = $1',
+          [jobId]
+        );
+        title = rows[0]?.name ?? null;
+      }
+      updates.push(`job_id = $${params.length + 1}`);
+      params.push(jobId);
+      updates.push(`job_title = $${params.length + 1}`);
+      params.push(title);
+    }
+
+    if (!updates.length) {
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    params.push(id);
+    await db!.query(`UPDATE users SET ${updates.join(', ')} WHERE id = $${params.length}`, params);
     res.json({ success: true });
   } catch (err) {
     logger.error('Admin user update error:', err);
