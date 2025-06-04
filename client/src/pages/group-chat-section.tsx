@@ -16,6 +16,7 @@ interface Group {
   id: number;
   name: string;
   creatorId?: number;
+  isAnnouncement?: boolean;
   isExplanation?: boolean;
 }
 
@@ -45,10 +46,13 @@ export default function GroupChatSection({ group, readOnly }: Props) {
 
   const isReadOnly = readOnly ?? (group.isExplanation && !user?.isAdmin && user?.id !== group.creatorId);
 
+  const messagesEndpoint = group.isAnnouncement
+    ? `/api/announcements/${group.id}/messages`
+    : `/api/groups/${group.id}/messages`;
   const { data: messages = [], refetch } = useQuery<GroupMessage[]>({
-    queryKey: ['group-messages', group.id],
+    queryKey: [group.isAnnouncement ? 'announcement-messages' : 'group-messages', group.id],
     queryFn: async () =>
-      (await apiClient.request<GroupMessage[]>(`/api/groups/${group.id}/messages`)) ?? [],
+      (await apiClient.request<GroupMessage[]>(messagesEndpoint)) ?? [],
   });
 
   useEffect(() => {

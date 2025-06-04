@@ -18,7 +18,8 @@ router.get('/', isAuthenticated, async (req: Request, res: Response) => {
               g.is_explanation AS "isExplanation"
          FROM groups g
          LEFT JOIN group_members gm ON gm.group_id = g.id AND gm.user_id = $1
-        WHERE gm.user_id IS NOT NULL OR g.creator_id = $1
+        WHERE (gm.user_id IS NOT NULL OR g.creator_id = $1)
+          AND g.is_announcement = 0
         ORDER BY g.name`,
       [userId]
     );
