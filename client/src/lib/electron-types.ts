@@ -30,6 +30,7 @@ export interface ElectronAPI {
     maximize: () => Promise<void>;
     reload: () => Promise<void>;
     openDevTools: () => Promise<void>;
+    openDoom: () => Promise<void>;
   };
 
   // Операции файловой системы

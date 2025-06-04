@@ -37,6 +37,7 @@ import { Bell, Moon, Sun, Globe, User, Lock, Settings as SettingsIcon, ArrowLeft
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useKonami } from '@/hooks/useKonami';
+import { useElectron } from '@/hooks/use-electron';
 
 const SettingsPage: React.FC = () => {
   const { t } = useTranslations();
@@ -60,6 +61,7 @@ const SettingsPage: React.FC = () => {
   const [pushNotifications, setPushNotifications] = React.useState(true);
   const [desktopNotifications, setDesktopNotifications] = React.useState(true);
   const secretUnlocked = useKonami();
+  const { api, isElectron } = useElectron();
 
   const { data: jobs = [] } = useQuery<{ id: number; name: string }[]>({
     queryKey: ['/api/jobs'],
@@ -116,11 +118,15 @@ const SettingsPage: React.FC = () => {
 
     toast({
       title: t('settings.changesApplied'),
-      description: value 
+      description: value
         ? `${t('settings.' + type + 'Notifications')} ${t('common.enabled')}`
         : `${t('settings.' + type + 'Notifications')} ${t('common.disabled')}`,
       duration: 2000,
     });
+  };
+
+  const handlePlayDoom = () => {
+    api?.app?.openDoom?.();
   };
 
   const changePasswordSchema = z
@@ -474,6 +480,11 @@ const SettingsPage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <p>{t('settings.secretMessage')}</p>
+                {isElectron && (
+                  <Button className="mt-4" onClick={handlePlayDoom}>
+                    {t('settings.playDoom')}
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

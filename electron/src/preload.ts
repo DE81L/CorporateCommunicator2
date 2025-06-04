@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('electron', {
     maximize: () => ipcRenderer.invoke('window-maximize'),
     reload: () => ipcRenderer.invoke('window-reload'),
     openDevTools: () => ipcRenderer.invoke('open-devtools'),
+    openDoom: () => ipcRenderer.invoke('open-doom'),
   },
   system: {
     getSystemInfo: () => ipcRenderer.invoke('get-system-info'),

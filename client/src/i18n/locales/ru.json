@@ -145,7 +145,8 @@
     "manageNotifications": "Управление уведомлениями",
     "pushNotificationsDescription": "Получать push-уведомления на устройстве",
     "desktopNotificationsDescription": "Получать уведомления на рабочем столе",
-    "secretMessage": "Вы открыли секреты!"
+    "secretMessage": "Вы открыли секреты!",
+    "playDoom": "Запустить DOOM"
   },
   "messages": {
     "title": "Сообщения",
