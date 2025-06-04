@@ -113,12 +113,7 @@ export default function AnnouncementsSection() {
     return times[id % times.length];
   };
 
-  const openAnnouncement = async (a: Announcement) => {
-    try {
-      await apiClient.request(`/api/groups/${a.id}/join`, { method: 'POST' });
-    } catch (err) {
-      // ignore if already joined
-    }
+  const openAnnouncement = (a: Announcement) => {
     setSelectedGroup(a);
   };
 
