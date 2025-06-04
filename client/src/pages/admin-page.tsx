@@ -175,7 +175,7 @@ export default function AdminPage() {
     e.preventDefault();
     try {
       setError(null);
-      await apiClient.request('/api/register', {
+      await apiClient.request('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newUser),

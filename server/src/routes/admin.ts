@@ -199,6 +199,29 @@ router.get('/users', isAuthenticated, async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/admin/users - create a new user without logging in
+router.post('/users', isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const adminId = req.session.userId as number;
+    const { rows } = await db!.query<{ is_admin: boolean }>(
+      'SELECT is_admin FROM users WHERE id = $1',
+      [adminId],
+    );
+    if (!rows[0]?.is_admin) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const newUser = await register(req.body);
+    res.status(201).json({ user: newUser });
+  } catch (err) {
+    logger.error('Admin user create error:', err);
+    if ((err as any).code === 'DUPLICATE') {
+      return res.status(409).json({ error: 'Username or email already exists' });
+    }
+    res.status(400).json({ error: (err as Error).message });
+  }
+});
+
 // PATCH /api/admin/users/:id - update user fields (currently only isAdmin)
 router.patch('/users/:id', isAuthenticated, async (req: Request, res: Response) => {
   try {
