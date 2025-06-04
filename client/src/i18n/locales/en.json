@@ -132,7 +132,8 @@
     "manageNotifications": "Manage notification preferences",
     "pushNotificationsDescription": "Receive push notifications on your device",
     "desktopNotificationsDescription": "Receive notifications on your desktop",
-    "secretMessage": "You've unlocked the secrets!"
+    "secretMessage": "You've unlocked the secrets!",
+    "playDoom": "Play DOOM"
   },
   "messages": {
     "noChat": "No chat",

@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
+import fs from 'fs';
 
 import path, { resolve } from 'node:path';
 import * as dotenv from 'dotenv';
@@ -50,6 +51,26 @@ ipcMain.handle('window-reload', () => {
 
 ipcMain.handle('open-devtools', () => {
   mainWindow?.webContents.openDevTools();
+});
+
+ipcMain.handle('open-doom', () => {
+  const doomPath = path.join(
+    __dirname,
+    '../../literal_copy_of_doom/doom-wasm/index.html'
+  );
+  const win = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  if (fs.existsSync(doomPath)) {
+    win.loadFile(doomPath);
+  } else {
+    win.loadURL('data:text/html,DOOM files not found');
+  }
 });
 
 app.whenReady().then(createMainWindow);
