@@ -97,6 +97,7 @@
     "react-resizable-panels": "^3.0.1",
     "recharts": "^2.15.3",
     "remark-gfm": "^3.0.1",
+    "rehype-raw": "^6.1.1",
     "rimraf": "^6.0.1",
     "simple-peer": "^9.11.1",
     "sonner": "^2.0.3",
