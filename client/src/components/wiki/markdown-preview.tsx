@@ -2,6 +2,7 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from '@/lib/remark-breaks';
+import rehypeRaw from 'rehype-raw';
 
 interface MarkdownPreviewProps {
   content: string;
@@ -11,7 +12,10 @@ interface MarkdownPreviewProps {
 export function MarkdownPreview({ content, className }: MarkdownPreviewProps) {
   return (
     <div className={className}>
-      <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkBreaks]}
+        rehypePlugins={[rehypeRaw]}
+      >
         {content}
       </ReactMarkdown>
     </div>
