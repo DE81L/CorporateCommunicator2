@@ -40,7 +40,7 @@ export const insertRequestSchema = z.object({
   phone: z
     .string()
     .optional()
-    .refine((val) => !val || /^(\+?[0-9]{10,15}|[0-9]{6})$/.test(val), {
+    .refine((val) => !val || /^(\+?[0-9]{7,15}|[0-9]{6})$/.test(val), {
       message: 'Invalid phone number',
     }),
   isUrgent: z.boolean().default(false),
