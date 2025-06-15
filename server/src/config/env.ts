@@ -8,5 +8,6 @@ export const config = {
   port: Number(process.env.PORT) || 3000,
   nodeEnv: process.env.NODE_ENV || 'development',
   dbUrl: process.env.DATABASE_URL,
-  apiPrefix: '/api'
+  apiPrefix: '/api',
+  jitsiDomain: process.env.JITSI_DOMAIN || 'meet.local.company'
 };

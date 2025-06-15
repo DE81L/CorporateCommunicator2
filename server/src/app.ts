@@ -51,12 +51,24 @@ export function createApp(): AppInit {
   app.use(morgan('dev'));
   // Increase JSON body size limit to handle batched messages
   app.use(express.json({ limit: '5mb' }));
+  const jitsi = process.env.JITSI_DOMAIN || 'meet.local.company'
   app.use(
     cors({
-      origin: ['http://localhost:5173', 'app://.*'],
+      origin: [
+        'http://localhost:5173',
+        'app://.*',
+        `https://${jitsi}`
+      ],
       credentials: true,
-    }),
-  );
+    })
+  )
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    res.setHeader(
+      'Content-Security-Policy',
+      `default-src 'self'; script-src 'self' https://${jitsi}; connect-src 'self' wss://${jitsi}`
+    )
+    next()
+  })
   app.use((req: Request, res: Response, next: NextFunction) => {
     const start = Date.now();
     res.on('finish', () =>
