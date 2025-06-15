@@ -9,7 +9,7 @@ import RequestsSection from "@/pages/requests-section";
 import ContactsSection from "@/pages/contacts-section";
 import SettingsSection from "@/pages/settings-section";
 import WikiSection from "@/pages/wiki-section";
-import CallModal from "@/components/call-modal";
+import CallModal from "@/components/call/CallModal";
 import CallRequestDialog from "@/components/call-request-dialog";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import ConnectionBanner from "@/components/connection-banner";

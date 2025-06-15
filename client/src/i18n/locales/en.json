@@ -204,7 +204,9 @@
     "decline": "Decline",
     "rejected": "Call rejected",
     "noAnswer": "No answer",
-    "ended": "Call ended"
+    "ended": "Call ended",
+    "toggleMic": "Microphone",
+    "leave": "Leave"
   },
   "requests": {
     "title": "Requests",
