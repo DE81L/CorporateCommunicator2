@@ -18,6 +18,7 @@
     "rehash-passwords": "node ./scripts/rehash-passwords.cjs",
     "seed:dev": "node ./scripts/seed-dev-users.cjs",
     "check:p2p": "node ./scripts/check-p2p.cjs",
+    "db:docs": "node scripts/generate-db-docs.cjs",
     "type-check": "tsc -p shared/tsconfig.json && tsc -p client/tsconfig.json && tsc -p ./tsconfig.server.json"
   },
   "engines": {
