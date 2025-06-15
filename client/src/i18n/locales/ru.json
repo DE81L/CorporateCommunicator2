@@ -219,6 +219,7 @@
     "noAnswer": "Нет ответа",
     "ended": "Звонок завершён",
     "toggleMic": "Микрофон",
+    "muteToggle": "Вкл/Выкл звук",
     "leave": "Покинуть"
   },
   "requests": {
