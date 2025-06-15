@@ -88,7 +88,17 @@ export function initWebSocket(
           })) {
             logger.debug(`Target ${to} not connected for p2p-signal`);
           }
-        // } else if (msg.type === 'call-request') {
+        } else if (msg.type === 'call-request') {
+          const { to, callType, fromName } = msg.payload as {
+            to: number; callType: 'video' | 'audio'; fromName: string;
+          };
+          sendToUser(to, { type: 'call-request', payload: { from: userId, fromName, callType } });
+        } else if (msg.type === 'call-accept') {
+          const { to } = msg.payload as { to: number };
+          sendToUser(to, { type: 'call-accept', payload: { from: userId } });
+        } else if (msg.type === 'call-reject') {
+          const { to } = msg.payload as { to: number };
+          sendToUser(to, { type: 'call-reject', payload: { from: userId } });
         }
       } catch (err) {
         logger.warn('WS message parse error:', err);

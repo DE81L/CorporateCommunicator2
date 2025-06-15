@@ -6,7 +6,7 @@ import { useWebSocket } from '@/hooks/useWebSocket';
 import { useTranslation } from 'react-i18next';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Send, Plus, Smile, X } from 'lucide-react';
+import { Send, Plus, Smile, X, Phone, Video } from 'lucide-react';
 import EmojiPicker from '@/components/emoji-picker';
 import { cn } from '@/lib/utils';
 import { MessageList, MessageItem } from '@/components/message-list';
@@ -30,9 +30,13 @@ interface GroupMessage extends MessageItem {
 interface Props {
   group: Group;
   readOnly?: boolean;
+  onStartCall?: (
+    type: 'audio' | 'video',
+    recipient: { id: number; name: string },
+  ) => void;
 }
 
-export default function GroupChatSection({ group, readOnly }: Props) {
+export default function GroupChatSection({ group, readOnly, onStartCall }: Props) {
   const { user } = useAuth();
   const apiClient = createApiClient();
   const { t } = useTranslation();
@@ -124,7 +128,31 @@ export default function GroupChatSection({ group, readOnly }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      <header className="p-3 border-b border-border font-medium">{group.name}</header>
+      <header className="p-3 border-b border-border font-medium flex items-center gap-2">
+        <span className="flex-1">{group.name}</span>
+        {onStartCall && (
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() =>
+                onStartCall('audio', { id: group.id, name: group.name })
+              }
+            >
+              <Phone className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() =>
+                onStartCall('video', { id: group.id, name: group.name })
+              }
+            >
+              <Video className="h-4 w-4" />
+            </Button>
+          </>
+        )}
+      </header>
       <div className="flex-1 overflow-y-auto p-4">
         <MessageList messages={plainMessages} myId={user.id} groupMode users={usersMap} />
       </div>

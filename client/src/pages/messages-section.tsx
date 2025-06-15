@@ -67,12 +67,12 @@ interface WsPacket<T = any> {
   payload: T;
 }
 
-// interface Props {
-//   onStartCall?: (
-//     type: 'audio' | 'video',
-//     recipient: { id: number; name: string },
-//   ) => void;
-// }
+interface Props {
+  onStartCall?: (
+    type: 'audio' | 'video',
+    recipient: { id: number; name: string },
+  ) => void;
+}
 
 /* ──────────────── COMPONENT ──────────────── */
 
@@ -597,7 +597,6 @@ export default function MessagesSection({ onStartCall }: any) {
             <span className="flex-1 font-medium">
               {selectedUser.firstName} {selectedUser.lastName}
             </span>
-            {/*
             {onStartCall && (
               <div className="flex gap-2">
                 <Button
@@ -626,7 +625,6 @@ export default function MessagesSection({ onStartCall }: any) {
                 </Button>
               </div>
             )}
-            */}
           </div>
         )}
         {selectedUser && (
