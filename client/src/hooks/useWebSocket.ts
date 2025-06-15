@@ -117,17 +117,17 @@ export function useWebSocket() {
     }
   }
 
-  // const sendCallRequest = (
-  //   to: number,
-  //   callType: 'video' | 'audio',
-  //   fromName: string,
-  // ) => sendRaw({ type: 'call-request', payload: { to, callType, fromName } })
+  const sendCallRequest = (
+    to: number,
+    callType: 'video' | 'audio',
+    fromName: string,
+  ) => sendRaw({ type: 'call-request', payload: { to, callType, fromName } })
 
-  // const sendCallAccept = (to: number) =>
-  //   sendRaw({ type: 'call-accept', payload: { to } })
+  const sendCallAccept = (to: number) =>
+    sendRaw({ type: 'call-accept', payload: { to } })
 
-  // const sendCallReject = (to: number) =>
-  //   sendRaw({ type: 'call-reject', payload: { to } })
+  const sendCallReject = (to: number) =>
+    sendRaw({ type: 'call-reject', payload: { to } })
 
   const reconnect = useCallback(() => {
     if (reconnectTimer.current) {
@@ -143,9 +143,9 @@ export function useWebSocket() {
     connectionStatus,
     lastRawMessage,
     sendRaw,
-    // sendCallRequest,
-    // sendCallAccept,
-    // sendCallReject,
+    sendCallRequest,
+    sendCallAccept,
+    sendCallReject,
     retriesLeft,
     reconnect,
   }

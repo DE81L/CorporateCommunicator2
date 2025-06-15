@@ -170,7 +170,9 @@ function GroupCard({
     </Card>
   );
 }
-export function GroupsSection() {
+export function GroupsSection({
+  onStartCall,
+}: { onStartCall?: (type: 'audio' | 'video', recipient: { id: number; name: string }) => void }) {
   const apiClient = createApiClient();
   const { lastRawMessage } = useWebSocket();
   const { toast } = useToast();
@@ -296,7 +298,7 @@ export function GroupsSection() {
         <Button className="m-2" variant="ghost" onClick={() => setSelectedGroup(null)}>
           {t('common.back', 'Back')}
         </Button>
-        <GroupChatSection group={selectedGroup} />
+        <GroupChatSection group={selectedGroup} onStartCall={onStartCall} />
       </div>
     );
   }
