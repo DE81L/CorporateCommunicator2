@@ -10,23 +10,24 @@
 
 ## Быстрый запуск
 
-В каталоге `scripts` расположен файл `run-production.sh`. Он устанавливает
-зависимости, выполняет сборку и запускает оба сервера. Последовательность
-примерно следующая:
+В каталоге `scripts` расположен файл `run-production.sh`. Он собирает только
+модули `shared` и `server`, устанавливает зависимости Python из
+`requirements.txt` и затем поднимает Python WebSocket и Node.js API.
+
+Сборка выполняется так:
 
 ```bash
-pnpm install --frozen-lockfile --ignore-scripts=false
-pnpm approve-builds
-pnpm run build
-pnpm prune --prod
+pnpm -r --filter 'shared...' run build
+pnpm -r --filter 'server...' run build
 ```
 
-После этого запускаются Node.js API и Python WebSocket:
+Запускаем сервисы командой:
 
 ```bash
-./scripts/run-production.sh
-# Скрипт запускает Node.js с флагом `--es-module-specifier-resolution=node` для корректной загрузки ESM модулей
+pnpm run start:prod
 ```
+Скрипт автоматически создаёт виртуальное окружение Python и запускает Node.js
+с флагом `--es-module-specifier-resolution=node`.
 
 Перед запуском при необходимости переопределите `DATABASE_URL`, `VITE_API_URL`
 и `VITE_WS_URL`. Скрипт по умолчанию использует адрес `91.197.96.9`.

@@ -20,6 +20,13 @@ pnpm run dev
 pnpm run build
 ```
 
+Для развёртывания в production используйте:
+
+```bash
+pnpm run build:prod
+pnpm run start:prod
+```
+
 ## Запуск тестов
 
 Информация о тестах описана в [docs/test-run.md](docs/test-run.md). Кратко:
