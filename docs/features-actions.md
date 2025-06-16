@@ -8,3 +8,5 @@
 - [2025-06-16] Добавлена документация `database_structure.md` и скрипт `pnpm run db:docs`.
 - [2025-06-16] Обновлена интеграция Jitsi: lib-jitsi-meet и файл логов.
 
+
+- [2025-06-17] Добавлен модуль `server/mail.ts` для отправки писем через Gmail SMTP и создана документация `email-smtp.md`.
