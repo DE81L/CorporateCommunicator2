@@ -9,8 +9,8 @@
     "dev:debug": "cross-env NODE_OPTIONS=\"--inspect=9229\" pnpm run dev",
     "dev:electron": "pnpm --filter ccnew-electron run dev",
     "dev:server": "pnpm --filter server run dev",
+    "dev:server-pyws": "./scripts/run-dev-server-pyws.sh",
     "log-check": "node scripts/analyse-log.js",
-    "postinstall": "node ./node_modules/electron/install.js",
     "ts-report": "pnpm run type-check --pretty false --noEmit > ts-report.log",
     "build:shared": "tsc -p shared/tsconfig.json",
     "build:electron": "pnpm --filter ccnew-electron run build",
@@ -72,7 +72,6 @@
     "debug": "latest",
     "dotenv": "^16.5.0",
     "drizzle-orm": "latest",
-    "electron": "36.2.0",
     "embla-carousel-react": "^8.6.0",
     "express-session": "^1.18.1",
     "gel": "^2.1.0",
@@ -119,6 +118,7 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.13",
     "@types/bcrypt": "^5.0.2",
+    "electron": "36.2.0",
     "@types/cors": "^2.8.18",
     "@types/debug": "latest",
     "@types/express": "^4.17.17",
@@ -151,7 +151,7 @@
   "type": "module",
   "workspaces": [
     "client",
-    "packages/ccnew-electron",
+    "electron",
     "server",
     "shared"
   ],

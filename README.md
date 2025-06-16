@@ -14,6 +14,12 @@ pnpm install
 pnpm run dev
 ```
 
+Для запуска только серверных служб (Node и Python WS) без клиента используйте:
+
+```bash
+pnpm run dev:server-pyws
+```
+
 ## Сборка
 
 ```bash

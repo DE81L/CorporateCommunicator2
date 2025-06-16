@@ -12,3 +12,5 @@
 - [2025-06-22] Улучшен скрипт `run-production.sh`: установка зависимостей без `--prod`, одобрение build-скриптов и `pnpm prune` после сборки.
 - [2025-06-23] Добавлен флаг `--es-module-specifier-resolution=node` в `run-production.sh` и unit-файле `cc2-node.service`.
 
+
+- [2025-06-24] Добавлен скрипт `run-dev-server-pyws.sh` для локального запуска Node и Python без клиента.
