@@ -192,6 +192,8 @@ function createMockElectronAPI(): ElectronAPI {
         return Promise.resolve();
       },
       openDevTools: () => Promise.resolve(),
+      // заглушка для запуска Doom в веб-версии
+      openDoom: () => Promise.resolve(),
     },
     system: {
       getSystemInfo: () => Promise.resolve({

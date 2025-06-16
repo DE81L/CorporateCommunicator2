@@ -56,10 +56,12 @@ export function useJitsi(roomId: string) {
       })
       conferenceRef.current = conf
       conf.on(JitsiMeetJS.events.conference.TRACK_ADDED, onRemoteTrack)
-      conf.on(JitsiMeetJS.events.conference.USER_JOINED, id => {
+      // участник подключился
+      conf.on(JitsiMeetJS.events.conference.USER_JOINED, (id: string) => {
         setParticipants(p => [...p, id])
       })
-      conf.on(JitsiMeetJS.events.conference.USER_LEFT, id => {
+      // участник вышел
+      conf.on(JitsiMeetJS.events.conference.USER_LEFT, (id: string) => {
         setParticipants(p => p.filter(pid => pid !== id))
         setRemoteTracks(t => {
           const copy = { ...t }
@@ -70,7 +72,7 @@ export function useJitsi(roomId: string) {
       const tracks = await JitsiMeetJS.createLocalTracks({ devices: ['audio', 'video'] })
       localTracksRef.current = tracks
       setLocalTracks(tracks)
-      tracks.forEach(t => conf.addTrack(t))
+      tracks.forEach((track: any) => conf.addTrack(track))
       conf.join()
       setStatus('connected')
     }
