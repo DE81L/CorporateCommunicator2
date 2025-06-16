@@ -322,6 +322,11 @@
     "languageChangeFailed": "Language Change Failed",
     "tryAgainLater": "Please try again later"
   },
+  "notifications": {
+    "newMessage": "Message from {{name}}",
+    "groupInvite": "Group invitation",
+    "addedToGroup": "You were added to \"{{groupName}}\""
+  },
   "connection": {
     "connected": "Connected",
     "offlineMode": "Offline Mode",
