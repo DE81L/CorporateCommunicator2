@@ -141,32 +141,34 @@ export default function ContactsSection({ onStartCall, onOpenChat }: any) {
                     <MessageSquare className="h-5 w-5" />
                   </Button>
                   {onStartCall && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full"
-                    onClick={() =>
-                      onStartCall("audio", {
-                        id: contact.id,
-                        name: `${contact.firstName} ${contact.lastName}`,
-                      })
-                    }
-                  >
-                    <Phone className="h-5 w-5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full"
-                    onClick={() =>
-                      onStartCall("video", {
-                        id: contact.id,
-                        name: `${contact.firstName} ${contact.lastName}`,
-                      })
-                    }
-                  >
-                    <Video className="h-5 w-5" />
-                  </Button>
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full"
+                        onClick={() =>
+                          onStartCall("audio", {
+                            id: contact.id,
+                            name: `${contact.firstName} ${contact.lastName}`,
+                          })
+                        }
+                      >
+                        <Phone className="h-5 w-5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full"
+                        onClick={() =>
+                          onStartCall("video", {
+                            id: contact.id,
+                            name: `${contact.firstName} ${contact.lastName}`,
+                          })
+                        }
+                      >
+                        <Video className="h-5 w-5" />
+                      </Button>
+                    </>
                   )}
                 </div>
               </CardContent>

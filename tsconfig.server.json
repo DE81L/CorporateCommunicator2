@@ -3,7 +3,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "esModuleInterop": true,
-    "module": "CommonJS", // Оставляем, если сервер использует CommonJS
+    "module": "NodeNext", // Поддержка import.meta
     "rootDirs": ["server/src", "shared/src"], // Указываем конкретную корневую директорию для исходников сервера
     "outDir": "./dist/server",
     "baseUrl": ".", // Базовый URL для разрешения путей

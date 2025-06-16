@@ -2,7 +2,7 @@
   "extends": "../tsconfig.base.json",          // if you have a root/base config
   "compilerOptions": {
     "target": "ES2022",
-    "module": "commonjs",
+    "module": "NodeNext",
     "outDir": "../dist/server",
     "rootDir": "../",
     "incremental": true,
