@@ -333,6 +333,11 @@
     "languageChangeFailed": "Не удалось изменить язык",
     "tryAgainLater": "Пожалуйста, попробуйте позже"
   },
+  "notifications": {
+    "newMessage": "Сообщение от {{name}}",
+    "groupInvite": "Приглашение в группу",
+    "addedToGroup": "Вас добавили в «{{groupName}}»"
+  },
   "connection": {
     "connected": "Подключено",
     "offlineMode": "Автономный режим",
