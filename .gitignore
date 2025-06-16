@@ -2,6 +2,7 @@
 /out
 *.log
 .vite
+.venv
 .ignored
 node_modules
 server/**/*.js
