@@ -6,12 +6,14 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "ts-node-dev --respawn -r tsconfig-paths/register src/index.ts",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server/index.js",
     "check-deps": "pnpm why ts-node"
   },
   "author": "Me",
   "license": "ISC",
   "dependencies": {
+    "shared": "workspace:^1.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
