@@ -13,3 +13,4 @@
 - [2025-06-23] Обновлён скрипт run-production.sh: сборка только shared и server, добавлен requirements.txt.
 - [2025-06-24] Скрипт run-production.sh допускает отсутствие сборки Node.
 - [2025-06-26] Добавлены скрипты dev-all.sh и run-pyws.sh, обновлены tsconfig и package.json для локальной разработки.
+- [2025-06-27] Включён skipLibCheck в tsconfig проектов server и shared.
