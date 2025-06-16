@@ -21,6 +21,11 @@ pnpm install --frozen-lockfile || echo "[WARN] pnpm install failed"
 pnpm -r --filter 'shared...' run build || true
 pnpm -r --filter 'server...' run build || true
 
+# ─────────── Очистка зависших процессов ───────────
+# Если прошлый запуск python_ws_server.py не завершился,
+# порт 8001 может быть занят. Остановим такие процессы.
+pkill -f python_ws_server.py 2>/dev/null || true
+
 # ─────────── Старт двух процессов ──────────
 "$PY_ENV/bin/python" "$ROOT_DIR/python_ws_server.py" &
 PYWS_PID=$!
