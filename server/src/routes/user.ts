@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
-import multer from 'multer';
+// Используем локальную заглушку multer
+import multer from '../stubs/multer';
 import path from 'path';
 import { db } from '../db';
 import { logger } from '../util/logger';

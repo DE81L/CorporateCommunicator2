@@ -4,3 +4,4 @@
 
 - [2025-06-18] Изменены настройки tsconfig для режима NodeNext.
 - [2025-06-18] Исправлена ошибка moduleResolution в tsconfig.server.json.
+- [2025-06-16] Добавлены заглушки multer и nodemailer для работы без внешних зависимостей.

@@ -1,4 +1,5 @@
-import nodemailer from 'nodemailer'
+// Используем локальную заглушку вместо зависимости nodemailer
+import nodemailer from '../stubs/nodemailer'
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST ?? 'localhost',
