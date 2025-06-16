@@ -4,7 +4,7 @@ import { isAuthenticated } from '../middleware/auth';
 import { logger } from '../util/logger';
 import { getFile, clearFile, findStoredFilePath } from '../store/messageStore';
 
-const router = Router();
+const router: Router = Router();
 
 // GET /api/announcements - list all announcement groups with creator department
 router.get('/', isAuthenticated, async (_req: Request, res: Response) => {

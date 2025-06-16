@@ -8,7 +8,7 @@ import { logger } from '../util/logger';
 // хранилище файлов для аватаров
 const upload = multer({ dest: path.join(process.cwd(), 'server/uploads/avatars') });
 
-const router = Router();
+const router: Router = Router();
 
 // POST /api/user/avatar - загрузка нового аватара и обновление профиля
 router.post('/avatar', upload.single('avatar'), async (req: Request, res: Response) => {

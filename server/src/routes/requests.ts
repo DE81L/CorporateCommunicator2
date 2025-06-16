@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { db } from '../db'; // Теперь этот импорт должен работать
 import { insertRequestSchema } from '@shared/schema';
 
-const router = Router();
+const router: Router = Router();
 
 // GET /api/requests – список заявок текущего пользователя
 router.get('/', async (req, res) => {

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db';
 
-const router = Router();
+const router: Router = Router();
 
 // GET /api/jobs - list all job positions
 router.get('/', async (_req, res) => {

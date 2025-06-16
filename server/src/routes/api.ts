@@ -33,7 +33,7 @@ import {
   type SyncMessage,
 } from '../store/messageStore';
 
-const router = Router();
+const router: Router = Router();
 router.use('/departments', isAuthenticated, departmentsRouter);
 router.use('/jobs', isAuthenticated, jobsRouter);
 router.use('/groups', isAuthenticated, groupsRouter);

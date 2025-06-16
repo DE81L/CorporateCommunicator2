@@ -4,7 +4,7 @@ import { logger } from '../util/logger';
 import fs from 'fs'
 import path from 'path'
 
-const router = Router();
+const router: Router = Router();
 
 router.use(isAuthenticated);
 
