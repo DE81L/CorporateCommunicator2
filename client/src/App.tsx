@@ -5,6 +5,7 @@ import HomePage from "./pages/home-page";
 import SettingsPage from './pages/settings-page';
 import AdminPage from './pages/admin-page';
 import WikiArticlePage from './pages/wiki-article-page';
+import WikiSection from "./pages/wiki-section";
 import { Route, Switch, Redirect } from 'wouter';
 import { QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
@@ -48,6 +49,9 @@ function AppContent() {
           </Route>
           <Route path="/wiki/:id">
             {user ? <WikiArticlePage /> : <Redirect to="/auth" />}
+          </Route>
+          <Route path="/wiki">
+            {user ? <WikiSection /> : <Redirect to="/auth" />}
           </Route>
           <Route>
             {user ? <HomePage /> : <Redirect to="/auth" />}
