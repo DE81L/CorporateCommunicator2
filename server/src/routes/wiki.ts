@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db';
 
-const router = Router();
+const router: Router = Router();
 
 // ----- Wiki entries -----
 

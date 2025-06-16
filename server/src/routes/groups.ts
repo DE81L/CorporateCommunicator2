@@ -4,7 +4,7 @@ import { isAuthenticated } from '../middleware/auth';
 import { logger } from '../util/logger';
 import { broadcastGroupCreated } from '../ws';
 
-const router = Router();
+const router: Router = Router();
 
 // GET /api/groups - list all groups
 router.get('/', isAuthenticated, async (req: Request, res: Response) => {

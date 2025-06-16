@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { db } from '../db';
 import { isAuthenticated } from '../middleware/auth';
 
-const router = Router();
+const router: Router = Router();
 
 router.post('/register', isAuthenticated, async (req: Request, res: Response) => {
   const token = req.body?.token as string | undefined;

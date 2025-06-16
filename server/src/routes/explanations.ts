@@ -3,7 +3,7 @@ import { db } from '../db';
 import { isAuthenticated } from '../middleware/auth';
 import { logger } from '../util/logger';
 
-const router = Router();
+const router: Router = Router();
 
 // GET /api/explanations - list all explanation channels
 router.get('/', isAuthenticated, async (_req: Request, res: Response) => {

@@ -5,7 +5,7 @@ import { broadcastStatus } from '../ws';
 import { logger } from '@shared/logger';
 
 
-const router = Router();
+const router: Router = Router();
 
 router.post('/login', async (req: Request, res: Response) => {
   try {

@@ -4,7 +4,7 @@ import { logger } from '../util/logger';
 import { isAuthenticated } from '../middleware/auth';
 import { register } from '../lib/api/auth';
 
-const router = Router();
+const router: Router = Router();
 
 // POST /api/admin/sql - execute arbitrary SQL query (admin only)
 router.post('/sql', isAuthenticated, async (req: Request, res: Response) => {

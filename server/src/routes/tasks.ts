@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db';
 
-const router = Router();
+const router: Router = Router();
 
 // GET /api/tasks - list all tasks
 router.get('/', async (_req, res) => {
