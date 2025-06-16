@@ -22,6 +22,7 @@ import explanationsRouter from './explanations';
 import tasksRouter from './tasks';
 import notificationsRouter from './notifications';
 import callLogsRouter from './call-logs';
+import userRouter from './user';
 import {
   addSyncMessages,
   takeSyncMessages,
@@ -44,6 +45,7 @@ router.use('/wiki', isAuthenticated, wikiRouter);
 router.use('/admin', isAuthenticated, adminRouter);
 router.use('/notifications', notificationsRouter);
 router.use('/call-logs', isAuthenticated, callLogsRouter);
+router.use('/user', isAuthenticated, userRouter);
 /**
  * POST /api/login
  * Логин пользователя.

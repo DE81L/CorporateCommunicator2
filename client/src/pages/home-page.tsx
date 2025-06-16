@@ -193,7 +193,7 @@ export default function HomePage() {
       toast({ title: t('call.rejected') });
     }
   }, [lastRawMessage, chatUser, user, toast, t, callRecipient]);
-  }, []);
+  
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">

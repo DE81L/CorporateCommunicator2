@@ -82,6 +82,7 @@
     "title": "Profile",
     "personalInfo": "Personal Information",
     "changePassword": "Change Password",
+    "profileSaved": "Profile saved",
     "updateProfile": "Update Profile",
     "online": "Online",
     "offline": "Offline",
@@ -206,6 +207,7 @@
     "noAnswer": "No answer",
     "ended": "Call ended",
     "toggleMic": "Microphone",
+    "muteToggle": "Mute / Unmute",
     "leave": "Leave"
   },
   "requests": {
