@@ -207,6 +207,7 @@
     "noAnswer": "No answer",
     "ended": "Call ended",
     "toggleMic": "Microphone",
+    "muteToggle": "Mute / Unmute",
     "leave": "Leave"
   },
   "requests": {
