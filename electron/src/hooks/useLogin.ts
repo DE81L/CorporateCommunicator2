@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
-import { UserWithoutPassword } from '@shared/types/user';
-import { LoginCredentials } from '@shared/schema';
+// импортируем типы напрямую из общей папки
+import { UserWithoutPassword } from '../../../shared/types/user';
+import { LoginCredentials } from '../../../shared/src/schema';
 
 export function useLogin() {
   const baseURL = import.meta.env.VITE_API_URL || "http://localhost:3000";

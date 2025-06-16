@@ -14,8 +14,8 @@ const router = Router();
 router.post('/avatar', upload.single('avatar'), async (req: Request, res: Response) => {
   const { username, email } = req.body as { username: string; email: string };
   const userId = req.session.userId as number;
-  // multer добавляет поле file динамически, поэтому приводим тип
-  const file = (req as any).file as Express.Multer.File | undefined;
+  // multer добавляет поле file динамически, используем собственный тип
+  const file = (req as any).file as { filename: string } | undefined;
   if (!userId || !file) {
     return res.status(400).json({ error: 'Invalid request' });
   }
