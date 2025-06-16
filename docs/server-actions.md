@@ -21,3 +21,4 @@
 - [2025-06-17] Скрипт run-production.sh завершает зависший python_ws_server перед запуском.
 - [2025-06-26] Упрощены tsconfig проектов shared и server для commonjs-сборки.
 - [2025-06-27] В tsconfig проектов server и shared включён skipLibCheck для устранения ошибок библиотек.
+- [2025-06-28] Указан путь tsBuildInfoFile для проекта server, чтобы избежать конфликтов сборки.
