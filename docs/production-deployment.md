@@ -10,8 +10,18 @@
 
 ## Быстрый запуск
 
-В каталоге `scripts` добавлен файл `run-production.sh`. Он собирает проект и
-запускает оба сервера:
+В каталоге `scripts` расположен файл `run-production.sh`. Он устанавливает
+зависимости, выполняет сборку и запускает оба сервера. Последовательность
+примерно следующая:
+
+```bash
+pnpm install --frozen-lockfile --ignore-scripts=false
+pnpm approve-builds
+pnpm run build
+pnpm prune --prod
+```
+
+После этого запускаются Node.js API и Python WebSocket:
 
 ```bash
 ./scripts/run-production.sh
@@ -32,3 +42,4 @@ sudo systemctl start cc2-node.service cc2-ws.service
 ```
 
 Сервисы автоматически перезапускаются при сбоях и стартуют вместе с системой.
+
