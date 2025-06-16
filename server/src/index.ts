@@ -9,6 +9,14 @@ import { logger } from "./util/logger";
 import { scheduleMessageCleanup } from "./util/messageCleanup";
 import { initWebSocket } from "./ws";
 
+// Если явно не указан USE_NODE_WS, отключаем Node WS
+if (!process.env.USE_NODE_WS && !process.env.NO_NODE_WS) {
+  console.log(
+    '⛔️ Node WS отключён по умолчанию. Установите USE_NODE_WS=1, чтобы включить.'
+  );
+  process.env.NO_NODE_WS = '1';
+}
+
 async function main() {
   await connectDb();
   await ensureIsExplanationColumn();
@@ -20,11 +28,11 @@ async function main() {
   // Оборачиваем Express в HTTP-сервер
   const server = http.createServer(app);
 
-  // Инициализируем WS сессией, если не выключено флагом
-  if (!process.env.NO_NODE_WS) {
+  // Инициализируем WS, только если разрешено переменной USE_NODE_WS
+  if (process.env.USE_NODE_WS) {
     initWebSocket(server, sessionMiddleware);
   } else {
-    logger.info('NO_NODE_WS set, skipping built-in WebSocket server');
+    logger.info('Встроенный WebSocket отключён');
   }
 
   server.listen(config.port, () => {
