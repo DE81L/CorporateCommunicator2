@@ -145,10 +145,7 @@ importers:
         version: 16.5.0
       drizzle-orm:
         specifier: latest
-        version: 0.43.1(@types/pg@8.15.2)(gel@2.1.0)(mysql2@3.14.1)(pg@8.16.0)
-      electron:
-        specifier: 36.2.0
-        version: 36.2.0
+        version: 0.44.2(@types/pg@8.15.4)(gel@2.1.0)(mysql2@3.14.1)(pg@8.16.0)
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@18.3.1)
@@ -275,7 +272,7 @@ importers:
     devDependencies:
       '@tailwindcss/typography':
         specifier: ^0.5.13
-        version: 0.5.16(tailwindcss@3.4.4(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3)))
+        version: 0.5.16(tailwindcss@3.4.4(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3)))
       '@types/bcrypt':
         specifier: ^5.0.2
         version: 5.0.2
@@ -296,10 +293,10 @@ importers:
         version: 1.9.9
       '@types/node':
         specifier: latest
-        version: 22.15.21
+        version: 24.0.3
       '@types/pg':
         specifier: latest
-        version: 8.15.2
+        version: 8.15.4
       '@types/react':
         specifier: 18.3.1
         version: 18.3.1
@@ -314,7 +311,7 @@ importers:
         version: 8.18.1
       '@vitejs/plugin-react':
         specifier: ^4.4.1
-        version: 4.4.1(vite@6.3.5(@types/node@22.15.21)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0))
+        version: 4.4.1(vite@6.3.5(@types/node@24.0.3)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0))
       autoprefixer:
         specifier: ^10.4.17
         version: 10.4.21(postcss@8.5.3)
@@ -324,6 +321,9 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
+      electron:
+        specifier: 36.2.0
+        version: 36.2.0
       express:
         specifier: ^4.21.2
         version: 4.21.2
@@ -344,10 +344,10 @@ importers:
         version: 0.2.1
       tailwindcss:
         specifier: ^3.4.1
-        version: 3.4.4(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3))
+        version: 3.4.4(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3))
       ts-node-dev:
         specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3)
+        version: 2.0.0(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3)
       tsconfig-paths:
         specifier: ^4.2.0
         version: 4.2.0
@@ -359,10 +359,10 @@ importers:
         version: 5.8.3
       vite:
         specifier: ^6.3.5
-        version: 6.3.5(@types/node@22.15.21)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0)
+        version: 6.3.5(@types/node@24.0.3)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0)
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.8.3)(vite@6.3.5(@types/node@22.15.21)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0))
+        version: 4.3.2(typescript@5.8.3)(vite@6.3.5(@types/node@24.0.3)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0))
 
   client:
     dependencies:
@@ -387,13 +387,13 @@ importers:
     devDependencies:
       '@tailwindcss/typography':
         specifier: ^0.5.13
-        version: 0.5.16(tailwindcss@3.4.4(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3)))
+        version: 0.5.16(tailwindcss@3.4.4(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3)))
       '@vitejs/plugin-react':
         specifier: ^4.4.1
-        version: 4.4.1(vite@6.3.5(@types/node@22.15.21)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0))
+        version: 4.4.1(vite@6.3.5(@types/node@24.0.3)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0))
       '@vitejs/plugin-react-swc':
         specifier: ^3.9.0
-        version: 3.9.0(vite@6.3.5(@types/node@22.15.21)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0))
+        version: 3.9.0(vite@6.3.5(@types/node@24.0.3)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0))
       autoprefixer:
         specifier: ^10
         version: 10.4.21(postcss@8.5.3)
@@ -402,13 +402,13 @@ importers:
         version: 8.5.3
       tailwindcss:
         specifier: 3.4.4
-        version: 3.4.4(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3))
+        version: 3.4.4(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3))
       vite:
         specifier: ^6.3.5
-        version: 6.3.5(@types/node@22.15.21)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0)
+        version: 6.3.5(@types/node@24.0.3)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0)
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.8.3)(vite@6.3.5(@types/node@22.15.21)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0))
+        version: 4.3.2(typescript@5.8.3)(vite@6.3.5(@types/node@24.0.3)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0))
 
   electron:
     dependencies:
@@ -421,7 +421,7 @@ importers:
         version: 24.13.3(electron-builder-squirrel-windows@24.13.3)
       ts-node-dev:
         specifier: ^2.0.0
-        version: 2.0.0(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3)
+        version: 2.0.0(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3)
       tsconfig-paths:
         specifier: ^4.2.0
         version: 4.2.0
@@ -1886,6 +1886,9 @@ packages:
   '@types/node@22.15.21':
     resolution: {integrity: sha512-EV/37Td6c+MgKAbkcLG6vqZ2zEYHD7bvSrzqqs2RIhbA6w3x+Dqz8MZM3sP6kGTeLrdoOgKZe+Xja7tUB2DNkQ==}
 
+  '@types/node@24.0.3':
+    resolution: {integrity: sha512-R4I/kzCYAdRLzfiCabn9hxWfbuHS573x+r0dJMkkzThEa7pbrcDWK+9zu3e7aBOouf+rQAciqPFMnxwr0aWgKg==}
+
   '@types/nodemailer@6.4.17':
     resolution: {integrity: sha512-I9CCaIp6DTldEg7vyUTZi8+9Vo0hi1/T8gv3C89yk1rSAAzoKQ8H8ki/jBYJSFoH/BisgLP8tkZMlQ91CIquww==}
 
@@ -2590,8 +2593,8 @@ packages:
     resolution: {integrity: sha512-I9OvvrHp4pIARv4+x9iuewrWycX6CcZtoAu1XrzPxc5UygMJXJZYmBsynku8IkrJwgypE5DGNjDPmPRhDCptUg==}
     engines: {node: '>=10'}
 
-  drizzle-orm@0.43.1:
-    resolution: {integrity: sha512-dUcDaZtE/zN4RV/xqGrVSMpnEczxd5cIaoDeor7Zst9wOe/HzC/7eAaulywWGYXdDEc9oBPMjayVEDg0ziTLJA==}
+  drizzle-orm@0.44.2:
+    resolution: {integrity: sha512-zGAqBzWWkVSFjZpwPOrmCrgO++1kZ5H/rZ4qTGeGOe18iXGVJWf3WPfHOVwFIbmi8kHjfJstC6rJomzGx8g/dQ==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -2607,6 +2610,7 @@ packages:
       '@types/better-sqlite3': '*'
       '@types/pg': '*'
       '@types/sql.js': '*'
+      '@upstash/redis': '>=1.34.7'
       '@vercel/postgres': '>=0.8.0'
       '@xata.io/client': '*'
       better-sqlite3: '>=7'
@@ -2649,6 +2653,8 @@ packages:
       '@types/pg':
         optional: true
       '@types/sql.js':
+        optional: true
+      '@upstash/redis':
         optional: true
       '@vercel/postgres':
         optional: true
@@ -4740,6 +4746,9 @@ packages:
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
+  undici-types@7.8.0:
+    resolution: {integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==}
+
   unified@10.1.2:
     resolution: {integrity: sha512-pUSWAi/RAnVy1Pif2kAoeWNBa3JVrx0MId2LASj8G+7AiHWoKZNTomq6LG326T68U7/e263X6fTdcXIy7XnF7Q==}
 
@@ -6321,13 +6330,13 @@ snapshots:
     dependencies:
       defer-to-connect: 2.0.1
 
-  '@tailwindcss/typography@0.5.16(tailwindcss@3.4.4(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3)))':
+  '@tailwindcss/typography@0.5.16(tailwindcss@3.4.4(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3)))':
     dependencies:
       lodash.castarray: 4.4.0
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.10
-      tailwindcss: 3.4.4(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3))
+      tailwindcss: 3.4.4(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3))
 
   '@tanstack/query-core@5.76.0': {}
 
@@ -6469,7 +6478,7 @@ snapshots:
 
   '@types/http-proxy@1.17.16':
     dependencies:
-      '@types/node': 22.15.21
+      '@types/node': 24.0.3
 
   '@types/jscodeshift@17.3.0':
     dependencies:
@@ -6500,6 +6509,10 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+  '@types/node@24.0.3':
+    dependencies:
+      undici-types: 7.8.0
+
   '@types/nodemailer@6.4.17':
     dependencies:
       '@types/node': 22.15.21
@@ -6514,7 +6527,7 @@ snapshots:
 
   '@types/pg@8.15.4':
     dependencies:
-      '@types/node': 22.15.21
+      '@types/node': 24.0.3
       pg-protocol: 1.10.0
       pg-types: 2.2.0
 
@@ -6560,7 +6573,7 @@ snapshots:
 
   '@types/simple-peer@9.11.8':
     dependencies:
-      '@types/node': 22.15.21
+      '@types/node': 24.0.3
 
   '@types/strip-bom@3.0.0': {}
 
@@ -6575,28 +6588,28 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 22.15.21
+      '@types/node': 24.0.3
 
   '@types/yauzl@2.10.3':
     dependencies:
       '@types/node': 22.15.21
     optional: true
 
-  '@vitejs/plugin-react-swc@3.9.0(vite@6.3.5(@types/node@22.15.21)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0))':
+  '@vitejs/plugin-react-swc@3.9.0(vite@6.3.5(@types/node@24.0.3)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0))':
     dependencies:
       '@swc/core': 1.11.24
-      vite: 6.3.5(@types/node@22.15.21)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0)
+      vite: 6.3.5(@types/node@24.0.3)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0)
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  '@vitejs/plugin-react@4.4.1(vite@6.3.5(@types/node@22.15.21)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0))':
+  '@vitejs/plugin-react@4.4.1(vite@6.3.5(@types/node@24.0.3)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0))':
     dependencies:
       '@babel/core': 7.27.1
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.27.1)
       '@babel/plugin-transform-react-jsx-source': 7.27.1(@babel/core@7.27.1)
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 6.3.5(@types/node@22.15.21)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0)
+      vite: 6.3.5(@types/node@24.0.3)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -7282,9 +7295,9 @@ snapshots:
 
   dotenv@9.0.2: {}
 
-  drizzle-orm@0.43.1(@types/pg@8.15.2)(gel@2.1.0)(mysql2@3.14.1)(pg@8.16.0):
+  drizzle-orm@0.44.2(@types/pg@8.15.4)(gel@2.1.0)(mysql2@3.14.1)(pg@8.16.0):
     optionalDependencies:
-      '@types/pg': 8.15.2
+      '@types/pg': 8.15.4
       gel: 2.1.0
       mysql2: 3.14.1
       pg: 8.16.0
@@ -8833,13 +8846,13 @@ snapshots:
       camelcase-css: 2.0.1
       postcss: 8.5.3
 
-  postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3)):
+  postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3)):
     dependencies:
       lilconfig: 3.1.3
       yaml: 2.8.0
     optionalDependencies:
       postcss: 8.5.3
-      ts-node: 10.9.2(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3)
+      ts-node: 10.9.2(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3)
 
   postcss-nested@6.2.0(postcss@8.5.3):
     dependencies:
@@ -9523,7 +9536,7 @@ snapshots:
 
   tailwind-merge@3.3.0: {}
 
-  tailwindcss@3.4.4(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3)):
+  tailwindcss@3.4.4(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3)):
     dependencies:
       '@alloc/quick-lru': 5.2.0
       arg: 5.0.2
@@ -9542,7 +9555,7 @@ snapshots:
       postcss: 8.5.3
       postcss-import: 15.1.0(postcss@8.5.3)
       postcss-js: 4.0.1(postcss@8.5.3)
-      postcss-load-config: 4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3))
+      postcss-load-config: 4.0.2(postcss@8.5.3)(ts-node@10.9.2(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3))
       postcss-nested: 6.2.0(postcss@8.5.3)
       postcss-selector-parser: 6.1.2
       resolve: 1.22.10
@@ -9639,7 +9652,7 @@ snapshots:
       - '@swc/wasm'
       - '@types/node'
 
-  ts-node-dev@2.0.0(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3):
+  ts-node-dev@2.0.0(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3):
     dependencies:
       chokidar: 3.6.0
       dynamic-dedupe: 0.3.0
@@ -9649,7 +9662,7 @@ snapshots:
       rimraf: 2.7.1
       source-map-support: 0.5.21
       tree-kill: 1.2.2
-      ts-node: 10.9.2(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3)
+      ts-node: 10.9.2(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3)
       tsconfig: 7.0.0
       typescript: 5.8.3
     transitivePeerDependencies:
@@ -9677,14 +9690,14 @@ snapshots:
     optionalDependencies:
       '@swc/core': 1.11.24
 
-  ts-node@10.9.2(@swc/core@1.11.24)(@types/node@22.15.21)(typescript@5.8.3):
+  ts-node@10.9.2(@swc/core@1.11.24)(@types/node@24.0.3)(typescript@5.8.3):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.11
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 22.15.21
+      '@types/node': 24.0.3
       acorn: 8.14.1
       acorn-walk: 8.3.4
       arg: 4.1.3
@@ -9754,6 +9767,8 @@ snapshots:
       random-bytes: 1.0.0
 
   undici-types@6.21.0: {}
+
+  undici-types@7.8.0: {}
 
   unified@10.1.2:
     dependencies:
@@ -9937,18 +9952,18 @@ snapshots:
       d3-time: 3.1.0
       d3-timer: 3.0.1
 
-  vite-tsconfig-paths@4.3.2(typescript@5.8.3)(vite@6.3.5(@types/node@22.15.21)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0)):
+  vite-tsconfig-paths@4.3.2(typescript@5.8.3)(vite@6.3.5(@types/node@24.0.3)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0)):
     dependencies:
       debug: 4.4.1
       globrex: 0.1.2
       tsconfck: 3.1.5(typescript@5.8.3)
     optionalDependencies:
-      vite: 6.3.5(@types/node@22.15.21)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0)
+      vite: 6.3.5(@types/node@24.0.3)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  vite@6.3.5(@types/node@22.15.21)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0):
+  vite@6.3.5(@types/node@24.0.3)(jiti@1.21.7)(tsx@4.19.4)(yaml@2.8.0):
     dependencies:
       esbuild: 0.25.4
       fdir: 6.4.4(picomatch@4.0.2)
@@ -9957,7 +9972,7 @@ snapshots:
       rollup: 4.40.2
       tinyglobby: 0.2.13
     optionalDependencies:
-      '@types/node': 22.15.21
+      '@types/node': 24.0.3
       fsevents: 2.3.3
       jiti: 1.21.7
       tsx: 4.19.4
