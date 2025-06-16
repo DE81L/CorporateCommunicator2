@@ -3,6 +3,7 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "../dist/shared",
+    "noEmit": false,
     "composite": true,
     "declaration": true
   },

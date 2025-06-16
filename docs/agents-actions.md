@@ -11,3 +11,4 @@
 - [2025-06-22] Обновлена инструкция запуска: улучшен скрипт `run-production.sh`.
 
 - [2025-06-23] Обновлён скрипт run-production.sh: сборка только shared и server, добавлен requirements.txt.
+- [2025-06-24] Скрипт run-production.sh допускает отсутствие сборки Node.
