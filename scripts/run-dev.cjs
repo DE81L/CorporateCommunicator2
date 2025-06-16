@@ -23,12 +23,11 @@ if (pyws) {
   }
 }
 
-const names = ['server', 'client', 'electron'];
-const colors = ['green', 'blue', 'magenta'];
+const names = ['server', 'client'];
+const colors = ['green', 'blue'];
 const commands = [
   'pnpm run dev:server',
-  'pnpm run dev:client',
-  'pnpm run dev:electron'
+  'pnpm run dev:client'
 ];
 
 if (pyws) {
