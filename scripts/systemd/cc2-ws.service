@@ -1,0 +1,14 @@
+[Unit]
+Description=CorporateCommunicator2 WebSocket Server (Python)
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/CorporateCommunicator2
+ExecStart=/usr/bin/python3 /opt/CorporateCommunicator2/python_ws_server.py --host 0.0.0.0 --port 8001
+Environment=DATABASE_URL=postgresql://cc_user:123@localhost:5432/cc_db
+User=cc2user
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
