@@ -2,7 +2,7 @@
   "extends": "../tsconfig.base.json",          // if you have a root/base config
   "compilerOptions": {
     "target": "ES2022",
-    "outDir": "../dist/server",
+    "outDir": "../dist/server",   
     "rootDir": "../",
     "noEmit": false,
     "incremental": true,
@@ -19,9 +19,6 @@
       "@shared/*": ["../shared/src/*"]
     }
   },
-  "references": [
-    { "path": "../shared" }      // сервер зависит от shared
-  ],
   // 3) actually include both trees
   "include": [
     "src/**/*",
