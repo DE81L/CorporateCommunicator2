@@ -25,6 +25,7 @@ pnpm prune --prod
 
 ```bash
 ./scripts/run-production.sh
+# Скрипт запускает Node.js с флагом `--es-module-specifier-resolution=node` для корректной загрузки ESM модулей
 ```
 
 Перед запуском при необходимости переопределите `DATABASE_URL`, `VITE_API_URL`

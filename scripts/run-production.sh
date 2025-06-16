@@ -31,7 +31,8 @@ pnpm prune --prod
 # Запускаем сервисы
 python3 python_ws_server.py --host 0.0.0.0 --port "$PYWS_PORT" &
 PYWS_PID=$!
-node dist/server/index.js &
+DIR=$(cd -- "$(dirname "$0")"/.. && pwd)
+node --es-module-specifier-resolution=node "$DIR/dist/server/main.js" &
 NODE_PID=$!
 
 echo "Запущены Node.js (PID $NODE_PID, порт $PORT) и Python WS (PID $PYWS_PID, порт $PYWS_PORT)"

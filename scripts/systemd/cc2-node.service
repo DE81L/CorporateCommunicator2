@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=/opt/CorporateCommunicator2
-ExecStart=/usr/bin/node /opt/CorporateCommunicator2/dist/server/index.js
+ExecStart=/usr/bin/node --es-module-specifier-resolution=node /opt/CorporateCommunicator2/dist/server/main.js
 Environment=NODE_ENV=production
 Environment=PORT=4000
 Environment=NO_NODE_WS=1
