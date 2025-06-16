@@ -6,3 +6,4 @@ This file tracks all changes related to the Electron wrapper and packaging.
 
 - [2025-06-18] Обновлена конфигурация TypeScript для поддержки import.meta в electron.
 - [2025-06-18] Добавлена заглушка openDoom в web-polyfills.
+- [2025-06-18] Обновлена конфигурация tsconfig в electron для корректной работы путей.

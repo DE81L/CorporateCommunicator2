@@ -8,16 +8,7 @@
     ],
     "outDir": "dist",
     "skipLibCheck": true,
-    "moduleResolution": "NodeNext",
-    "baseUrl": ".",
-    "paths": {
-      "@shared/*": [
-        "../shared/src/*"
-      ],
-      "@shared/types/*": [
-        "../shared/types/*"
-      ]
-    }
+    "moduleResolution": "NodeNext"
   },
   "include": [
     "src",

@@ -4,6 +4,7 @@
     "target": "ES2022",
     "esModuleInterop": true,
     "module": "NodeNext", // Поддержка import.meta
+    "moduleResolution": "NodeNext", // Требуется для совместимости с module NodeNext
     "rootDirs": ["server/src", "shared/src"], // Указываем конкретную корневую директорию для исходников сервера
     "outDir": "./dist/server",
     "baseUrl": ".", // Базовый URL для разрешения путей
