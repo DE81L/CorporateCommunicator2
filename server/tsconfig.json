@@ -5,8 +5,15 @@
     "rootDir": "src",
     "outDir": "../dist/server",
     "composite": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
-  "include": ["src"],
-  "references": [{ "path": "../shared" }]
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../shared"
+    }
+  ]
 }
