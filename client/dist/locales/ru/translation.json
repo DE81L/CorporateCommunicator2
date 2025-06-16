@@ -43,6 +43,16 @@
     "theme": "Тема",
     "lightMode": "Светлая",
     "darkMode": "Темная",
-    "system": "Системная"
+    "system": "Системная",
+    "customizeAppearance": "Настройка внешнего вида приложения",
+    "changeLanguage": "Изменить язык приложения",
+    "manageAccount": "Управление учетной записью",
+    "accountSettings": "Настройки учетной записи",
+    "managePrivacy": "Управление конфиденциальностью",
+    "privacySettings": "Настройки конфиденциальности",
+    "manageNotifications": "Управление уведомлениями",
+    "emailNotificationsDescription": "Получать обновления по электронной почте",
+    "pushNotificationsDescription": "Получать push-уведомления на устройстве",
+    "desktopNotificationsDescription": "Получать уведомления на рабочем столе"
   }
 }
