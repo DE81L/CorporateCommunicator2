@@ -14,10 +14,12 @@ const router = Router();
 router.post('/avatar', upload.single('avatar'), async (req: Request, res: Response) => {
   const { username, email } = req.body as { username: string; email: string };
   const userId = req.session.userId as number;
-  if (!userId || !req.file) {
+  // multer добавляет поле file динамически, поэтому приводим тип
+  const file = (req as any).file as Express.Multer.File | undefined;
+  if (!userId || !file) {
     return res.status(400).json({ error: 'Invalid request' });
   }
-  const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+  const avatarUrl = `/uploads/avatars/${file.filename}`;
   try {
     await db!.query(
       'UPDATE users SET username = $1, email = $2, avatarurl = $3 WHERE id = $4',

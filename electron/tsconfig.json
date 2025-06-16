@@ -8,7 +8,8 @@
     ],
     "outDir": "dist",
     "skipLibCheck": true,
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "NodeNext",
+    "baseUrl": ".."
   },
   "include": [
     "src",
