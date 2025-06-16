@@ -1,4 +1,5 @@
-import type { Plugin } from 'unified'
+// Локальное определение типа плагина, чтобы не тянуть зависимость unified
+type Plugin = () => (tree: Node) => void
 
 type Node = {
   type: string

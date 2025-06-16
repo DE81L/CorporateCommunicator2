@@ -241,8 +241,7 @@ export default function HomePage() {
         <CallModal
           isOpen={isCallModalOpen}
           onClose={endCall}
-          callType={callType}
-          recipient={callRecipient}
+          roomId={"" + callRecipient.id}
         />
       )}
 
