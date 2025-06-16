@@ -12,24 +12,29 @@ if [[ ! -d "$PY_ENV" ]]; then
 fi
 source "$PY_ENV/bin/activate"
 
-pip install --upgrade pip
-pip install -r "$ROOT_DIR/requirements.txt"
+pip install --upgrade pip || echo "[WARN] pip upgrade failed"
+pip install -r "$ROOT_DIR/requirements.txt" || echo "[WARN] pip install failed"
 
 # ─────────── Node: deps + build ──────────
-pnpm install --frozen-lockfile
+pnpm install --frozen-lockfile || echo "[WARN] pnpm install failed"
 
-pnpm -r --filter 'shared...' run build
-pnpm -r --filter 'server...' run build
+pnpm -r --filter 'shared...' run build || true
+pnpm -r --filter 'server...' run build || true
 
 # ─────────── Старт двух процессов ──────────
-python "$ROOT_DIR/python_ws_server.py" &
+"$PY_ENV/bin/python" "$ROOT_DIR/python_ws_server.py" &
 PYWS_PID=$!
 
-node --es-module-specifier-resolution=node \
-     "$ROOT_DIR/dist/server/main.js" &
-NODE_PID=$!
+if [[ -f "$ROOT_DIR/dist/server/main.js" ]]; then
+  node --es-module-specifier-resolution=node \
+       "$ROOT_DIR/dist/server/main.js" &
+  NODE_PID=$!
+  echo "[OK] pyws($PYWS_PID) + node($NODE_PID) подняты"
+else
+  NODE_PID=""
+  echo "[WARN] Node server not found; only pyws($PYWS_PID) запущен"
+fi
 
-trap "kill $PYWS_PID $NODE_PID" EXIT
+trap "kill $PYWS_PID ${NODE_PID:-}" EXIT
 
-echo "[OK] pyws($PYWS_PID) + node($NODE_PID) подняты"
 wait

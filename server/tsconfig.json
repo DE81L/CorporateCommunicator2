@@ -4,6 +4,7 @@
     "target": "ES2022",
     "outDir": "../dist/server",
     "rootDir": "../",
+    "noEmit": false,
     "incremental": true,
     "strict": true,
     "esModuleInterop": true,
