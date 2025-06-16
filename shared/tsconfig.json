@@ -1,13 +1,11 @@
 {
   "extends": "../tsconfig.base.json",
-    "compilerOptions": {
-    "target": "ES2022",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "../dist/shared",
     "composite": true,
-    "outDir": "dist",
-    "skipLibCheck": true,   // ← temporary extra shield
-    "paths": {
-      "@shared/*": ["../shared/src/*"]
-    }
+    "declaration": true
   },
   "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

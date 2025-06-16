@@ -2,14 +2,13 @@
   "extends": "../tsconfig.base.json",          // if you have a root/base config
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
     "outDir": "../dist/server",
     "rootDir": "../",
     "incremental": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-
+    "composite": true,  
     // 1) Let TS “see” both your server/src _and_ shared/src folders:
     "rootDirs": ["src", "../shared/src"],
 
@@ -19,7 +18,9 @@
       "@shared/*": ["../shared/src/*"]
     }
   },
-
+  "references": [
+    { "path": "../shared" }      // сервер зависит от shared
+  ],
   // 3) actually include both trees
   "include": [
     "src/**/*",
