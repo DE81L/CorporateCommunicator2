@@ -1,40 +1,35 @@
-#!/bin/bash
-
-# Скрипт сборки и запуска CorporateCommunicator2 в production-режиме
-# Запускает Node.js API-сервер и Python WebSocket-сервер
-#
-# Параметры окружения можно переопределить перед запуском:
-#   PORT - порт для Node.js, по умолчанию 4000
-#   PYWS_PORT - порт Python WS, по умолчанию 8001
-#   DATABASE_URL - строка подключения к PostgreSQL
-#   VITE_API_URL и VITE_WS_URL - адреса, прошиваемые в клиент
-
+#!/usr/bin/env bash
 set -euo pipefail
 
-PORT="${PORT:-4000}"
-PYWS_PORT="${PYWS_PORT:-8001}"
+# ─────────── директории ───────────
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+PY_ENV="${ROOT_DIR}/.venv"
 
-pnpm install --frozen-lockfile --ignore-scripts=false
-pnpm approve-builds || true
+# ─────────── Python: venv + deps ──────────
+if [[ ! -d "$PY_ENV" ]]; then
+  echo "[pyws] creating venv @ $PY_ENV"
+  python3.12 -m venv "$PY_ENV"
+fi
+source "$PY_ENV/bin/activate"
 
-# Устанавливаем переменные для сборки клиента
-export NODE_ENV=production
-export PORT
-export NO_NODE_WS=1
-export DATABASE_URL="${DATABASE_URL:-postgresql://cc_user:123@localhost:5432/cc_db}"
-export VITE_API_URL="${VITE_API_URL:-http://91.197.96.9:$PORT}"
-export VITE_WS_URL="${VITE_WS_URL:-ws://91.197.96.9:$PYWS_PORT/ws}"
+pip install --upgrade pip
+pip install -r "$ROOT_DIR/requirements.txt"
 
-pnpm run build
-pnpm prune --prod
+# ─────────── Node: deps + build ──────────
+pnpm install --frozen-lockfile
 
-# Запускаем сервисы
-python3 python_ws_server.py --host 0.0.0.0 --port "$PYWS_PORT" &
+pnpm -r --filter 'shared...' run build
+pnpm -r --filter 'server...' run build
+
+# ─────────── Старт двух процессов ──────────
+python "$ROOT_DIR/python_ws_server.py" &
 PYWS_PID=$!
-DIR=$(cd -- "$(dirname "$0")"/.. && pwd)
-node --es-module-specifier-resolution=node "$DIR/dist/server/main.js" &
+
+node --es-module-specifier-resolution=node \
+     "$ROOT_DIR/dist/server/main.js" &
 NODE_PID=$!
 
-echo "Запущены Node.js (PID $NODE_PID, порт $PORT) и Python WS (PID $PYWS_PID, порт $PYWS_PORT)"
-wait $NODE_PID $PYWS_PID
+trap "kill $PYWS_PID $NODE_PID" EXIT
 
+echo "[OK] pyws($PYWS_PID) + node($NODE_PID) подняты"
+wait
