@@ -1,0 +1,17 @@
+[Unit]
+Description=CorporateCommunicator2 API Server (Node.js)
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/CorporateCommunicator2
+ExecStart=/usr/bin/node /opt/CorporateCommunicator2/dist/server/index.js
+Environment=NODE_ENV=production
+Environment=PORT=4000
+Environment=NO_NODE_WS=1
+Environment=DATABASE_URL=postgresql://cc_user:123@localhost:5432/cc_db
+User=cc2user
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
