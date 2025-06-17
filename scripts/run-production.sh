@@ -33,6 +33,7 @@ PYWS_PID=$!
 
 if [[ -f "$ROOT_DIR/dist/server/index.js" ]]; then
   # подключаем резолвер путей tsconfig, иначе алиасы не работают
+  export TS_NODE_PROJECT="$ROOT_DIR/server/tsconfig.json"
   node -r tsconfig-paths/register "$ROOT_DIR/dist/server/index.js" &
   NODE_PID=$!
   echo "[OK] pyws($PYWS_PID) + node($NODE_PID) подняты"
