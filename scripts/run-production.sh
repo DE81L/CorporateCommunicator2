@@ -32,7 +32,8 @@ pkill -f python_ws_server.py 2>/dev/null || true
 PYWS_PID=$!
 
 if [[ -f "$ROOT_DIR/dist/server/index.js" ]]; then
-  node "$ROOT_DIR/dist/server/index.js" &
+  # подключаем резолвер путей tsconfig, иначе алиасы не работают
+  node -r tsconfig-paths/register "$ROOT_DIR/dist/server/index.js" &
   NODE_PID=$!
   echo "[OK] pyws($PYWS_PID) + node($NODE_PID) подняты"
 else
