@@ -23,3 +23,4 @@
 - [2025-06-27] В tsconfig проектов server и shared включён skipLibCheck для устранения ошибок библиотек.
 - [2025-06-28] Указан путь tsBuildInfoFile для проекта server, чтобы избежать конфликтов сборки.
 - [2025-06-29] Конфигурация server/tsconfig.json наследует tsconfig.base.json для корректной работы алиасов.
+- [2025-06-30] build:prod собирает клиент; Express раздаёт client/dist; start:prod использует порт 5173; run-production.sh собирает при отсутствии dist.
