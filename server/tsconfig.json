@@ -6,6 +6,11 @@
     "moduleResolution": "node",
     "rootDir": "src",
     "outDir": "../dist/server",
+    "baseUrl": "../",
+    "paths": {
+      "@shared/*": ["dist/shared/*"],
+      "@shared/types/*": ["dist/shared/types/*"]
+    },
     "tsBuildInfoFile": "../dist/server/tsconfig.tsbuildinfo",
     "composite": true,
     "esModuleInterop": true,
