@@ -15,3 +15,4 @@
 - [2025-06-26] Добавлены скрипты dev-all.sh и run-pyws.sh, обновлены tsconfig и package.json для локальной разработки.
 - [2025-06-27] Включён skipLibCheck в tsconfig проектов server и shared.
 - [2025-07-04] Скрипт run-production.sh теперь подключает tsconfig-paths/register для корректной работы алиасов.
+- [2025-07-05] Уточнена конфигурация tsconfig-paths: export TS_NODE_PROJECT в run-production.sh.

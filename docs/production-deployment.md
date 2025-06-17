@@ -27,6 +27,8 @@ pnpm run build:prod
 pnpm run start:prod
 ```
 Скрипт автоматически создаёт виртуальное окружение Python и запускает Node.js.
+Он также экспортирует переменную `TS_NODE_PROJECT`, чтобы `tsconfig-paths` смог
+корректно найти конфигурацию `server/tsconfig.json`.
 
 Перед запуском при необходимости переопределите `DATABASE_URL`, `VITE_API_URL`
 и `VITE_WS_URL`. Скрипт по умолчанию использует адрес `91.197.96.9`.
