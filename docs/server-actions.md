@@ -25,3 +25,5 @@
 - [2025-06-29] Конфигурация server/tsconfig.json наследует tsconfig.base.json для корректной работы алиасов.
 - [2025-06-30] build:prod собирает клиент; Express раздаёт client/dist; start:prod использует порт 5173; run-production.sh собирает при отсутствии dist.
 - [2025-07-01] Изменён tsconfig сервера на NodeNext для совместимости с "type": "module".
+
+- [2025-07-02] Заменено "type" в server/package.json на "module" для корректной сборки.
