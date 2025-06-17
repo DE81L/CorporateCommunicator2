@@ -27,3 +27,4 @@
 - [2025-07-01] Изменён tsconfig сервера на NodeNext для совместимости с "type": "module".
 
 - [2025-07-02] Заменено "type" в server/package.json на "module" для корректной сборки.
+- [2025-07-03] Возврат к CommonJS: tsconfig серверных проектов и package.json теперь используют CommonJS.
