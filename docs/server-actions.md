@@ -30,3 +30,4 @@
 - [2025-07-03] Возврат к CommonJS: tsconfig серверных проектов и package.json теперь используют CommonJS.
 - [2025-07-04] run-production.sh запускает Node с параметром -r tsconfig-paths/register.
 - [2025-07-05] run-production.sh экспортирует переменную TS_NODE_PROJECT для корректного поиска tsconfig.
+- [2025-07-06] Исправлены алиасы в server/tsconfig.json: baseUrl '../', paths указывают на dist/shared для корректного запуска.
