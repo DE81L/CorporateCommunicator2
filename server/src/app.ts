@@ -89,8 +89,20 @@ export function createApp(): AppInit {
   app.use('/api', authRouter);                 // /api/auth/login, /api/auth/logout, …
   app.use('/api', isAuthenticated, apiRouter); // всё остальное
 
-  /* ───────── 404 FALLBACK ───────── */
-  app.all('*', (_req, res) => res.status(404).json({ error: 'Not found' }));
+
+  /* ─────── Статика SPA в production ─────── */
+  if (process.env.NODE_ENV === 'production') {
+    // Отдаём собранный клиент
+    app.use(express.static(path.join(process.cwd(), 'client', 'dist')));
+
+    // HTML5 history fallback для SPA
+    app.get('*', (_req, res) => {
+      res.sendFile(path.join(process.cwd(), 'client', 'dist', 'index.html'));
+    });
+  } else {
+    // В режиме разработки оставляем JSON‑ответ
+    app.all('*', (_req, res) => res.status(404).json({ error: 'Not found' }));
+  }
 
   return { app, sessionMiddleware: sess as RequestHandler };
 }

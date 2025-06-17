@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -e
 
 # ─────────── директории ───────────
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -18,8 +18,9 @@ pip install -r "$ROOT_DIR/requirements.txt" || echo "[WARN] pip install failed"
 # ─────────── Node: deps + build ──────────
 pnpm install --frozen-lockfile || echo "[WARN] pnpm install failed"
 
-pnpm -r --filter 'shared...' run build || true
-pnpm -r --filter 'server...' run build || true
+if [ ! -d "client/dist" ]; then
+  pnpm run build:prod
+fi
 
 # ─────────── Очистка зависших процессов ───────────
 # Если прошлый запуск python_ws_server.py не завершился,
@@ -30,9 +31,8 @@ pkill -f python_ws_server.py 2>/dev/null || true
 "$PY_ENV/bin/python" "$ROOT_DIR/python_ws_server.py" &
 PYWS_PID=$!
 
-if [[ -f "$ROOT_DIR/dist/server/main.js" ]]; then
-  node --es-module-specifier-resolution=node \
-       "$ROOT_DIR/dist/server/main.js" &
+if [[ -f "$ROOT_DIR/dist/server/index.js" ]]; then
+  node "$ROOT_DIR/dist/server/index.js" &
   NODE_PID=$!
   echo "[OK] pyws($PYWS_PID) + node($NODE_PID) подняты"
 else

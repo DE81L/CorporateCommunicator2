@@ -1,24 +1,24 @@
 # Развёртывание CorporateCommunicator2 в production
 
-Этот документ описывает примерную схему запуска без Electron. 
+Этот документ описывает примерную схему запуска без Electron.
 
 ## Используемые порты
 
-- **5173** – dev-сервер Vite для клиента (только в режиме разработки).
-- **3000/4000** – Node.js API-сервер. Значение задаётся переменной `PORT`.
+- **5173** – dev-сервер Vite и production‑сервер Express.
 - **8001** – Python WebSocket-сервер.
+
+В продакшене Express и клиент работают на одном порту, значение задаётся `PORT`.
 
 ## Быстрый запуск
 
-В каталоге `scripts` расположен файл `run-production.sh`. Он собирает только
-модули `shared` и `server`, устанавливает зависимости Python из
-`requirements.txt` и затем поднимает Python WebSocket и Node.js API.
+В каталоге `scripts` расположен файл `run-production.sh`. Он при отсутствии
+готовой сборки вызывает `pnpm run build:prod`, устанавливает зависимости Python
+из `requirements.txt` и затем поднимает Python WebSocket и Node.js API.
 
 Сборка выполняется так:
 
 ```bash
-pnpm -r --filter 'shared...' run build
-pnpm -r --filter 'server...' run build
+pnpm run build:prod
 ```
 
 Запускаем сервисы командой:
@@ -26,8 +26,7 @@ pnpm -r --filter 'server...' run build
 ```bash
 pnpm run start:prod
 ```
-Скрипт автоматически создаёт виртуальное окружение Python и запускает Node.js
-с флагом `--es-module-specifier-resolution=node`.
+Скрипт автоматически создаёт виртуальное окружение Python и запускает Node.js.
 
 Перед запуском при необходимости переопределите `DATABASE_URL`, `VITE_API_URL`
 и `VITE_WS_URL`. Скрипт по умолчанию использует адрес `91.197.96.9`.
